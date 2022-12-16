@@ -6,7 +6,7 @@ This is a simple starter app built with [Privy Auth](https://www.privy.io/) on [
 
 1. First, clone this repository locally and open it in your terminal. 
 ```sh
-git clone git@github.com:privy-io/auth-demo.git
+git clone https://github.com/privy-io/next-starter.git
 cd auth-demo
 ```
 
