@@ -1,0 +1,10 @@
+{
+    "recommendations": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "tamasfe.even-better-toml",
+        "mikestead.dotenv",
+        "austenc.tailwind-docs",
+        "styled-components.vscode-styled-components"
+    ]
+}

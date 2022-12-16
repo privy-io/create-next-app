@@ -1,0 +1,22 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:base"],
+  "encrypted": {
+    "npmrc": "wcFMA/xDdHCJBTolAQ/8DzZm/3mNUotcOA8ldKAs1JvwdF0Vfu56Z1Houknw7uTtSDZTKZDQGzAJ4Jj3JuY1gbYwxFufM27YRyZYNdi7xTZOaG79i9k3lcHhC0PHxdTkulE8uKGcePsHL3Ajg+GZ3h1pS/h0rHnCtGHT80AguSHMN/mLZ9MarV75WetpExWhALPMU2Pve4F2ELwoa1+yVZNwgsyzLOnKRbl3cS8ghVwDaHCvNiOd7IEXve+27Crq310W6Y+TO5RHTEMNpeR9BxhATUjqJemi8UEIAeh7ezGnZe6Q0m36AeeTZF3vc4pIkZUxyY60ApZVshORky/iC4KK3PVWWA4jj4ad8DgMc0KmKV91s0UmjHuYuQPQg/bb1E/S85yZiJHwQfZHWbvxAAltuntvsyZmWXR63VwQPsrWc+ecO54SXsOhhIPO5mQPbgLLJ5EARqrReYMUoI7t7wxQQ7jrc7FbEayFZ7oFreyOqRyeIwh6r+mhLaeGGXVcncUiN0GJxQzPeyJA2PCPMC/2c7qoXCXRY/lNvI2GpMSlLA4DM8/q3ZDjw0fKC/kPsJNAzduLX6T4syaqWAPB3KWfx2ck34qr8CKrp/VxM7mt1EewyfAYOfGdAwlUnn5cFiP05AzNkFA+4mwH/4aHyk8EFzdiTj59Uoinorx8NimzLkNxvUlLYhBJXBWBxqHSwHsBoLX5VLjqvhFY55/PSph1kxUc8PhQZsmu2MIubBaYBYUHt9ukejv0LK9n3V6ZBba76pv6WRiPFv7DOKH7TfqiLFu86hSt6MjeruuXyJ0CJffSDujjtdpNb8z125JPsZnXSCYqPIjIVi8wQ8gI+ENlYIaA+wgNO8hBXv4SU6HiBu6HD5zn9ueVqGTdVM1Lk2/jJpuWPcgo3fnLh5Dkw2deDOshURkiItneqjHb2o8Ojfpv/zgANhbE40p3Z2m4EehEBQ3JpIFAM43lolY8AjWQG8LkSA0W15KRBqVO7Zd9Qt1WQfKH0KNvKhjl5tIkCV3d02wZs/TiSaBDn1+CllzDT9PmzyaR17P05EZcHnrtRsTVjTu9X0VYz9p/YvWpzM1ao3b8FqvgkZKGMwHHkUocKXopLPIeq+QxT38"
+  },
+  "packageRules": [
+    {
+      "packagePatterns": ["*"],
+      "excludePackagePatterns": ["@privy-io"],
+      "enabled": false
+    },
+    {
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "automerge": true
+    }
+  ],
+  "rangeStrategy": "pin",
+  "constraints": {
+    "node": ">=16.0.0 <17.0.0"
+  }
+}
