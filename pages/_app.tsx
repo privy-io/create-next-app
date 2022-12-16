@@ -20,7 +20,7 @@ function MyApp({Component, pageProps}: AppProps) {
         <link rel="apple-touch-icon" href="/favicons/apple-touch-icon.png" />
         <link rel="manifest" href="/favicons/manifest.json" />
 
-        <title>Privy Auth NextJS Starter</title>
+        <title>Privy Auth Starter</title>
         <meta name="description" content="Privy Auth Starter" />
       </Head>
       <PrivyProvider
