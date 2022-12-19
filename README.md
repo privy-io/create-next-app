@@ -23,7 +23,7 @@ cp .env.example .env.local
 NEXT_PUBLIC_PRIVY_APP_ID=<your-privy-app-id>
 ```
 
-4. Run this application with `npm run dev` and open http://localhost:3000 in your browser to see it in action.
+4. Run this application with `npm run dev` and open http://localhost:3000 in your browser to see it in action!
 
 ## Integration Points
 
