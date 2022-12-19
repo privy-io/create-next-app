@@ -1,6 +1,6 @@
 # Privy Auth Demo
 
-This is a simple demo app to get you started building with [**Privy Auth**](https://www.privy.io/) on [NextJS](https://nextjs.org/). 
+This is a simple demo app to get you started building with [**Privy Auth**](https://www.privy.io/) on [NextJS](https://nextjs.org/). Take a look at the deployed version at https://init.privy.io/!
 
 ## Setup
 
@@ -9,7 +9,7 @@ This is a simple demo app to get you started building with [**Privy Auth**](http
 git clone https://github.com/privy-io/next-starter.git
 ```
 
-2. Install the necessary dependencies (including [Privy Auth](https://www.npmjs.com/package/@privy-io/react-auth)) with `npm`
+2. Install the necessary dependencies (including [Privy Auth](https://www.npmjs.com/package/@privy-io/react-auth)) with `npm`.
 ```sh
 npm i 
 ```
@@ -23,10 +23,9 @@ cp .env.example .env.local
 NEXT_PUBLIC_PRIVY_APP_ID=<your-privy-app-id>
 ```
 
-4. Run locally!
-Run this application with `npm run dev` and open http://localhost:3000 in your browser to see it in action.
+4. Run this application with `npm run dev` and open http://localhost:3000 in your browser to see it in action.
 
-## Useful Code Snippets
+## Integration Starters
 
 These are some specific points of integration with Privy Auth, which you may find helpful:
 
@@ -44,3 +43,5 @@ These are some specific points of integration with Privy Auth, which you may fin
 - We use the `user` object to show the user's DID and linked accounts.
 - The `linkEmail`, `linkWallet`, `linkPhone`, `linkGoogle`, `linkTwitter`, and `linkDiscord` hooks allow to user to link additional accounts. 
 - The `logout` hook allows the user to logout. 
+
+Check out the [Privy Auth docs](https://docs.privy.io/) for more guidance around using Privy in your app!
