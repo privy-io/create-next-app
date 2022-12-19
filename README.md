@@ -2,9 +2,9 @@
 
 This is a simple demo app to get you started building with [**Privy Auth**](https://www.privy.io/) on [NextJS](https://nextjs.org/). 
 
-Take a look at the deployed version at https://init.privy.io/!
+Or, play around with the [deployed app](https://init.privy.io/)!
 
-## Setup
+## 👩‍💻 Setup
 
 1. Clone this repository and open it in your terminal. 
 ```sh
@@ -27,7 +27,7 @@ NEXT_PUBLIC_PRIVY_APP_ID=<your-privy-app-id>
 
 4. Run this application with `npm run dev` and open http://localhost:3000 in your browser to see it in action!
 
-## Integration Points
+## 🏗 Integration Points
 
 These are some specific points of integration with Privy Auth, which you may find helpful:
 
