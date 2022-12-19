@@ -1,6 +1,8 @@
 # Privy Auth NextJS Starter
 
-This is a simple demo app to get you started building with [**Privy Auth**](https://www.privy.io/) on [NextJS](https://nextjs.org/). Take a look at the deployed version at https://init.privy.io/!
+This is a simple demo app to get you started building with [**Privy Auth**](https://www.privy.io/) on [NextJS](https://nextjs.org/). 
+
+Take a look at the deployed version at https://init.privy.io/!
 
 ## Setup
 
