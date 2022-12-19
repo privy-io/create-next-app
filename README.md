@@ -25,7 +25,7 @@ NEXT_PUBLIC_PRIVY_APP_ID=<your-privy-app-id>
 
 4. Run this application with `npm run dev` and open http://localhost:3000 in your browser to see it in action.
 
-## Integration Starters
+## Integration Points
 
 These are some specific points of integration with Privy Auth, which you may find helpful:
 
