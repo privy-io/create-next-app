@@ -6,7 +6,7 @@ This is a template for integrating [**Privy Auth**](https://www.privy.io/) into 
 
 1. Clone this repository and open it in your terminal. 
 ```sh
-git clone https://github.com/privy-io/next-starter.git
+git clone https://github.com/privy-io/create-next-app
 ```
 
 2. Install the necessary dependencies (including [Privy Auth](https://www.npmjs.com/package/@privy-io/react-auth)) with `npm`.
@@ -20,7 +20,7 @@ npm i
 cp .env.example .env.local
 
 # Add your Privy App ID to .env.local
-REACT_APP_PRIVY_APP_ID=<your-privy-app-id>
+NEXT_PUBLIC_PRIVY_APP_ID=<your-privy-app-id>
 ```
 
 ## Building locally
