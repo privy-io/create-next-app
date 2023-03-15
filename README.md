@@ -1,10 +1,8 @@
-# Privy Auth NextJS Starter
+# Privy Auth `create-next-app` Starter
 
-This is a simple demo app to get you started building with [**Privy Auth**](https://www.privy.io/) on [NextJS](https://nextjs.org/). 
+This is a template for integrating [**Privy Auth**](https://www.privy.io/) into a [NextJS](https://nextjs.org/) project. Check out the deployed app [here](https://init.privy.io/)!
 
-Or, play around with the [deployed app](https://init.privy.io/)!
-
-## 👩‍💻 Setup
+## Setup
 
 1. Clone this repository and open it in your terminal. 
 ```sh
@@ -16,34 +14,24 @@ git clone https://github.com/privy-io/next-starter.git
 npm i 
 ```
 
-3. Copy the example `.env.example` file to an `.env.local` file, and [add in your Privy App ID from the console](https://docs.privy.io/guide/console/api-keys). 
+3. Initialize your environment variables by copying the `.env.example` file to an `.env.local` file. Then, in `.env.local`, [paste your Privy App ID from the console](https://docs.privy.io/guide/console/api-keys).
 ```sh
-# Create the .env.local file in terminal
+# In your terminal, create .env.local from .env.example
 cp .env.example .env.local
 
-# Add your Privy App ID in .env.local
-NEXT_PUBLIC_PRIVY_APP_ID=<your-privy-app-id>
+# Add your Privy App ID to .env.local
+REACT_APP_PRIVY_APP_ID=<your-privy-app-id>
 ```
 
-4. Run this application with `npm run dev` and open http://localhost:3000 in your browser to see it in action!
+## Building locally
 
-## 🏗 Integration Points
+In your project directory, run `npm run dev`. You can now visit http://localhost:3000 to see your app and login with Privy!
 
-These are some specific points of integration with Privy Auth, which you may find helpful:
 
-### `pages/_app.tsx`
-- The `PrivyProvider` wraps all components that will use the Privy Auth SDK. 
-- In the `PrivyProvider`, we also pass in:
-  - our Privy `appId` (retrieved from the Privy Console)
-  - an (optional) `onSuccess` callback that redirects the user to the dashboard page upon login. 
+## Check out:
+- `pages/_app.tsx` for how to use the `PrivyProvider` and initialize it with your Privy App ID
+- `pages/index.tsx` for how to use the `usePrivy` hook and implement a simple `login` button
+- `pages/dashboard.tsx` for how to use the `usePrivy` hook, fields like `ready`, `authenticated`, and `user`, and methods like `linkWallet` and `logout`
 
-### `pages/index.tsx`
-- The login button invokes Privy's `login` hook when clicked, prompting a user to login with an email or crypto wallet
 
-### `pages/dashboard.tsx`
-- If a user is not `authenticated`, we redirect them back to our landing page. Note that we first check if `ready` is true before taking any actions based off of the `authenticated` hook. This ensures we do not take any actions based off of outdated authentication state that will soon be updated.
-- We use the `user` object to show the user's DID and linked accounts.
-- The `linkEmail`, `linkWallet`, `linkPhone`, `linkGoogle`, `linkTwitter`, and `linkDiscord` hooks allow to user to link additional accounts. 
-- The `logout` hook allows the user to logout. 
-
-Check out the [Privy Auth docs](https://docs.privy.io/) for more guidance around using Privy in your app!
+**Check out [our docs](https://docs.privy.io/) for more guidance around using Privy in your app!**
