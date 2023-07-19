@@ -28,6 +28,12 @@ function MyApp({Component, pageProps}: AppProps) {
         <PrivyProvider
           appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ''}
           onSuccess={() => router.push('/dashboard')}
+          config={{
+            embeddedWallets: {
+              createOnLogin: 'users-without-wallets',
+              noPromptOnSignature: true,
+            }
+          }}
         >
           <Component {...pageProps} />
         </PrivyProvider>
