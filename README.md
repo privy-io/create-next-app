@@ -1,26 +1,33 @@
-# Privy Auth `create-next-app` Starter
+# Privy x ZeroDev Starter
 
-This is a template for integrating [**Privy Auth**](https://www.privy.io/) into a [NextJS](https://nextjs.org/) project. Check out the deployed app [here](https://create-next-app.privy.io/)!
+This is a template for integrating [**Privy**](https://www.privy.io/) and [**ZeroDev**](https://zerodev.app/) into a [NextJS](https://nextjs.org/) project. Check out the deployed app [here](https://create-next-app.privy.io/)!
+
+In this demo app, a user can login with:
+- an external wallet, like MetaMask, or
+- an email address, and get a Privy embedded wallet behind-the-scenes
+
+Once the user has an external or embedded wallet, ZeroDev will create a **smart wallet** for the user behind the scenes, which can then be used to incorporate gas sponsorship, batched transactions, and more into your app. 
 
 ## Setup
 
-1. Clone this repository and open it in your terminal. 
+1. Fork this repository, clone it, and open it in your terminal.
 ```sh
-git clone https://github.com/privy-io/create-next-app
+git clone https://github.com/<your-github-handle>/zerodev-example
 ```
 
-2. Install the necessary dependencies (including [Privy Auth](https://www.npmjs.com/package/@privy-io/react-auth)) with `npm`.
+2. Install the necessary dependencies (including [Privy](https://www.npmjs.com/package/@privy-io/react-auth) and [ZeroDev](https://www.npmjs.com/package/@zerodevapp/privy)) with `npm`.
 ```sh
 npm i 
 ```
 
-3. Initialize your environment variables by copying the `.env.example` file to an `.env.local` file. Then, in `.env.local`, [paste your Privy App ID from the console](https://docs.privy.io/guide/console/api-keys).
+3. Initialize your environment variables by copying the `.env.example` file to an `.env.local` file. Then, in `.env.local`, paste your **Privy App ID** from the [Privy console](https://console.privy.io) and your **ZeroDev Project ID** from the [ZeroDev dashboard](https://dashboard.zerodev.app/).
 ```sh
 # In your terminal, create .env.local from .env.example
 cp .env.example .env.local
 
 # Add your Privy App ID to .env.local
 NEXT_PUBLIC_PRIVY_APP_ID=<your-privy-app-id>
+NEXT_PUBLIC_ZERODEV_PROJECT_ID=<your-zerodev-project-id>
 ```
 
 ## Building locally
@@ -29,9 +36,8 @@ In your project directory, run `npm run dev`. You can now visit http://localhost
 
 
 ## Check out:
-- `pages/_app.tsx` for how to use the `PrivyProvider` and initialize it with your Privy App ID
-- `pages/index.tsx` for how to use the `usePrivy` hook and implement a simple `login` button
-- `pages/dashboard.tsx` for how to use the `usePrivy` hook, fields like `ready`, `authenticated`, and `user`, and methods like `linkWallet` and `logout`
+- `pages/_app.tsx` for how to set your app up with the `PrivyProvider` and `ZeroDevProvider`
+- `pages/dashboard.tsx` for how to use the `useSmartPrivy` hook from ZeroDev to take actions like `sendTransaction`
 
 
-**Check out [our docs](https://docs.privy.io/) for more guidance around using Privy in your app!**
+**Check out our [ZeroDev integration guide](https://docs.privy.io/) for more guidance!**
