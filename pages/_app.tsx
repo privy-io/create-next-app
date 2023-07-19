@@ -3,6 +3,7 @@ import type {AppProps} from 'next/app';
 import Head from 'next/head';
 import {PrivyProvider} from '@privy-io/react-auth';
 import {useRouter} from 'next/router';
+// import {ZeroDevProvider} from '@zerodevapp/privy';
 
 function MyApp({Component, pageProps}: AppProps) {
   const router = useRouter();
@@ -20,15 +21,17 @@ function MyApp({Component, pageProps}: AppProps) {
         <link rel="apple-touch-icon" href="/favicons/apple-touch-icon.png" />
         <link rel="manifest" href="/favicons/manifest.json" />
 
-        <title>Privy Auth Starter</title>
-        <meta name="description" content="Privy Auth Starter" />
+        <title>Privy ZeroDev Integration</title>
+        <meta name="description" content="Privy ZeroDev Integration" />
       </Head>
-      <PrivyProvider
-        appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ''}
-        onSuccess={() => router.push('/dashboard')}
-      >
-        <Component {...pageProps} />
-      </PrivyProvider>
+      {/* <ZeroDevProvider projectId={process.env.NEXT_PUBLIC_ZERODEV_PROJECT_ID || ''}> */}
+        <PrivyProvider
+          appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ''}
+          onSuccess={() => router.push('/dashboard')}
+        >
+          <Component {...pageProps} />
+        </PrivyProvider>
+      {/* </ZeroDevProvider> */}
     </>
   );
 }
