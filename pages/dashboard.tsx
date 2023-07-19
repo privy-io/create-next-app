@@ -4,7 +4,7 @@ import {usePrivy, useWallets} from '@privy-io/react-auth';
 import Head from 'next/head';
 import { encodeFunctionData } from "viem";
 import abi from '../lib/nft.json';
-// import {useSmartPrivy} from '@zerodevapp/privy';
+import {useSmartPrivy} from '@zerodevapp/privy';
 
 const contractAddress = '0x34bE7f35132E97915633BC1fc020364EA5134863';
 
@@ -18,6 +18,7 @@ export default function DashboardPage() {
     sendTransaction,
     logout
   } = usePrivy();
+  const smart = useSmartPrivy();
   const {wallets} = useWallets();
   const [isLoading, setIsLoading] = useState(false);
 

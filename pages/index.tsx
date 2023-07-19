@@ -1,9 +1,16 @@
 import Portal from '../components/graphics/portal';
 import {usePrivy} from '@privy-io/react-auth';
 import Head from 'next/head';
+import { useRouter } from 'next/router';
+import { useEffect } from 'react';
 
 export default function LoginPage() {
-  const {login} = usePrivy();
+  const {ready, authenticated, login} = usePrivy();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (ready && authenticated) router.push('/dashboard')
+  }, [ready, authenticated])
 
   return (
     <>

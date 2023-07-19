@@ -3,7 +3,7 @@ import type {AppProps} from 'next/app';
 import Head from 'next/head';
 import {PrivyProvider} from '@privy-io/react-auth';
 import {useRouter} from 'next/router';
-// import {ZeroDevProvider} from '@zerodevapp/privy';
+import {ZeroDevProvider} from '@zerodevapp/privy';
 
 function MyApp({Component, pageProps}: AppProps) {
   const router = useRouter();
@@ -24,7 +24,7 @@ function MyApp({Component, pageProps}: AppProps) {
         <title>Privy ZeroDev Integration</title>
         <meta name="description" content="Privy ZeroDev Integration" />
       </Head>
-      {/* <ZeroDevProvider projectId={process.env.NEXT_PUBLIC_ZERODEV_PROJECT_ID || ''}> */}
+      <ZeroDevProvider projectId={process.env.NEXT_PUBLIC_ZERODEV_PROJECT_ID || ''}>
         <PrivyProvider
           appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ''}
           onSuccess={() => router.push('/dashboard')}
@@ -37,7 +37,7 @@ function MyApp({Component, pageProps}: AppProps) {
         >
           <Component {...pageProps} />
         </PrivyProvider>
-      {/* </ZeroDevProvider> */}
+      </ZeroDevProvider>
     </>
   );
 }
