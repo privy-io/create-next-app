@@ -107,9 +107,7 @@ export default function DashboardPage() {
             >
               {user?.wallet?.address}
             </a>
-            <p
-              className="mt-6 font-bold uppercase text-sm text-gray-600"
-            >
+            <p className="mt-6 font-bold uppercase text-sm text-gray-600">
               Your Signer Address
             </p>
             <a
