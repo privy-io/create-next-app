@@ -106,7 +106,7 @@ export default function DashboardPage() {
               {user?.wallet?.address}
             </p>
             <p className="mt-6 font-bold uppercase text-sm text-gray-600">
-              Your EOA Address
+              Your Signer Address
             </p>
             <p className="mt-2 text-sm text-gray-500">{eoa?.address}</p>
           </>
