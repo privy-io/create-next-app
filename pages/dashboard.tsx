@@ -17,8 +17,7 @@ export default function DashboardPage() {
     user,
     sendTransaction,
     logout
-  } = usePrivy();
-  const smart = useSmartPrivy();
+  } = useSmartPrivy();
   const {wallets} = useWallets();
   const [isLoading, setIsLoading] = useState(false);
 
