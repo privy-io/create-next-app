@@ -4,6 +4,8 @@ This is a template for integrating [**Privy**](https://www.privy.io/) and [**Zer
 
 In this demo app, a user can login with their email, Google account, Discord account, Twitter account, or Apple account, and get a Privy embedded wallet. Once the user has logged in and created an embedded wallet, ZeroDev will create a **smart wallet** for the user behind the scenes, which can then be used to incorporate gas sponsorship, batched transactions, and more into your app. 
 
+You can test this by logging into the app and attempting to mint an NFT; it should cost you no gas!
+
 ## Setup
 
 1. Fork this repository, clone it, and open it in your terminal.
