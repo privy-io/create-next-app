@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import React, { useCallback, useState, useEffect } from "react";
-import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { useWallets } from "@privy-io/react-auth";
 import Head from "next/head";
 import { encodeFunctionData } from "viem";
 import abi from "../lib/nft.json";
