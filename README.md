@@ -2,11 +2,7 @@
 
 This is a template for integrating [**Privy**](https://www.privy.io/) and [**ZeroDev**](https://zerodev.app/) into a [NextJS](https://nextjs.org/) project. Check out the deployed app [here](https://create-next-app.privy.io/)!
 
-In this demo app, a user can login with:
-- an external wallet, like MetaMask, or
-- an email address, and get a Privy embedded wallet behind-the-scenes
-
-Once the user has an external or embedded wallet, ZeroDev will create a **smart wallet** for the user behind the scenes, which can then be used to incorporate gas sponsorship, batched transactions, and more into your app. 
+In this demo app, a user can login with their email, Google account, Discord account, Twitter account, or Apple account, and get a Privy embedded wallet. Once the user has logged in and created an embedded wallet, ZeroDev will create a **smart wallet** for the user behind the scenes, which can then be used to incorporate gas sponsorship, batched transactions, and more into your app. 
 
 ## Setup
 
@@ -38,6 +34,5 @@ In your project directory, run `npm run dev`. You can now visit http://localhost
 ## Check out:
 - `pages/_app.tsx` for how to set your app up with the `PrivyProvider` and `ZeroDevProvider`
 - `pages/dashboard.tsx` for how to use the `useSmartPrivy` hook from ZeroDev to take actions like `sendTransaction`
-
 
 **Check out our [ZeroDev integration guide](https://docs.privy.io/) for more guidance!**
