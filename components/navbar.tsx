@@ -116,8 +116,8 @@ export default function Navbar({ items, accountId, appName }: NavbarProps) {
                             className="h-8 w-8 rounded-full"
                             src="/images/avatar.png"
                             alt="avatar placeholder"
-                            height="32px"
-                            width="32px"
+                            height="32"
+                            width="32"
                           />
                         </div>
                       </Menu.Button>
