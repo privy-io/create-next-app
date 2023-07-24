@@ -2,7 +2,7 @@
   "private": true,
   "engines": {
     "npm": ">=8.0.0 <9.0.0",
-    "node": ">=16.0.0 <17.0.0"
+    "node": ">=16.0.0 <=18.17.0"
   },
   "scripts": {
     "dev": "next dev",
@@ -21,6 +21,8 @@
     "@zerodevapp/privy": "^1.0.0-alpha.16",
     "next": "latest",
     "react": "18.2.0",
+    "react-dom": "^18.2.0",
+    "react-toastify": "^9.1.3",
     "viem": "^1.4.1"
   },
   "devDependencies": {

@@ -1,53 +1,74 @@
-import {useRouter} from 'next/router';
-import React, {useCallback, useState, useEffect} from 'react';
-import {usePrivy, useWallets} from '@privy-io/react-auth';
-import Head from 'next/head';
+import { useRouter } from "next/router";
+import React, { useCallback, useState, useEffect } from "react";
+import { usePrivy, useWallets } from "@privy-io/react-auth";
+import Head from "next/head";
 import { encodeFunctionData } from "viem";
-import abi from '../lib/nft.json';
-import {useSmartPrivy} from '@zerodevapp/privy';
+import abi from "../lib/nft.json";
+import { useSmartPrivy } from "@zerodevapp/privy";
+import { ToastContainer, toast } from "react-toastify";
 
-const contractAddress = '0x34bE7f35132E97915633BC1fc020364EA5134863';
+const NFT_CONTRACT_ADDRESS = "0x34bE7f35132E97915633BC1fc020364EA5134863";
+const MUMBAI_SCAN_URL = "https://mumbai.polygonscan.com";
 
 export default function DashboardPage() {
   const router = useRouter();
-  // Replace with useSmartPrivy
-  const {
-    ready,
-    authenticated,
-    user,
-    sendTransaction,
-    logout
-  } = useSmartPrivy();
-  const {wallets} = useWallets();
+  const { ready, authenticated, user, zeroDevReady, sendTransaction, logout } =
+    useSmartPrivy();
+  const { wallets } = useWallets();
   const [isLoading, setIsLoading] = useState(false);
 
-  const eoa = wallets.find((wallet) => (wallet.walletClientType === 'privy')) || wallets[0];
+  const eoa =
+    wallets.find((wallet) => wallet.walletClientType === "privy") || wallets[0];
 
   useEffect(() => {
     if (ready && !authenticated) {
-      router.push('/');
+      router.push("/");
     }
   }, [ready, authenticated, router]);
 
   const onMint = useCallback(async () => {
     if (!user?.wallet?.address || !sendTransaction) {
-      console.error('Wallet has not fully initialized yet');
+      console.error("Wallet has not fully initialized yet");
       return;
     }
 
     setIsLoading(true);
-    const txHash = await sendTransaction({
-      to: contractAddress,
-      data: encodeFunctionData({
-        abi,
-        functionName: 'mint',
-        args: [user.wallet.address],
-      })
-    });
-
-    console.log(`Minted with transaction hash: ${txHash}`);
+    const toastId = toast.loading("Minting...");
+    try {
+      const txHash = await sendTransaction({
+        to: NFT_CONTRACT_ADDRESS,
+        data: encodeFunctionData({
+          abi,
+          functionName: "mint",
+          args: [user.wallet.address],
+        }),
+      });
+      toast.update(toastId, {
+        render: (
+          <p>
+            See your mint transaction on{" "}
+            <a href={`${MUMBAI_SCAN_URL}/tx/${txHash}`} color="#FF8271">
+              Polygonscan
+            </a>
+            .
+          </p>
+        ),
+        type: "success",
+        isLoading: false,
+        autoClose: 2000,
+      });
+    } catch (error) {
+      toast.update(toastId, {
+        render:
+          "Failed to mint NFT. Please see the developer console for more information.",
+        type: "error",
+        isLoading: false,
+        autoClose: 2000,
+      });
+      console.error(`Failed to mint with error: ${error}`);
+    }
     setIsLoading(false);
-  }, [sendTransaction])
+  }, [sendTransaction]);
 
   return (
     <>
@@ -56,6 +77,7 @@ export default function DashboardPage() {
       </Head>
 
       <main className="flex flex-col min-h-screen px-4 sm:px-20 py-6 sm:py-10 bg-privy-light-blue">
+        <ToastContainer />
         {ready && authenticated ? (
           <>
             <div className="flex flex-row justify-between">
@@ -71,17 +93,23 @@ export default function DashboardPage() {
               <button
                 onClick={onMint}
                 // Replace with useSmartPrivy ready state
-                disabled={isLoading || !ready}
-                className="text-sm bg-violet-600 hover:bg-violet-700 py-2 px-4 rounded-md text-white"
+                disabled={isLoading || !ready || !zeroDevReady}
+                className="text-sm bg-violet-600 hover:bg-violet-700 disabled:bg-violet-400 py-2 px-4 rounded-md text-white"
               >
-                Mint NFT to Smart Wallet
+                {!isLoading ? "Mint NFT to Smart Wallet" : "Minting..."}
               </button>
             </div>
 
-            <p className="mt-6 font-bold uppercase text-sm text-gray-600">Your Smart Wallet Address</p>
+            <p className="mt-6 font-bold uppercase text-sm text-gray-600">
+              Your Smart Wallet Address
+            </p>
             {/* Replace with smart wallet address */}
-            <p className="mt-2 text-sm text-gray-500">{user?.wallet?.address}</p>
-            <p className="mt-6 font-bold uppercase text-sm text-gray-600">Your EOA Address</p>
+            <p className="mt-2 text-sm text-gray-500">
+              {user?.wallet?.address}
+            </p>
+            <p className="mt-6 font-bold uppercase text-sm text-gray-600">
+              Your EOA Address
+            </p>
             <p className="mt-2 text-sm text-gray-500">{eoa?.address}</p>
           </>
         ) : null}

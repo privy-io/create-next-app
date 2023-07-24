@@ -1,17 +1,17 @@
-import Image from 'next/image';
-import {useRouter} from 'next/router';
-import {Fragment} from 'react';
-import {Disclosure, Menu, Transition} from '@headlessui/react';
+import Image from "next/image";
+import { useRouter } from "next/router";
+import { Fragment } from "react";
+import { Disclosure, Menu, Transition } from "@headlessui/react";
 import {
   ChevronDownIcon,
   Bars3Icon,
   XMarkIcon,
   InformationCircleIcon,
-} from '@heroicons/react/24/outline';
-import {Logo} from './logo';
+} from "@heroicons/react/24/outline";
+import { Logo } from "./logo";
 
 function classNames(...classes: Array<string | boolean>): string {
-  return classes.filter(Boolean).join(' ');
+  return classes.filter(Boolean).join(" ");
 }
 
 /**
@@ -20,7 +20,7 @@ function classNames(...classes: Array<string | boolean>): string {
  * fragments, query params, or trailing slashes
  */
 const extractTabFromPath = (path: string) => {
-  return path.split('/').pop() as string;
+  return path.split("/").pop() as string;
 };
 
 export type NavbarItem = {
@@ -35,15 +35,15 @@ type NavbarProps = {
   items: Array<NavbarItem>;
 };
 
-export default function Navbar({items, accountId, appName}: NavbarProps) {
+export default function Navbar({ items, accountId, appName }: NavbarProps) {
   const router = useRouter();
   const resourceId = router.query.id;
   const selected = extractTabFromPath(router.pathname);
 
   const selectedItemClass =
-    'hover:cursor-pointer rounded-full bg-gray-900 px-3 py-2 text-lg font-medium text-white';
+    "hover:cursor-pointer rounded-full bg-gray-900 px-3 py-2 text-lg font-medium text-white";
   const unselectedItemClass =
-    'hover:cursor-pointer rounded-full px-3 py-2 text-lg font-medium text-gray-300 hover:bg-gray-700 hover:text-white';
+    "hover:cursor-pointer rounded-full px-3 py-2 text-lg font-medium text-gray-300 hover:bg-gray-700 hover:text-white";
 
   // Navigate to a resource sub-page:
   // /apps/:appId/settings
@@ -54,7 +54,7 @@ export default function Navbar({items, accountId, appName}: NavbarProps) {
 
   return (
     <Disclosure as="nav" className="bg-gray-800">
-      {({open}) => (
+      {({ open }) => (
         <>
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex h-16 items-center justify-between">
@@ -78,7 +78,9 @@ export default function Navbar({items, accountId, appName}: NavbarProps) {
                               navigateTo(item);
                             }}
                             className={
-                              selected === item.id ? selectedItemClass : unselectedItemClass
+                              selected === item.id
+                                ? selectedItemClass
+                                : unselectedItemClass
                             }
                           >
                             {item.name}
@@ -97,7 +99,10 @@ export default function Navbar({items, accountId, appName}: NavbarProps) {
                     type="button"
                     className="rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white"
                   >
-                    <InformationCircleIcon className="h-6 w-6" aria-hidden="true" />
+                    <InformationCircleIcon
+                      className="h-6 w-6"
+                      aria-hidden="true"
+                    />
                   </button>
                   <p className="text-white">{appName}</p>
 
@@ -116,7 +121,10 @@ export default function Navbar({items, accountId, appName}: NavbarProps) {
                           />
                         </div>
                       </Menu.Button>
-                      <ChevronDownIcon className="ml-1 h-4 w-4 text-white" aria-hidden="true" />
+                      <ChevronDownIcon
+                        className="ml-1 h-4 w-4 text-white"
+                        aria-hidden="true"
+                      />
                     </div>
                     <Transition
                       as={Fragment}
@@ -129,12 +137,12 @@ export default function Navbar({items, accountId, appName}: NavbarProps) {
                     >
                       <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                         <Menu.Item>
-                          {({active}) => (
+                          {({ active }) => (
                             <a
                               href={`/accounts/${accountId}`}
                               className={classNames(
-                                active ? 'bg-gray-100' : '',
-                                'block px-4 py-2 text-sm text-gray-700',
+                                active ? "bg-gray-100" : "",
+                                "block px-4 py-2 text-sm text-gray-700"
                               )}
                             >
                               Your account
@@ -142,12 +150,12 @@ export default function Navbar({items, accountId, appName}: NavbarProps) {
                           )}
                         </Menu.Item>
                         <Menu.Item>
-                          {({active}) => (
+                          {({ active }) => (
                             <a
                               href="#"
                               className={classNames(
-                                active ? 'bg-gray-100' : '',
-                                'block px-4 py-2 text-sm text-gray-700',
+                                active ? "bg-gray-100" : "",
+                                "block px-4 py-2 text-sm text-gray-700"
                               )}
                             >
                               Settings
@@ -155,12 +163,12 @@ export default function Navbar({items, accountId, appName}: NavbarProps) {
                           )}
                         </Menu.Item>
                         <Menu.Item>
-                          {({active}) => (
+                          {({ active }) => (
                             <a
                               href="#"
                               className={classNames(
-                                active ? 'bg-gray-100' : '',
-                                'block px-4 py-2 text-sm text-gray-700',
+                                active ? "bg-gray-100" : "",
+                                "block px-4 py-2 text-sm text-gray-700"
                               )}
                             >
                               Sign out
