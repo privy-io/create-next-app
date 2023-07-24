@@ -6,7 +6,6 @@ import { encodeFunctionData } from "viem";
 import abi from "../lib/nft.json";
 import { useSmartPrivy } from "@zerodevapp/privy";
 import { ToastContainer, toast } from "react-toastify";
-
 const NFT_CONTRACT_ADDRESS = "0x34bE7f35132E97915633BC1fc020364EA5134863";
 const MUMBAI_SCAN_URL = "https://mumbai.polygonscan.com";
 
@@ -102,13 +101,23 @@ export default function DashboardPage() {
             <p className="mt-6 font-bold uppercase text-sm text-gray-600">
               Your Smart Wallet Address
             </p>
-            <p className="mt-2 text-sm text-gray-500">
+            <a
+              className="mt-2 text-sm text-gray-500 hover:text-violet-600"
+              href={`${MUMBAI_SCAN_URL}/address/${user?.wallet?.address}`}
+            >
               {user?.wallet?.address}
-            </p>
-            <p className="mt-6 font-bold uppercase text-sm text-gray-600">
+            </a>
+            <p
+              className="mt-6 font-bold uppercase text-sm text-gray-600"
+            >
               Your Signer Address
             </p>
-            <p className="mt-2 text-sm text-gray-500">{eoa?.address}</p>
+            <a
+              className="mt-2 text-sm text-gray-500 hover:text-violet-600"
+              href={`${MUMBAI_SCAN_URL}/address/${eoa?.address}`}
+            >
+              {eoa?.address}
+            </a>
           </>
         ) : null}
       </main>
