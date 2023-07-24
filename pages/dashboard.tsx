@@ -45,17 +45,17 @@ export default function DashboardPage() {
       });
       toast.update(toastId, {
         render: (
-          <p>
-            See your mint transaction on{" "}
-            <a href={`${MUMBAI_SCAN_URL}/tx/${txHash}`} color="#FF8271">
-              Polygonscan
-            </a>
-            .
-          </p>
+          <a
+            href={`${MUMBAI_SCAN_URL}/tx/${txHash}`}
+            target="_blank"
+            color="#FF8271"
+          >
+            Click here to see your mint transaction.
+          </a>
         ),
         type: "success",
         isLoading: false,
-        autoClose: 2000,
+        autoClose: 5000,
       });
     } catch (error) {
       toast.update(toastId, {
@@ -63,7 +63,7 @@ export default function DashboardPage() {
           "Failed to mint NFT. Please see the developer console for more information.",
         type: "error",
         isLoading: false,
-        autoClose: 2000,
+        autoClose: 3000,
       });
       console.error(`Failed to mint with error: ${error}`);
     }
@@ -73,7 +73,7 @@ export default function DashboardPage() {
   return (
     <>
       <Head>
-        <title>Privy Auth Demo</title>
+        <title>Privy x ZeroDev Demo</title>
       </Head>
 
       <main className="flex flex-col min-h-screen px-4 sm:px-20 py-6 sm:py-10 bg-privy-light-blue">
@@ -81,7 +81,7 @@ export default function DashboardPage() {
         {ready && authenticated ? (
           <>
             <div className="flex flex-row justify-between">
-              <h1 className="text-2xl font-semibold">Privy Auth Demo</h1>
+              <h1 className="text-2xl font-semibold">Privy x ZeroDev Demo</h1>
               <button
                 onClick={logout}
                 className="text-sm bg-violet-200 hover:text-violet-900 py-2 px-4 rounded-md text-violet-700"
