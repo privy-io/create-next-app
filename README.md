@@ -18,7 +18,8 @@ git clone https://github.com/<your-github-handle>/zerodev-example
 npm i 
 ```
 
-3. Initialize your environment variables by copying the `.env.example` file to an `.env.local` file. Then, in `.env.local`, paste your **Privy App ID** from the [Privy console](https://console.privy.io) and your **ZeroDev Project ID** from the [ZeroDev dashboard](https://dashboard.zerodev.app/).
+3. Initialize your environment variables by copying the `.env.example` file to an `.env.local` file. Then, in `.env.local`, paste your **Privy App ID** from the [Privy console](https://console.privy.io) and your **ZeroDev Project ID** from the [ZeroDev dashboard](https://dashboard.zerodev.app/). This app uses Polygon's [Mumbai testnet](https://www.alchemy.com/overviews/mumbai-testnet); you should make sure to apply the same settings to your **ZeroDev Project ID**. 
+
 ```sh
 # In your terminal, create .env.local from .env.example
 cp .env.example .env.local
