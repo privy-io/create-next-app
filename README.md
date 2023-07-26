@@ -38,4 +38,4 @@ In your project directory, run `npm run dev`. You can now visit http://localhost
 - `pages/_app.tsx` for how to set your app up with the `PrivyProvider` and `ZeroDevProvider`
 - `pages/dashboard.tsx` for how to use the `useSmartPrivy` hook from ZeroDev to take actions like `sendTransaction`
 
-**Check out our [ZeroDev integration guide](https://docs.privy.io/) for more guidance!**
+**Check out our [ZeroDev integration guide](https://docs.privy.io/guide/guides/zerodev) for more guidance!**
