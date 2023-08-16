@@ -4,7 +4,7 @@ import { useWallets } from "@privy-io/react-auth";
 import Head from "next/head";
 import { encodeFunctionData } from "viem";
 import abi from "../lib/nft.json";
-import { useSmartPrivy } from "@zerodevapp/privy";
+import { useSmartPrivy } from "@zerodev/privy";
 import { ToastContainer, toast } from "react-toastify";
 const NFT_CONTRACT_ADDRESS = "0x34bE7f35132E97915633BC1fc020364EA5134863";
 const MUMBAI_SCAN_URL = "https://mumbai.polygonscan.com";

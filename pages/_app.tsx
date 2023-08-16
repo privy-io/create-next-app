@@ -3,7 +3,7 @@ import type { AppProps } from "next/app";
 import Head from "next/head";
 import { PrivyProvider } from "@privy-io/react-auth";
 import { useRouter } from "next/router";
-import { ZeroDevProvider } from "@zerodevapp/privy";
+import { ZeroDevProvider } from "@zerodev/privy";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 

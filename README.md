@@ -13,7 +13,7 @@ You can test this by logging into the app and attempting to mint an NFT with you
 git clone https://github.com/<your-github-handle>/zerodev-example
 ```
 
-2. Install the necessary dependencies (including [Privy](https://www.npmjs.com/package/@privy-io/react-auth) and [ZeroDev](https://www.npmjs.com/package/@zerodevapp/privy)) with `npm`.
+2. Install the necessary dependencies (including [Privy](https://www.npmjs.com/package/@privy-io/react-auth) and [ZeroDev](https://www.npmjs.com/package/@zerodev/privy)) with `npm`.
 ```sh
 npm i 
 ```
