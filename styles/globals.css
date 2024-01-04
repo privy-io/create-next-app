@@ -3,21 +3,25 @@
 @tailwind utilities;
 
 @layer base {
-  /* normal */
-  @font-face {
-    font-family: "Adelle Sans";
-    src: url("/fonts/AdelleSans-Regular.woff2") format("woff2");
-    font-style: normal;
-    font-display: swap;
-    font-weight: 300;
-  }
+	/* normal */
+	@font-face {
+		font-family: "Adelle Sans";
+		src: url("/fonts/AdelleSans-Regular.woff2") format("woff2");
+		font-style: normal;
+		font-display: swap;
+		font-weight: 300;
+	}
 
-  /* semibold */
-  @font-face {
-    font-family: "Adelle Sans";
-    src: url("/fonts/AdelleSans-Semibold.woff2") format("woff2");
-    font-style: normal;
-    font-display: swap;
-    font-weight: 600;
-  }
+	/* semibold */
+	@font-face {
+		font-family: "Adelle Sans";
+		src: url("/fonts/AdelleSans-Semibold.woff2") format("woff2");
+		font-style: normal;
+		font-display: swap;
+		font-weight: 600;
+	}
+
+	/* .pb-safe {
+		padding-bottom: env(safe-area-inset-bottom);
+	} */
 }
