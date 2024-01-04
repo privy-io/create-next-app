@@ -16,12 +16,21 @@ module.exports = {
 				neonBlue: "#4D4DFF",
 				neonPink: "#FF6AD5",
 			},
-			backgroundImage: (theme) => ({
+			backgroundImage: {
 				"neon-gradient": "linear-gradient(45deg, #4D4DFF, #FF6AD5)",
-				"neon-radial-gradient": "radial-gradient(circle at center, #4D4DFF, #FF6AD5)", // Replace with your actual gradient
-			}),
+				"neon-radial-gradient": "radial-gradient(circle at center, #4D4DFF, #FF6AD5)",
+			},
 			borderRadius: {
 				xl: "1rem",
+			},
+			animation: {
+				"spin-slow": "spin 2s linear infinite",
+			},
+			keyframes: {
+				spin: {
+					"0%": { transform: "rotate(0deg)" },
+					"100%": { transform: "rotate(360deg)" },
+				},
 			},
 		},
 	},

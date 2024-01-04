@@ -1,12 +1,14 @@
 // components/CameraComponent.tsx
 import React, { useEffect, useRef, useState } from "react";
-import { Button, Page } from "konsta/react";
-import { User, usePrivy, useWallets } from "@privy-io/react-auth";
+import { Button } from "konsta/react";
+import { useWallets } from "@privy-io/react-auth";
 import { WebIrys } from "@irys/sdk";
 import { useRouter } from "next/router";
+import Spinner from "./Spinner"; // Import the Spinner component
 
 const CameraComponent: React.FC = () => {
 	const router = useRouter();
+	const [isUploading, setIsUploading] = useState(false);
 
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const [streamActive, setStreamActive] = useState(false);
@@ -33,8 +35,9 @@ const CameraComponent: React.FC = () => {
 
 		return () => {
 			if (streamActive && videoRef.current && videoRef.current.srcObject) {
-				const tracks = videoRef.current.srcObject.getTracks();
-				tracks.forEach((track) => track.stop());
+				const mediaStream = videoRef.current.srcObject as MediaStream;
+				const tracks = mediaStream.getTracks();
+				tracks.forEach((track: MediaStreamTrack) => track.stop());
 			}
 		};
 	}, [streamActive]);
@@ -85,26 +88,6 @@ const CameraComponent: React.FC = () => {
 		}
 	};
 
-	const convertCanvasToBlob = (
-		canvas: HTMLCanvasElement,
-		mimeType: string,
-		qualityArgument: number,
-	): Promise<Blob> => {
-		return new Promise((resolve, reject) => {
-			canvas.toBlob(
-				(blob) => {
-					if (blob) {
-						resolve(blob);
-					} else {
-						reject(new Error("Canvas to Blob conversion failed"));
-					}
-				},
-				mimeType,
-				qualityArgument,
-			);
-		});
-	};
-
 	const resizeImage = async (originalBlob: Blob): Promise<Blob> => {
 		// Create an image to read the dimensions of the original blob
 		const image = new Image();
@@ -141,7 +124,7 @@ const CameraComponent: React.FC = () => {
 			});
 
 			// If the resized blob is still larger than 100 KiB, reduce the quality
-			if (resizedBlob.size > 100 * 1024) {
+			if (resizedBlob && resizedBlob.size > 100 * 1024) {
 				quality -= 0.1; // Reduce quality by 10%
 			}
 		} while (resizedBlob && resizedBlob.size > 100 * 1024 && quality > 0);
@@ -151,6 +134,7 @@ const CameraComponent: React.FC = () => {
 	};
 
 	const onUpload = async (originalBlob: Blob): Promise<void> => {
+		setIsUploading(true);
 		try {
 			const resizedBlob = await resizeImage(originalBlob);
 
@@ -172,6 +156,7 @@ const CameraComponent: React.FC = () => {
 		} catch (e) {
 			console.error("Error uploading data", e);
 		}
+		setIsUploading(false);
 	};
 
 	return (
@@ -202,9 +187,10 @@ const CameraComponent: React.FC = () => {
 						</Button>
 						<Button
 							className="bg-neon-radial-gradient text-white py-2 rounded-full"
-							onClick={() => onUpload(imageBlob)}
+							onClick={() => imageBlob && onUpload(imageBlob)}
+							disabled={isUploading}
 						>
-							Upload
+							{isUploading ? <Spinner /> : "Upload"}
 						</Button>
 					</div>
 				</>

@@ -1,7 +1,7 @@
 import React from "react";
 import FeedComponent from "../components/FeedComponent";
 import TopNav from "../components/TopNav";
-import { Button, Page } from "konsta/react";
+import { Page } from "konsta/react";
 
 const Feed = () => {
 	// Implement state and navigation logic

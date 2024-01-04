@@ -2,8 +2,14 @@ import React, { useEffect, useState } from "react";
 import { Page, Card, Block } from "konsta/react";
 import Query from "@irys/query";
 
+interface Item {
+	id: string;
+	address: string;
+	timestamp: number;
+}
+
 const FeedComponent = () => {
-	const [items, setItems] = useState([]);
+	const [items, setItems] = useState<Item[]>([]);
 
 	useEffect(() => {
 		const fetchImages = async () => {
@@ -28,7 +34,7 @@ const FeedComponent = () => {
 		fetchImages();
 	}, []);
 
-	const formatDate = (unixTimestamp) => {
+	const formatDate = (unixTimestamp: number) => {
 		const date = new Date(unixTimestamp);
 		const day = date.getDate();
 		const month = date.toLocaleString("default", { month: "short" });
