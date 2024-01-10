@@ -22,7 +22,10 @@ const FeedComponent = () => {
 						address: true,
 						timestamp: true,
 					})
-					.tags([{ name: "application-id", values: ["my-image-feed"] }])
+					.tags([
+						{ name: "application-id", values: ["my-image-feed"] },
+						{ name: "Content-Type", values: ["image/jpeg"] },
+					])
 					.sort("DESC");
 				//@ts-ignore
 				setItems(results);

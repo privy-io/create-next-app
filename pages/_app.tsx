@@ -3,6 +3,7 @@ import type { AppProps } from "next/app";
 import Head from "next/head";
 import { PrivyProvider } from "@privy-io/react-auth";
 import { useRouter } from "next/router";
+import { polygonMumbai } from "viem/chains";
 
 function MyApp({ Component, pageProps }: AppProps) {
 	const router = useRouter();
@@ -27,8 +28,10 @@ function MyApp({ Component, pageProps }: AppProps) {
 				appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ""}
 				onSuccess={() => router.push("/feed")}
 				config={{
+					defaultChain: polygonMumbai,
 					embeddedWallets: {
-						createOnLogin: "users-without-wallets", // or 'all-users'
+						// 	noPromptOnSignature: false, // defaults to false
+						createOnLogin: "users-without-wallets", // or ''
 					},
 				}}
 			>

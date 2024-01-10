@@ -4,10 +4,9 @@ import TopNav from "../components/TopNav";
 import { Page } from "konsta/react";
 
 const Feed = () => {
-	// Implement state and navigation logic
 	return (
-		<div className="">
-			<Page className="bg-neon-gradient">
+		<div className="z-0">
+			<Page>
 				<TopNav />
 				<FeedComponent />
 			</Page>
@@ -16,4 +15,3 @@ const Feed = () => {
 };
 
 export default Feed;
-//

@@ -14,25 +14,25 @@ const TopNav = () => {
 	};
 
 	return (
-		<Navbar className="fixed  bg-neonBlue shadow-lg z-10 max-h-[60px]">
+		<Navbar className="fixed  bg-neonBlue shadow-2xl z-10 max-h-[60px]">
 			<div className="flex justify-between items-center w-full px-4">
 				<Button
 					clear
-					className="bg-neon-radial-gradient rounded-full text-white px-4 py-1 mx-2" // Reduced padding here
+					className="bg-neon-radial-gradient border border-1 border-white shadow-2xl rounded-full text-white px-4 py-1 mx-2" // Reduced padding here
 					onClick={() => router.push("/camera")}
 				>
 					Camera
 				</Button>
 				<Button
 					clear
-					className="bg-neon-radial-gradient rounded-full text-white px-4 py-1 mx-2" // Reduced padding here
+					className="bg-neon-radial-gradient border border-1 border-white shadow-2xl rounded-full text-white px-4 py-1 mx-2" // Reduced padding here
 					onClick={() => router.push("/feed")}
 				>
 					Feed
 				</Button>
 				<Button
 					clear
-					className="bg-neon-radial-gradient rounded-full text-white px-4 py-1 mx-2" // Reduced padding here
+					className="bg-neon-radial-gradient border border-1 border-white shadow-2xl rounded-full text-white px-4 py-1 mx-2" // Reduced padding here
 					onClick={doLogout}
 				>
 					Logout
