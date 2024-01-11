@@ -30,8 +30,8 @@ function MyApp({ Component, pageProps }: AppProps) {
 				config={{
 					defaultChain: polygonMumbai,
 					embeddedWallets: {
-						// 	noPromptOnSignature: false, // defaults to false
-						createOnLogin: "users-without-wallets", // or ''
+						noPromptOnSignature: false, // defaults to false
+						createOnLogin: "users-without-wallets",
 					},
 				}}
 			>

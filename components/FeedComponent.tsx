@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Page, Card, Block } from "konsta/react";
-import Query from "@irys/query";
+import { fetchImages } from "../utils/irysFunctions";
 
 interface Item {
 	id: string;
@@ -12,29 +12,11 @@ const FeedComponent = () => {
 	const [items, setItems] = useState<Item[]>([]);
 
 	useEffect(() => {
-		const fetchImages = async () => {
-			const myQuery = new Query({ url: "https://node2.irys.xyz/graphql" });
-			try {
-				const results = await myQuery
-					.search("irys:transactions")
-					.fields({
-						id: true,
-						address: true,
-						timestamp: true,
-					})
-					.tags([
-						{ name: "application-id", values: ["my-image-feed"] },
-						{ name: "Content-Type", values: ["image/jpeg"] },
-					])
-					.sort("DESC");
-				//@ts-ignore
-				setItems(results);
-			} catch (error) {
-				console.error("Failed to fetch images:", error);
-			}
+		const doFetchImages = async () => {
+			const curItems = await fetchImages();
+			setItems(curItems);
 		};
-
-		fetchImages();
+		doFetchImages();
 	}, []);
 
 	const formatDate = (unixTimestamp: number) => {
