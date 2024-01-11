@@ -1,21 +1,38 @@
 {
-	"extends": "@tsconfig/node16-strictest-esm/tsconfig.json",
-	"compilerOptions": {
-		"lib": ["dom", "dom.iterable", "esnext"],
-		"declaration": true,
-		"sourceMap": true,
-		"stripInternal": true,
-		"allowJs": true,
-		"noEmit": true,
-		"module": "esnext",
-		"resolveJsonModule": true,
-		"isolatedModules": true,
-		"jsx": "preserve",
-		"incremental": true,
-		"noImplicitReturns": false,
-		"noPropertyAccessFromIndexSignature": false,
-		"exactOptionalPropertyTypes": false
-	},
-	"include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "./types/*"],
-	"exclude": ["node_modules"]
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "resolveJsonModule": true,
+    "declaration": true,
+    "sourceMap": true,
+    "noEmit": true,
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ESNext"
+    ],
+    "noImplicitReturns": false,
+    "noPropertyAccessFromIndexSignature": false,
+    "exactOptionalPropertyTypes": false,
+    "allowJs": true,
+    "incremental": true
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.js",
+    "**/*.jsx",
+    "./types/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
