@@ -28,6 +28,7 @@ function MyApp({ Component, pageProps }: AppProps) {
 				appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ""}
 				onSuccess={() => router.push("/feed")}
 				config={{
+					//@ts-ignore
 					defaultChain: polygonMumbai,
 					embeddedWallets: {
 						noPromptOnSignature: false, // defaults to false

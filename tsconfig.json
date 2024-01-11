@@ -1,33 +1,21 @@
 {
-  "extends": "@tsconfig/node16-strictest-esm/tsconfig.json",
-  "compilerOptions": {
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
-    "declaration": true,
-    "sourceMap": true,
-    "stripInternal": true,
-    "allowJs": true,
-    "noEmit": true,
-    "module": "esnext",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "preserve",
-    "incremental": true,
-    "noImplicitReturns": false,
-    "noPropertyAccessFromIndexSignature": false,
-    "exactOptionalPropertyTypes": false,
-  },
-  "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    "**/*.js",
-    "**/*.jsx"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+	"extends": "@tsconfig/node16-strictest-esm/tsconfig.json",
+	"compilerOptions": {
+		"lib": ["dom", "dom.iterable", "esnext"],
+		"declaration": true,
+		"sourceMap": true,
+		"stripInternal": true,
+		"allowJs": true,
+		"noEmit": true,
+		"module": "esnext",
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"jsx": "preserve",
+		"incremental": true,
+		"noImplicitReturns": false,
+		"noPropertyAccessFromIndexSignature": false,
+		"exactOptionalPropertyTypes": false
+	},
+	"include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "./types/*"],
+	"exclude": ["node_modules"]
 }

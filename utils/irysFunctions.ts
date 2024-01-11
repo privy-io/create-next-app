@@ -1,11 +1,12 @@
 import { WebIrys } from "@irys/sdk";
 import Query from "@irys/query";
 import pica from "pica";
+import type { ConnectedWallet } from "@privy-io/react-auth";
 
 const nodeUrl = "https://node2.irys.xyz";
 // const nodeUrl = "https://devnet.irys.xyz";
 
-export const getWebIrys = async (w) => {
+export const getWebIrys = async (w: ConnectedWallet) => {
 	const rpcURL = "https://polygon-mumbai.g.alchemy.com/v2/demo";
 	const token = "matic";
 
@@ -20,6 +21,7 @@ export const getWebIrys = async (w) => {
 			gasLimit: data.gasLimit.toHexString(),
 			maxFeePerGas: data.maxFeePerGas.toHexString(),
 			maxPriorityFeePerGas: data.maxPriorityFeePerGas.toHexString(),
+			//@ts-ignore
 		}).then((r) => r.transactionHash);
 
 	await webIrys.ready();
@@ -66,7 +68,7 @@ const resizeImage = async (originalBlob: Blob, targetSizeKb = 100): Promise<Blob
 	return resizedBlob;
 };
 
-export const uploadImage = async (originalBlob: Blob, w) => {
+export const uploadImage = async (originalBlob: Blob, w: ConnectedWallet) => {
 	try {
 		// Initialize WebIrys
 		console.log("w=", w);
@@ -110,7 +112,7 @@ interface Item {
 	timestamp: number;
 }
 
-export const fetchImages = async (): Promise<Item[] | undefined> => {
+export const fetchImages = async (): Promise<Item[]> => {
 	const myQuery = new Query({ url: `${nodeUrl}/graphql` });
 	try {
 		const results = await myQuery
@@ -125,8 +127,11 @@ export const fetchImages = async (): Promise<Item[] | undefined> => {
 				{ name: "Content-Type", values: ["image/jpeg"] },
 			])
 			.sort("DESC");
-		return results as Item[]; // Cast results to an array of Item objects
+
+		// Check if results exist and cast to array of Item objects
+		return results ? (results as Item[]) : [];
 	} catch (error) {
 		console.error("Failed to fetch images:", error);
+		return []; // Return an empty array in case of error
 	}
 };

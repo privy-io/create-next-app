@@ -1,10 +1,8 @@
 // components/CameraComponent.tsx
 import React, { useEffect, useRef, useState } from "react";
 import { useWallets } from "@privy-io/react-auth";
-import { WebIrys } from "@irys/sdk";
 import { useRouter } from "next/router";
 import Spinner from "./Spinner"; // Import the Spinner component
-import { usePrivy } from "@privy-io/react-auth";
 import { uploadImage } from "../utils/irysFunctions";
 
 const CameraComponent: React.FC = () => {
@@ -23,7 +21,9 @@ const CameraComponent: React.FC = () => {
 
 	useEffect(() => {
 		// Mobile detection
+
 		const isTouchDevice =
+			//@ts-ignore
 			"ontouchstart" in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
 		setIsMobileDevice(isTouchDevice);
 	}, []);
@@ -59,10 +59,21 @@ const CameraComponent: React.FC = () => {
 		const devices = await navigator.mediaDevices.enumerateDevices();
 		const videoDevices = devices.filter((device) => device.kind === "videoinput");
 
-		if (videoDevices.length > 1) {
-			const currentDeviceIndex = videoDevices.findIndex((device) => device.deviceId === currentDeviceId);
-			const nextDeviceIndex = (currentDeviceIndex + 1) % videoDevices.length;
-			setCurrentDeviceId(videoDevices[nextDeviceIndex].deviceId);
+		if (videoDevices.length > 0) {
+			if (currentDeviceId === null) {
+				// Set to the default mobile device ID (first device in the list)
+				const defaultDeviceId = videoDevices[0]?.deviceId;
+				if (defaultDeviceId) {
+					setCurrentDeviceId(defaultDeviceId);
+				}
+			} else {
+				const currentDeviceIndex = videoDevices.findIndex((device) => device.deviceId === currentDeviceId);
+				const nextDeviceIndex = (currentDeviceIndex + 1) % videoDevices.length;
+				const nextDeviceId = videoDevices[nextDeviceIndex]?.deviceId;
+				if (nextDeviceId) {
+					setCurrentDeviceId(nextDeviceId);
+				}
+			}
 		}
 	};
 
@@ -98,12 +109,14 @@ const CameraComponent: React.FC = () => {
 	};
 
 	const onUpload = async (originalBlob: Blob): Promise<void> => {
-		setIsUploading(true);
+		if (w) {
+			setIsUploading(true);
 
-		await uploadImage(originalBlob, w);
-		// Back to the feed
-		router.push("/feed");
-		setIsUploading(false);
+			await uploadImage(originalBlob, w);
+			// Back to the feed
+			router.push("/feed");
+			setIsUploading(false);
+		}
 	};
 
 	return (
