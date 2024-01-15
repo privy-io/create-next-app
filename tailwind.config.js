@@ -1,38 +1,37 @@
-const defaultTheme = require("tailwindcss/defaultTheme");
-
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-	content: ["./pages/**/*.{js,ts,jsx,tsx}", "./components/**/*.{js,ts,jsx,tsx}"],
-	theme: {
-		extend: {
-			fontFamily: {
-				sans: ["Adelle Sans", ...defaultTheme.fontFamily.sans],
-			},
-			colors: {
-				"privy-navy": "#160B45",
-				"privy-light-blue": "#EFF1FD",
-				"privy-blueish": "#D4D9FC",
-				"privy-pink": "#FF8271",
-				neonBlue: "#4D4DFF",
-				neonPink: "#FF6AD5",
-			},
-			backgroundImage: {
-				"neon-gradient": "linear-gradient(45deg, #4D4DFF, #FF6AD5)",
-				"neon-radial-gradient": "radial-gradient(circle at center, #4D4DFF, #FF6AD5)",
-			},
-			borderRadius: {
-				xl: "1rem",
-			},
-			animation: {
-				"spin-slow": "spin 2s linear infinite",
-			},
-			keyframes: {
-				spin: {
-					"0%": { transform: "rotate(0deg)" },
-					"100%": { transform: "rotate(360deg)" },
-				},
-			},
-		},
-	},
-	plugins: [require("@tailwindcss/forms")],
-};
+  darkMode: ["class"],
+  content: [
+    './pages/**/*.{ts,tsx}',
+    './components/**/*.{ts,tsx}',
+    './app/**/*.{ts,tsx}',
+    './src/**/*.{ts,tsx}',
+  ],
+  prefix: "",
+  theme: {
+    container: {
+      center: true,
+      padding: "2rem",
+      screens: {
+        "2xl": "1400px",
+      },
+    },
+    extend: {
+      keyframes: {
+        "accordion-down": {
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
+        },
+        "accordion-up": {
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
+        },
+      },
+      animation: {
+        "accordion-down": "accordion-down 0.2s ease-out",
+        "accordion-up": "accordion-up 0.2s ease-out",
+      },
+    },
+  },
+  plugins: [require("tailwindcss-animate")],
+}

@@ -1,37 +1,37 @@
+import { Camera, LogIn } from "lucide-react";
+
+import { Button } from "../components/ui/button";
 import Head from "next/head";
 import { usePrivy } from "@privy-io/react-auth";
 
 export default function LoginPage() {
-	const { login } = usePrivy();
+  const { login } = usePrivy();
+  const TITLE = "Photoland Travelogue (Irys + Privy)";
 
-	return (
-		<>
-			<Head>
-				<title>Photoland Travelogue (Irys + Privy)</title>
-			</Head>
+  return (
+    <>
+      <Head>
+        <title>{TITLE}</title>
+      </Head>
 
-			<main className="flex min-h-screen min-w-full">
-				<div className="flex flex-1">
-					<div
-						className="fixed inset-0 bg-cover bg-center"
-						style={{ backgroundImage: `url(./images/splashScreen.png)` }}
-					/>
-					<div className="flex flex-1 justify-center items-end z-10 pb-20">
-						<div
-							className="text-center px-3 py-3 rounded-2xl"
-							style={{ backgroundColor: "rgba(255, 255, 255, 0.5)" }}
-						>
-							<h1 className="text-4xl font-bold text-black mb-4">Photoland Travelogue</h1>
-							<button
-								className="bg-black hover:bg-violet-700 py-3 px-6 text-white rounded-lg"
-								onClick={login}
-							>
-								Log in
-							</button>
-						</div>
-					</div>
-				</div>
-			</main>
-		</>
-	);
+      <main className="flex min-h-screen min-w-full">
+        <div className="flex flex-1">
+          <div className="flex flex-1 justify-center items-center z-10 pb-20">
+            <div className="flex flex-col text-center p-20 rounded-2xl items-center justify-center">
+              <Camera className="w-10 h-10 text-black p-2 my-6 bg-white rounded-full hover:-rotate-6 transition-all" />
+              <h1 className="text-4xl font-bold text-white mb-4">
+                Welcome back
+              </h1>
+              <h2 className="-mt-2 mb-10 text-white/80">
+                Click below to sign in to your account
+              </h2>
+              <Button onClick={login} variant={"outline"}>
+                Sign in with Privy
+              </Button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </>
+  );
 }

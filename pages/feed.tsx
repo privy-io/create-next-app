@@ -1,17 +1,16 @@
+import FeedComponent from "../components/feed";
+import Nav from "../components/navbar";
 import React from "react";
-import FeedComponent from "../components/FeedComponent";
-import TopNav from "../components/TopNav";
-import { Page } from "konsta/react";
 
 const Feed = () => {
-	return (
-		<div className="z-0">
-			<Page>
-				<TopNav />
-				<FeedComponent />
-			</Page>
-		</div>
-	);
+  return (
+    <div className="relative">
+      <div className="max-w-lg mx-auto">
+        <FeedComponent />
+      </div>
+      <Nav />
+    </div>
+  );
 };
 
 export default Feed;
