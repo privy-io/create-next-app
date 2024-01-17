@@ -6,26 +6,24 @@ import type { ConnectedWallet } from "@privy-io/react-auth";
 const nodeUrl = "https://node2.irys.xyz";
 // const nodeUrl = "https://devnet.irys.xyz";
 
-export const getWebIrys = async (w: ConnectedWallet) => {
+export const getWebIrys = async (w: ConnectedWallet, sendTransaction: any) => {
 	const rpcURL = "https://polygon-mumbai.g.alchemy.com/v2/demo";
 	const token = "matic";
-
+	console.log("w?.walletClientType=", w?.walletClientType);
+	console.log("sendTransaction=", sendTransaction);
 	const provider = await w?.getEthersProvider();
 	if (!provider) throw new Error(`Cannot find privy wallet`);
+	const irysWallet =
+		w?.walletClientType === "privy"
+			? { name: "privy-embedded", provider, sendTransaction }
+			: { name: "privy", provider };
 
-	const webIrys = new WebIrys({ url: nodeUrl, token, wallet: { rpcUrl: rpcURL, name: "privy", provider } });
-	webIrys.tokenConfig.sendTx = async (data) =>
-		//@ts-ignore
-		sendTransaction({
-			...data,
-			gasLimit: data.gasLimit.toHexString(),
-			maxFeePerGas: data.maxFeePerGas.toHexString(),
-			maxPriorityFeePerGas: data.maxPriorityFeePerGas.toHexString(),
-			//@ts-ignore
-		}).then((r) => r.transactionHash);
-
+	const webIrys = new WebIrys({
+		url: nodeUrl,
+		token: token,
+		wallet: irysWallet,
+	});
 	await webIrys.ready();
-
 	return webIrys;
 };
 
@@ -68,11 +66,11 @@ const resizeImage = async (originalBlob: Blob, targetSizeKb = 100): Promise<Blob
 	return resizedBlob;
 };
 
-export const uploadImage = async (originalBlob: Blob, w: ConnectedWallet) => {
+export const uploadImage = async (originalBlob: Blob, w: ConnectedWallet, sendTransaction: any) => {
 	try {
 		// Initialize WebIrys
 		console.log("w=", w);
-		const webIrys = await getWebIrys(w);
+		const webIrys = await getWebIrys(w, sendTransaction);
 		console.log("webIrys=", webIrys);
 		const resizedBlob = await resizeImage(originalBlob);
 
@@ -80,25 +78,29 @@ export const uploadImage = async (originalBlob: Blob, w: ConnectedWallet) => {
 		const imageFile = new File([resizedBlob], "photo.jpg", { type: "image/jpeg" });
 		console.log("Image file size: ", imageFile.size);
 
-		// Fund
-		const loadedBalance = webIrys.utils.fromAtomic(await webIrys.getLoadedBalance());
-		const costToUpload = await webIrys.getPrice(imageFile.size);
-		console.log("Loaded balance=", loadedBalance.toString());
-		if (costToUpload.isGreaterThanOrEqualTo(loadedBalance)) {
-			try {
-				console.log("Funding node costToUpload=", costToUpload);
-				const fundTx = await webIrys.fund(costToUpload);
-				console.log("Funding successful ", fundTx);
-			} catch (e) {
-				console.log("Error funding e=", e);
+		// If imageFile.size < 100 Kib, it's free to upload, don't even check funding
+		if (imageFile.size >= 102400) {
+			// Fund
+			const loadedBalance = webIrys.utils.fromAtomic(await webIrys.getLoadedBalance());
+			const costToUpload = await webIrys.getPrice(imageFile.size);
+			console.log("Loaded balance=", loadedBalance.toString());
+			if (costToUpload.isGreaterThanOrEqualTo(loadedBalance)) {
+				try {
+					console.log("Funding node costToUpload=", costToUpload);
+					const fundTx = await webIrys.fund(costToUpload);
+					console.log("Funding successful ", fundTx);
+				} catch (e) {
+					console.log("Error funding e=", e);
+				}
+			} else {
+				console.log("Balance sufficient !(Funding node)");
 			}
-		} else {
-			console.log("Balance sufficient !(Funding node)");
 		}
 		const tags = [
 			{ name: "Content-Type", value: "image/jpeg" },
 			{ name: "application-id", value: "my-image-feed" },
 		];
+		console.log(`about to upload`);
 		const receipt = await webIrys.uploadFile(imageFile, { tags });
 		console.log(`Data uploaded ==> https://gateway.irys.xyz/${receipt.id}`);
 	} catch (e) {
