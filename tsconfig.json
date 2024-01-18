@@ -1,5 +1,9 @@
 {
-  "extends": "@tsconfig/node16-strictest-esm/tsconfig.json",
+  "extends": [
+    "@tsconfig/strictest/tsconfig",
+    "@tsconfig/node18/tsconfig",
+    "@tsconfig/next/tsconfig"
+  ],
   "compilerOptions": {
     "lib": [
       "dom",
@@ -19,6 +23,7 @@
     "noImplicitReturns": false,
     "noPropertyAccessFromIndexSignature": false,
     "exactOptionalPropertyTypes": false,
+    "moduleResolution": "node"
   },
   "include": [
     "next-env.d.ts",
