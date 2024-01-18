@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { dayjs } from "../lib/dayjs";
 import { fetchImages } from "../utils/irysFunctions";
+import { useCategory } from "./category-context";
 
 interface Item {
   id: string;
@@ -17,9 +18,11 @@ const FeedComponent = () => {
   const [loading, setLoading] = useState(false);
   const loadMoreRef = useRef(null);
 
+  const { category } = useCategory();
+
   const loadItems = async () => {
     setLoading(true);
-    const newItems = await fetchImages();
+    const newItems = await fetchImages({ category });
     setItems(newItems);
     setDisplayedItems(newItems.slice(0, 5));
     setLoading(false);
@@ -28,6 +31,10 @@ const FeedComponent = () => {
   useEffect(() => {
     loadItems();
   }, []);
+
+  useEffect(() => {
+    loadItems();
+  }, [category]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -62,7 +69,8 @@ const FeedComponent = () => {
   };
 
   return (
-    <div className="p-10 flex flex-col gap-10">
+    <div className="p-3 flex flex-col gap-10">
+      {category}
       <AnimatePresence>
         {displayedItems.map((item) => (
           <motion.div
@@ -79,8 +87,11 @@ const FeedComponent = () => {
                 />
               </CardContent>
               <CardFooter className="pt-1">
-                <div className="flex flex-col gap-2 ">
-                  <p className="font-bold">{shortenString(item.address)}</p>
+                <div className="flex flex-col gap-2 w-full">
+                  <div className="flex items-center justify-between w-full">
+                    <p className="">Category</p>
+                    <p className="font-bold">{shortenString(item.address)}</p>
+                  </div>
                   <p className="text-neutral-400 italic text-sm">
                     {dayjs(item.timestamp).fromNow()}
                   </p>
