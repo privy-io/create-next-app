@@ -11,6 +11,8 @@ export enum CATEGORIES {
 type CategoryContextValue = {
   category: CATEGORIES | null;
   setCategory: (category: CATEGORIES) => void;
+  setShouldUpdate: (p: number) => void;
+  shouldUpdate: number;
 };
 
 const CategoryContext = createContext<CategoryContextValue | undefined>(
@@ -23,9 +25,12 @@ type CategoryProviderProps = {
 
 export const CategoryProvider = ({ children }: CategoryProviderProps) => {
   const [category, setCategory] = useState<CATEGORIES | null>(null);
+  const [shouldUpdate, setShouldUpdate] = useState<number>(0);
 
   return (
-    <CategoryContext.Provider value={{ category, setCategory }}>
+    <CategoryContext.Provider
+      value={{ category, setCategory, setShouldUpdate, shouldUpdate }}
+    >
       {children}
     </CategoryContext.Provider>
   );

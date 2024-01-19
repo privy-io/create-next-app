@@ -18,7 +18,7 @@ const FeedComponent = () => {
   const [loading, setLoading] = useState(false);
   const loadMoreRef = useRef(null);
 
-  const { category } = useCategory();
+  const { category, shouldUpdate } = useCategory();
 
   const loadItems = async () => {
     setLoading(true);
@@ -34,7 +34,7 @@ const FeedComponent = () => {
 
   useEffect(() => {
     loadItems();
-  }, [category]);
+  }, [category, shouldUpdate]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
