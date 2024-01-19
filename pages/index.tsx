@@ -1,12 +1,28 @@
+"use client";
+
 import { Camera, LogIn } from "lucide-react";
 
 import { Button } from "../components/ui/button";
 import Head from "next/head";
 import { usePrivy } from "@privy-io/react-auth";
+import { useEffect } from "react";
 
 export default function LoginPage() {
-	const { login } = usePrivy();
+	const { login, logout, ready, authenticated, user } = usePrivy();
 	const TITLE = "Photoland Travelogue (Irys + Privy)";
+
+	useEffect(() => {
+		// Mobile detection
+		const doLogout = async () => {
+			console.log("Logging out");
+			await logout();
+		};
+
+		// If we land on login page, but users is already logged in, then logout first
+		if (ready && authenticated) {
+			doLogout();
+		}
+	}, []);
 
 	return (
 		<>
