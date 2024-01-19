@@ -11,8 +11,6 @@ import {
 import { GanttChart } from "lucide-react";
 import { useState } from "react";
 
-// const CATEGORIES = ["People", "Nature", "Animals", "Food"];
-
 const CategoryDrawer = () => {
   const { setCategory } = useCategory();
 

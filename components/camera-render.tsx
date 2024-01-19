@@ -2,6 +2,7 @@ import { Camera, RefreshCcw, SwitchCamera, Upload } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 
+import { ComboboxDemo } from "./ui/combobox";
 import { Loader2 } from "lucide-react";
 import { uploadImage } from "../utils/irysFunctions";
 import { useRouter } from "next/router";
@@ -12,6 +13,7 @@ type Props = {
 
 const CameraRender = ({ uploadCallback }: Props) => {
   const router = useRouter();
+  const [category, setCategory] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [currentDeviceId, setCurrentDeviceId] = useState<string | null>(null);
   const [isMobileDevice, setIsMobileDevice] = useState(false);
@@ -27,7 +29,6 @@ const CameraRender = ({ uploadCallback }: Props) => {
 
   useEffect(() => {
     // Mobile detection
-
     const isTouchDevice =
       //@ts-ignore
       "ontouchstart" in window ||
@@ -126,9 +127,7 @@ const CameraRender = ({ uploadCallback }: Props) => {
   const onUpload = async (originalBlob: Blob): Promise<void> => {
     if (w) {
       setIsUploading(true);
-      // pass in categeory from UI
       await uploadImage(originalBlob, w, sendTransaction);
-      // Back to the feed
       router.push("/feed");
       setIsUploading(false);
       uploadCallback && uploadCallback();
@@ -174,22 +173,32 @@ const CameraRender = ({ uploadCallback }: Props) => {
             />
           </div>
 
-          <div className="flex space-x-2 mt-4">
-            <button
-              className="group bg-neon-radial-gradient text-black py-2 px-4 rounded-full  hover:border-black focus:outline-none focus:border-black"
-              onClick={handleRetake}
-            >
-              <RefreshCcw className="group-hover:-rotate-90 transition-all" />
-            </button>
-
-            <button
-              className="bg-neon-radial-gradient border border-1 text-black py-2 px-4 rounded-full border-black focus:outline-none focus:border-black hover:ring ring-black disabled:opacity-40"
-              onClick={() => imageBlob && onUpload(imageBlob)}
-              disabled={isUploading}
-            >
-              {isUploading ? <Loader2 className="animate-spin" /> : <Upload />}
-            </button>
+          <div className="w-full mt-4">
+            <ComboboxDemo setValue={setCategory} value={category} />
           </div>
+
+          {category ? (
+            <div className="flex space-x-2 mt-4">
+              <button
+                className="group bg-neon-radial-gradient text-black py-2 px-4 rounded-full  hover:border-black focus:outline-none focus:border-black"
+                onClick={handleRetake}
+              >
+                <RefreshCcw className="group-hover:-rotate-90 transition-all" />
+              </button>
+
+              <button
+                className="bg-neon-radial-gradient border border-1 text-black py-2 px-4 rounded-full border-black focus:outline-none focus:border-black hover:ring ring-black disabled:opacity-40"
+                onClick={() => imageBlob && onUpload(imageBlob)}
+                disabled={isUploading}
+              >
+                {isUploading ? (
+                  <Loader2 className="animate-spin" />
+                ) : (
+                  <Upload />
+                )}
+              </button>
+            </div>
+          ) : null}
         </>
       )}
     </div>
