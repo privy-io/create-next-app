@@ -15,9 +15,7 @@ const CategoryDrawer = () => {
   const { setCategory } = useCategory();
 
   function getUnsplashImageUrl(category: string) {
-    return `https://source.unsplash.com/random/335x80/?${encodeURIComponent(
-      category
-    )}`;
+    return `/images/${category.toLowerCase()}.jpeg`;
   }
 
   const [isOpen, setIsOpen] = useState(false);

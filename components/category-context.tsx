@@ -2,6 +2,7 @@
 import React, { ReactNode, createContext, useContext, useState } from "react";
 
 export enum CATEGORIES {
+  ALL = "All",
   PEOPLE = "People",
   NATURE = "Nature",
   ANIMALS = "Animals",

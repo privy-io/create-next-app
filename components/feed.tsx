@@ -24,7 +24,7 @@ const FeedComponent = () => {
     setLoading(true);
     const newItems = await fetchImages({ category });
     setItems(newItems);
-    setDisplayedItems(newItems.slice(0, 5));
+    // setDisplayedItems(newItems.slice(0, 5));
     setLoading(false);
   };
 
@@ -34,6 +34,7 @@ const FeedComponent = () => {
 
   useEffect(() => {
     loadItems();
+    console.log("uai");
   }, [category, shouldUpdate]);
 
   useEffect(() => {
@@ -72,7 +73,7 @@ const FeedComponent = () => {
     <div className="p-3 flex flex-col gap-10">
       {category}
       <AnimatePresence>
-        {displayedItems.map((item) => (
+        {items.map((item) => (
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}

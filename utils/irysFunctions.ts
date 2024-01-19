@@ -140,7 +140,8 @@ export const fetchImages = async ({
     { name: "application-id", values: ["my-image-feed"] },
     { name: "Content-Type", values: ["image/jpeg"] },
   ];
-  if (category) {
+  if (category && category !== CATEGORIES.ALL) {
+    console.log("to indo");
     TAGS_TO_FILTER.push({ name: "category", values: [category] });
   }
   try {
