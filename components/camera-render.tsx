@@ -127,7 +127,7 @@ const CameraRender = ({ uploadCallback }: Props) => {
   const onUpload = async (originalBlob: Blob): Promise<void> => {
     if (w) {
       setIsUploading(true);
-      await uploadImage(originalBlob, w, sendTransaction);
+      await uploadImage(originalBlob, w, sendTransaction, category);
       router.push("/feed");
       setIsUploading(false);
       uploadCallback && uploadCallback();

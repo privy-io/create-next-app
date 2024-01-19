@@ -1,4 +1,4 @@
-import { CATEGORIES } from "@/components/feed";
+import { CATEGORIES } from "@/components/category-context";
 import type { ConnectedWallet } from "@privy-io/react-auth";
 import Query from "@irys/query";
 import { WebIrys } from "@irys/sdk";
@@ -73,7 +73,8 @@ const resizeImage = async (
 export const uploadImage = async (
   originalBlob: Blob,
   w: ConnectedWallet,
-  sendTransaction: any
+  sendTransaction: any,
+  category?: string
 ) => {
   try {
     // Initialize WebIrys
@@ -112,6 +113,9 @@ export const uploadImage = async (
       { name: "Content-Type", value: "image/jpeg" },
       { name: "application-id", value: "my-image-feed" },
     ];
+    if (category) {
+      tags.push({ name: "category", value: category });
+    }
     console.log(`about to upload`);
     const receipt = await webIrys.uploadFile(imageFile, { tags });
     console.log(`Data uploaded ==> https://gateway.irys.xyz/${receipt.id}`);
