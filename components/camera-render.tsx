@@ -129,6 +129,7 @@ const CameraRender = ({ uploadCallback }: Props) => {
 			router.push("/feed");
 			setIsUploading(false);
 			// @ts-ignore
+			// William
 			setShouldUpdate((prev: number) => prev + 1);
 
 			uploadCallback && uploadCallback();
