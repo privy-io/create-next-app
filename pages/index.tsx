@@ -12,15 +12,17 @@ export default function LoginPage() {
 	const TITLE = "Photoland Travelogue (Irys + Privy)";
 
 	useEffect(() => {
-		// Mobile detection
+		console.log("index: ready=", ready);
+		console.log("index: authenticated=", authenticated);
+
 		const doLogout = async () => {
 			console.log("Logging out");
 			await logout();
 		};
-
+		doLogout();
 		// If we land on login page, but users is already logged in, then logout first
 		if (ready && authenticated) {
-			doLogout();
+			// doLogout();
 		}
 	}, []);
 
