@@ -28,7 +28,7 @@ const CameraRender = ({ uploadCallback }: Props) => {
   const { wallets } = useWallets();
 
   const [imgSrc, setImgSrc] = useState<string | null>(null);
-  const [facingMode, setFacingMode] = useState<"environment" | "facingMode">(
+  const [facingMode, setFacingMode] = useState<"environment" | "user">(
     "environment"
   );
 
@@ -43,9 +43,7 @@ const CameraRender = ({ uploadCallback }: Props) => {
   };
 
   const handleSwitchCamera = () => {
-    setFacingMode((prev) =>
-      prev === "environment" ? "facingMode" : "environment"
-    );
+    setFacingMode((prev) => (prev === "environment" ? "user" : "environment"));
   };
 
   // The 0th position wallet is the most recently connected one
