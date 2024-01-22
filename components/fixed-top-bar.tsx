@@ -41,7 +41,7 @@ const InstallPWA: React.FC = () => {
   return (
     <div
       className={cn(
-        "fixed top-0 inset-x-0 py-3 bg-white/40 z-50 backdrop-blur-md flex items-center justify-center",
+        "fixed top-0 inset-x-0 py-3 bg-white/40 z-50 backdrop-blur-md flex items-center justify-center rounded-b-2xl shadow-lg",
         {
           hidden: close,
         }
@@ -53,7 +53,12 @@ const InstallPWA: React.FC = () => {
           click on 'Add to Home Screen'
         </p>
       ) : (
-        <button onClick={onClick} aria-label="Install app" title="Install App">
+        <button
+          onClick={onClick}
+          aria-label="Install app"
+          title="Install App"
+          className="text-sm"
+        >
           Click here to add our app to your home screen
         </button>
       )}
