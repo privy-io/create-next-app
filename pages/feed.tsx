@@ -21,7 +21,7 @@ const Feed = () => {
     <CategoryProvider>
       <div className="relative">
         <FixedTopBar />
-        <div className="max-w-lg mx-auto">
+        <div className="max-w-lg mx-auto pb-20">
           <FeedComponent />
         </div>
         <Nav />
