@@ -48,7 +48,7 @@ const InstallPWA: React.FC = () => {
       )}
     >
       {!supportsPWA ? (
-        <p className="p-4 text-center text-sm">
+        <p className="text-center text-sm p-5 md:p-0">
           Add our app to your home screen. Click on the share button and then
           click on 'Add to Home Screen'
         </p>
