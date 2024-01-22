@@ -179,10 +179,6 @@ const CameraRender = ({ uploadCallback }: Props) => {
             />
           </div>
 
-          <div className="w-full mt-4">
-            <ComboboxDemo setValue={setCategory} value={category} />
-          </div>
-
           {category ? (
             <div className="flex space-x-2 mt-4">
               <button
@@ -204,7 +200,11 @@ const CameraRender = ({ uploadCallback }: Props) => {
                 )}
               </button>
             </div>
-          ) : null}
+          ) : (
+            <div className="w-full mt-4">
+              <ComboboxDemo setValue={setCategory} value={category} />
+            </div>
+          )}
         </>
       )}
     </div>
