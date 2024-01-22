@@ -1,9 +1,10 @@
 import { Camera, RefreshCcw, SwitchCamera, Upload } from "lucide-react";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 
 import { ComboboxDemo } from "./ui/combobox";
 import { Loader2 } from "lucide-react";
+import Webcam from "react-webcam";
 import { uploadImage } from "../utils/irysFunctions";
 import { useCategory } from "./category-context";
 import { useRouter } from "next/router";
@@ -16,15 +17,36 @@ const CameraRender = ({ uploadCallback }: Props) => {
   const router = useRouter();
   const [category, setCategory] = useState("");
   const [isUploading, setIsUploading] = useState(false);
-  const [currentDeviceId, setCurrentDeviceId] = useState<string | null>(null);
+
   const [isMobileDevice, setIsMobileDevice] = useState(false);
   const { sendTransaction } = usePrivy();
   const { setShouldUpdate } = useCategory();
 
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const videoRef = useRef<Webcam>(null);
   const [streamActive, setStreamActive] = useState(false);
   const [imageBlob, setImageBlob] = useState<Blob | null>(null);
   const { wallets } = useWallets();
+
+  const [imgSrc, setImgSrc] = useState<string | null>(null);
+  const [facingMode, setFacingMode] = useState<"environment" | "facingMode">(
+    "environment"
+  );
+
+  const handleCapture = useCallback(() => {
+    if (!videoRef.current) return;
+    const imageSrc = videoRef.current.getScreenshot();
+    setImgSrc(imageSrc);
+  }, [videoRef]);
+
+  const handleRetake = () => {
+    setImgSrc(null);
+  };
+
+  const handleSwitchCamera = () => {
+    setFacingMode((prev) =>
+      prev === "environment" ? "facingMode" : "environment"
+    );
+  };
 
   // The 0th position wallet is the most recently connected one
   const w = wallets.at(0);
@@ -39,92 +61,6 @@ const CameraRender = ({ uploadCallback }: Props) => {
       navigator.msMaxTouchPoints > 0;
     setIsMobileDevice(isTouchDevice);
   }, []);
-
-  useEffect(() => {
-    async function enableStream(deviceId = currentDeviceId) {
-      try {
-        const constraints = {
-          video: deviceId ? { deviceId: { exact: deviceId } } : true,
-        };
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          setStreamActive(true);
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    }
-
-    if (!streamActive) {
-      enableStream();
-    }
-
-    return () => {
-      if (streamActive && videoRef.current && videoRef.current.srcObject) {
-        const mediaStream = videoRef.current.srcObject as MediaStream;
-        const tracks = mediaStream.getTracks();
-        tracks.forEach((track: MediaStreamTrack) => track.stop());
-      }
-    };
-  }, [streamActive, currentDeviceId]);
-
-  const switchCamera = async () => {
-    const devices = await navigator.mediaDevices.enumerateDevices();
-    const videoDevices = devices.filter(
-      (device) => device.kind === "videoinput"
-    );
-
-    if (videoDevices.length > 0) {
-      if (currentDeviceId === null) {
-        // Set to the default mobile device ID (first device in the list)
-        const defaultDeviceId = videoDevices[0]?.deviceId;
-        if (defaultDeviceId) {
-          setCurrentDeviceId(defaultDeviceId);
-        }
-      } else {
-        const currentDeviceIndex = videoDevices.findIndex(
-          (device) => device.deviceId === currentDeviceId
-        );
-        const nextDeviceIndex = (currentDeviceIndex + 1) % videoDevices.length;
-        const nextDeviceId = videoDevices[nextDeviceIndex]?.deviceId;
-        if (nextDeviceId) {
-          setCurrentDeviceId(nextDeviceId);
-        }
-      }
-    }
-  };
-
-  const handleCapture = () => {
-    if (videoRef.current) {
-      const video = videoRef.current;
-      const canvas = document.createElement("canvas");
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const context = canvas.getContext("2d");
-      if (context) {
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        canvas.toBlob((blob) => {
-          if (blob) {
-            setImageBlob(blob);
-          }
-        });
-      }
-    }
-  };
-
-  const handleRetake = async () => {
-    setImageBlob(null);
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        setStreamActive(true);
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
 
   const onUpload = async (originalBlob: Blob): Promise<void> => {
     if (w) {
@@ -142,14 +78,19 @@ const CameraRender = ({ uploadCallback }: Props) => {
 
   return (
     <div className="p-4 flex flex-col items-center justify-center">
-      {!imageBlob ? (
+      {!imgSrc ? (
         <>
-          <div className="rounded-3xl overflow-hidden bg-black shadow-xl max-h-[265px] lg:max-h-full">
-            <video
+          <div className="rounded-3xl overflow-hidden bg-white shadow-xl max-h-[265px] lg:max-h-full">
+            <Webcam
+              audio={false}
               ref={videoRef}
-              autoPlay
-              playsInline
-              muted // Add padding around the video element
+              screenshotFormat="image/jpeg"
+              videoConstraints={{
+                facingMode,
+              }}
+              className="w-full max-h-[265px]"
+              onUserMedia={() => setStreamActive(true)}
+              onUserMediaError={() => setStreamActive(false)}
             />
           </div>
           <div className="flex space-x-2 w-full">
@@ -162,7 +103,7 @@ const CameraRender = ({ uploadCallback }: Props) => {
             {isMobileDevice && (
               <button
                 className="mt-4 bg-neon-radial-gradient text-black py-2 px-4 rounded-full border border-1 hover:border-black focus:outline-none focus:border-black"
-                onClick={switchCamera}
+                onClick={handleSwitchCamera}
               >
                 <SwitchCamera />
               </button>
@@ -173,7 +114,7 @@ const CameraRender = ({ uploadCallback }: Props) => {
         <>
           <div className="rounded-3xl overflow-hidden bg-black shadow-xl max-h-[265px] lg:max-h-full">
             <img
-              src={URL.createObjectURL(imageBlob)}
+              src={imgSrc}
               alt="Preview"
               // className="px-2 py-2 rounded-xl"
             />
