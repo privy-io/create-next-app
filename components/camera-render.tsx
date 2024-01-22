@@ -23,8 +23,8 @@ const CameraRender = ({ uploadCallback }: Props) => {
   const { setShouldUpdate } = useCategory();
 
   const videoRef = useRef<Webcam>(null);
-  const [streamActive, setStreamActive] = useState(false);
   const [imageBlob, setImageBlob] = useState<Blob | null>(null);
+  console.log("🚀 ~ CameraRender ~ imageBlob:", imageBlob);
   const { wallets } = useWallets();
 
   const [imgSrc, setImgSrc] = useState<string | null>(null);
@@ -32,9 +32,12 @@ const CameraRender = ({ uploadCallback }: Props) => {
     "environment"
   );
 
-  const handleCapture = useCallback(() => {
+  const handleCapture = useCallback(async () => {
     if (!videoRef.current) return;
     const imageSrc = videoRef.current.getScreenshot();
+    // @ts-ignore
+    const blob = await fetch(imageSrc).then((r) => r.blob());
+    setImageBlob(blob);
     setImgSrc(imageSrc);
   }, [videoRef]);
 
@@ -67,9 +70,7 @@ const CameraRender = ({ uploadCallback }: Props) => {
       router.push("/feed");
       setIsUploading(false);
       // @ts-ignore
-      // William
       setShouldUpdate((prev: number) => prev + 1);
-
       uploadCallback && uploadCallback();
     }
   };
@@ -87,8 +88,6 @@ const CameraRender = ({ uploadCallback }: Props) => {
                 facingMode,
               }}
               className="w-full max-h-[265px]"
-              onUserMedia={() => setStreamActive(true)}
-              onUserMediaError={() => setStreamActive(false)}
             />
           </div>
           <div className="flex space-x-2 w-full">

@@ -118,6 +118,7 @@ export const uploadImage = async (
     }
     console.log(`about to upload`);
     const receipt = await webIrys.uploadFile(imageFile, { tags });
+    console.log("🚀 ~ receipt:", receipt);
     console.log(`Data uploaded ==> https://gateway.irys.xyz/${receipt.id}`);
   } catch (e) {
     console.error("Error uploading data", e);
@@ -140,9 +141,9 @@ export const fetchImages = async ({
     { name: "application-id", values: ["my-image-feed"] },
     { name: "Content-Type", values: ["image/jpeg"] },
   ];
-  if (category && category !== CATEGORIES.ALL) {
-    TAGS_TO_FILTER.push({ name: "category", values: [category] });
-  }
+  // if (category && category !== CATEGORIES.ALL) {
+  //   TAGS_TO_FILTER.push({ name: "category", values: [category] });
+  // }
   try {
     const results = await myQuery
       .search("irys:transactions")
@@ -150,6 +151,10 @@ export const fetchImages = async ({
         id: true,
         address: true,
         timestamp: true,
+        tags: {
+          name: true,
+          value: true,
+        },
       })
       .tags(TAGS_TO_FILTER)
       .sort("DESC");

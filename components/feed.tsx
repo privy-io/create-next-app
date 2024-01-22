@@ -1,7 +1,7 @@
-import { AnimatePresence, motion } from "framer-motion";
 import { Card, CardContent, CardFooter } from "./ui/card";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
+import { AnimatePresence } from "framer-motion";
 import { dayjs } from "../lib/dayjs";
 import { fetchImages } from "../utils/irysFunctions";
 import { useCategory } from "./category-context";
@@ -10,22 +10,29 @@ interface Item {
   id: string;
   address: string;
   timestamp: number;
+  tags: Tag[];
+}
+
+interface Tag {
+  name: string;
+  value: string;
+}
+
+function titleCase(string: string) {
+  if (!string) return string;
+  return string[0].toUpperCase() + string.slice(1).toLowerCase();
 }
 
 const FeedComponent = () => {
   const [items, setItems] = useState<Item[]>([]);
-  const [displayedItems, setDisplayedItems] = useState<Item[]>([]);
-  const [loading, setLoading] = useState(false);
-  const loadMoreRef = useRef(null);
+  console.log("🚀 ~ FeedComponent ~ items:", items);
 
   const { category, shouldUpdate } = useCategory();
+  console.log("🚀 ~ FeedComponent ~ category:", category);
 
   const loadItems = async () => {
-    setLoading(true);
-    const newItems = await fetchImages({ category });
-    setItems(newItems);
-    // setDisplayedItems(newItems.slice(0, 5));
-    setLoading(false);
+    const fetchedItems = (await fetchImages({ category })) as Item[];
+    setItems(fetchedItems);
   };
 
   useEffect(() => {
@@ -34,36 +41,7 @@ const FeedComponent = () => {
 
   useEffect(() => {
     loadItems();
-    console.log("uai");
-  }, [category, shouldUpdate]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return; // Do nothing if it's not a browser environment
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && !loading) {
-          setDisplayedItems((prev) => [
-            ...prev,
-            ...items.slice(prev.length, prev.length + 5),
-          ]);
-        }
-      },
-      { threshold: 1 }
-    );
-
-    if (loadMoreRef.current) {
-      observer.observe(loadMoreRef.current);
-    }
-
-    return () => {
-      if (loadMoreRef.current) {
-        observer.unobserve(loadMoreRef.current);
-      }
-    };
-  }, [loadMoreRef, items, displayedItems]);
+  }, [shouldUpdate]);
 
   const shortenString = (str: string) => {
     return `${str.slice(0, 10)}...${str.slice(-10)}`;
@@ -73,13 +51,15 @@ const FeedComponent = () => {
     <div className="p-3 flex flex-col gap-10">
       {category}
       <AnimatePresence>
-        {items.map((item) => (
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            key={item.id}
-          >
-            <Card className="rounded-2xl">
+        {items
+          .filter((obj) =>
+            category === "All" || category === null
+              ? true
+              : obj?.tags?.find((obj) => obj.name === "category")?.value ===
+                category.toLowerCase()
+          )
+          .map((item) => (
+            <Card className="rounded-2xl" key={item.id}>
               <CardContent>
                 <img
                   src={`https://gateway.irys.xyz/${item.id}`}
@@ -90,7 +70,13 @@ const FeedComponent = () => {
               <CardFooter className="pt-1">
                 <div className="flex flex-col gap-2 w-full">
                   <div className="flex items-center justify-between w-full">
-                    <p className="">Category</p>
+                    <p className="">
+                      {titleCase(
+                        // @ts-ignore
+                        item?.tags?.find((obj) => obj.name === "category")
+                          ?.value
+                      ) ?? "No category"}
+                    </p>
                     <p className="font-bold">{shortenString(item.address)}</p>
                   </div>
                   <p className="text-neutral-400 italic text-sm">
@@ -99,10 +85,8 @@ const FeedComponent = () => {
                 </div>
               </CardFooter>
             </Card>
-          </motion.div>
-        ))}
+          ))}
       </AnimatePresence>
-      <div ref={loadMoreRef} />
     </div>
   );
 };
