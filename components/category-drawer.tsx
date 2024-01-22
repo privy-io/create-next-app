@@ -9,10 +9,11 @@ import {
 } from "./ui/sheet";
 
 import { GanttChart } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useState } from "react";
 
 const CategoryDrawer = () => {
-  const { setCategory } = useCategory();
+  const { setCategory, category } = useCategory();
 
   function getUnsplashImageUrl(category: string) {
     return `/images/${category.toLowerCase()}.jpeg`;
@@ -39,17 +40,25 @@ const CategoryDrawer = () => {
           <SheetTitle className="text-xl font-bold mb-4">Categories</SheetTitle>
           <SheetDescription>
             <div className="flex flex-col gap-4">
-              {Object.values(CATEGORIES).map((category, index) => (
+              {Object.values(CATEGORIES).map((c, index) => (
                 <div
                   key={`category-${index}`}
-                  className="category-card relative bg-cover bg-center rounded-xl shadow-md cursor-pointer hover:shadow-lg overflow-hidden"
+                  className={cn(
+                    "category-card relative bg-cover bg-center rounded-xl shadow-md cursor-pointer hover:shadow-lg overflow-hidden",
+                    {
+                      "opacity-80":
+                        category !== null &&
+                        category !== "All" &&
+                        c !== category,
+                    }
+                  )}
                   style={{
-                    backgroundImage: `url(${getUnsplashImageUrl(category)})`,
+                    backgroundImage: `url(${getUnsplashImageUrl(c)})`,
                   }}
-                  onClick={() => handleCategorySelect(category)}
+                  onClick={() => handleCategorySelect(c)}
                 >
                   <div className="category-label p-2 bg-black bg-opacity-50 text-white text-xl rounded-b-lg h-20 flex items-center justify-center">
-                    {category}
+                    {c}
                   </div>
                 </div>
               ))}

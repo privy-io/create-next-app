@@ -25,10 +25,8 @@ function titleCase(string: string) {
 
 const FeedComponent = () => {
   const [items, setItems] = useState<Item[]>([]);
-  console.log("🚀 ~ FeedComponent ~ items:", items);
 
   const { category, shouldUpdate } = useCategory();
-  console.log("🚀 ~ FeedComponent ~ category:", category);
 
   const loadItems = async () => {
     const fetchedItems = (await fetchImages({ category })) as Item[];
@@ -49,7 +47,6 @@ const FeedComponent = () => {
 
   return (
     <div className="p-3 flex flex-col gap-10">
-      {category}
       <AnimatePresence>
         {items
           .filter((obj) =>
