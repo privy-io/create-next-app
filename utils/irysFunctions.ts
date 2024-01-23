@@ -141,6 +141,7 @@ export const fetchImages = async ({ category }: { category: CATEGORIES | null })
 					value: true,
 				},
 			})
+			//@ts-ignore
 			.tags(TAGS_TO_FILTER)
 			.sort("DESC");
 
