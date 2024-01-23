@@ -8,26 +8,26 @@ import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/router";
 
 const Feed = () => {
-  //   const router = useRouter();
-  //   const { ready, authenticated } = usePrivy();
+	const router = useRouter();
+	const { ready, authenticated } = usePrivy();
 
-  //   useEffect(() => {
-  //     if (ready && !authenticated) {
-  //       router.push("/");
-  //     }
-  //   }, [ready, authenticated, router]);
+	useEffect(() => {
+		if (ready && !authenticated) {
+			router.push("/");
+		}
+	}, [ready, authenticated, router]);
 
-  return (
-    <CategoryProvider>
-      <div className="relative">
-        <FixedTopBar />
-        <div className="max-w-lg mx-auto pb-20">
-          <FeedComponent />
-        </div>
-        <Nav />
-      </div>
-    </CategoryProvider>
-  );
+	return (
+		<CategoryProvider>
+			<div className="relative">
+				<FixedTopBar />
+				<div className="max-w-lg mx-auto pb-20">
+					<FeedComponent />
+				</div>
+				<Nav />
+			</div>
+		</CategoryProvider>
+	);
 };
 
 export default Feed;
