@@ -25,6 +25,7 @@ export default async function GET(req: NextApiRequest, res: NextApiResponse<Auth
   const headerAuthToken = req.headers.authorization?.replace(/^Bearer /, '');
   const cookieAuthToken = req.cookies['privy-token'];
   
+  // TODO: properly show examples for cookies and non-cookies
   const authToken = cookieAuthToken || headerAuthToken;
 
   if (!authToken) {

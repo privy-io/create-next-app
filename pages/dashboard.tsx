@@ -44,6 +44,8 @@ export default function DashboardPage() {
   const authenticateWithServer = async () => {
     const url = '/api/authenticate';
     const accessToken = await getAccessToken();
+
+    // TODO: do something with the response
     console.log(await (
       await fetch(url, {
         headers: {
