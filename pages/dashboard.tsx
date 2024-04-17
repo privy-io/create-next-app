@@ -1,6 +1,6 @@
 import {useRouter} from 'next/router';
 import React, {useEffect} from 'react';
-import {usePrivy} from '@privy-io/react-auth';
+import {getAccessToken, usePrivy} from '@privy-io/react-auth';
 import Head from 'next/head';
 
 export default function DashboardPage() {
@@ -40,6 +40,22 @@ export default function DashboardPage() {
   const googleSubject = user?.google?.subject || null;
   const twitterSubject = user?.twitter?.subject || null;
   const discordSubject = user?.discord?.subject || null;
+
+  const authenticateWithServer = async () => {
+    const url = '/api/authenticate';
+    const accessToken = await getAccessToken();
+    console.log(await (
+      await fetch(url, {
+        headers: {
+          ...(accessToken
+            ? {
+                Authorization: `Bearer ${accessToken}`,
+              }
+            : undefined),
+        },
+      })
+    ).json());
+  };
 
   return (
     <>
@@ -177,6 +193,13 @@ export default function DashboardPage() {
                   Connect phone
                 </button>
               )}
+
+                <button
+                  onClick={authenticateWithServer}
+                  className="text-sm bg-violet-600 hover:bg-violet-700 py-2 px-4 rounded-md text-white border-none"
+                >
+                  Authenticate with server
+                </button>
             </div>
 
             <p className="mt-6 font-bold uppercase text-sm text-gray-600">User object</p>
