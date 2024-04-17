@@ -3,6 +3,18 @@ import React, { useEffect, useState } from "react";
 import { getAccessToken, usePrivy } from "@privy-io/react-auth";
 import Head from "next/head";
 
+async function verifyToken() {
+  const url = "/api/verify";
+  const accessToken = await getAccessToken();
+  const result = await fetch(url, {
+    headers: {
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined),
+    },
+  });
+
+  return await result.json();
+}
+
 export default function DashboardPage() {
   const [verifyResult, setVerifyResult] = useState();
   const router = useRouter();
@@ -41,20 +53,6 @@ export default function DashboardPage() {
   const googleSubject = user?.google?.subject || null;
   const twitterSubject = user?.twitter?.subject || null;
   const discordSubject = user?.discord?.subject || null;
-
-  const verifyToken = async () => {
-    const url = "/api/verify";
-    const accessToken = await getAccessToken();
-    const response = await fetch(url, {
-      headers: {
-        ...(accessToken
-          ? { Authorization: `Bearer ${accessToken}` }
-          : undefined),
-      },
-    }).then((res) => res.json());
-
-    setVerifyResult(response);
-  };
 
   return (
     <>
@@ -194,7 +192,7 @@ export default function DashboardPage() {
               )}
 
               <button
-                onClick={verifyToken}
+                onClick={() => verifyToken().then(setVerifyResult)}
                 className="text-sm bg-violet-600 hover:bg-violet-700 py-2 px-4 rounded-md text-white border-none"
               >
                 Verify token on server
