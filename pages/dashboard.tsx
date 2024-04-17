@@ -1,9 +1,22 @@
-import {useRouter} from 'next/router';
-import React, {useEffect} from 'react';
-import {usePrivy} from '@privy-io/react-auth';
-import Head from 'next/head';
+import { useRouter } from "next/router";
+import React, { useEffect, useState } from "react";
+import { getAccessToken, usePrivy } from "@privy-io/react-auth";
+import Head from "next/head";
+
+async function verifyToken() {
+  const url = "/api/verify";
+  const accessToken = await getAccessToken();
+  const result = await fetch(url, {
+    headers: {
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined),
+    },
+  });
+
+  return await result.json();
+}
 
 export default function DashboardPage() {
+  const [verifyResult, setVerifyResult] = useState();
   const router = useRouter();
   const {
     ready,
@@ -26,7 +39,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (ready && !authenticated) {
-      router.push('/');
+      router.push("/");
     }
   }, [ready, authenticated, router]);
 
@@ -177,15 +190,32 @@ export default function DashboardPage() {
                   Connect phone
                 </button>
               )}
+
+              <button
+                onClick={() => verifyToken().then(setVerifyResult)}
+                className="text-sm bg-violet-600 hover:bg-violet-700 py-2 px-4 rounded-md text-white border-none"
+              >
+                Verify token on server
+              </button>
+
+              {Boolean(verifyResult) && (
+                <details className="w-full">
+                  <summary className="mt-6 font-bold uppercase text-sm text-gray-600">
+                    Server verify result
+                  </summary>
+                  <pre className="max-w-4xl bg-slate-700 text-slate-50 font-mono p-4 text-xs sm:text-sm rounded-md mt-2">
+                    {JSON.stringify(verifyResult, null, 2)}
+                  </pre>
+                </details>
+              )}
             </div>
 
-            <p className="mt-6 font-bold uppercase text-sm text-gray-600">User object</p>
-            <textarea
-              value={JSON.stringify(user, null, 2)}
-              className="max-w-4xl bg-slate-700 text-slate-50 font-mono p-4 text-xs sm:text-sm rounded-md mt-2"
-              rows={20}
-              disabled
-            />
+            <p className="mt-6 font-bold uppercase text-sm text-gray-600">
+              User object
+            </p>
+            <pre className="max-w-4xl bg-slate-700 text-slate-50 font-mono p-4 text-xs sm:text-sm rounded-md mt-2">
+              {JSON.stringify(user, null, 2)}
+            </pre>
           </>
         ) : null}
       </main>
