@@ -17,6 +17,6 @@
   ],
   "rangeStrategy": "pin",
   "constraints": {
-    "node": ">=16.0.0 <17.0.0"
+    "node": ">=18.0.0"
   }
 }
