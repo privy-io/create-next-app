@@ -16,7 +16,7 @@ git clone https://github.com/privy-io/create-next-app
 npm i 
 ```
 
-3. Initialize your environment variables by copying the `.env.example` file to an `.env.local` file. Then, in `.env.local`, [paste your Privy App ID from the console](https://docs.privy.io/guide/console/api-keys).
+3. Initialize your environment variables by copying the `.env.example` file to an `.env.local` file. Then, in `.env.local`, [paste your Privy App ID from the dashboard](https://docs.privy.io/guide/dashboard/api-keys).
 ```sh
 # In your terminal, create .env.local from .env.example
 cp .env.example .env.local
