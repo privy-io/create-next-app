@@ -1,8 +1,9 @@
 import Portal from "../components/graphics/portal";
-import { usePrivy } from "@privy-io/react-auth";
+import { useLogin } from "@privy-io/react-auth";
 import { PrivyClient } from "@privy-io/server-auth";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
+import { useRouter } from "next/router";
 
 export const getServerSideProps: GetServerSideProps = async ({ req }) => {
   const cookieAuthToken = req.cookies["privy-token"];
@@ -30,7 +31,10 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
 };
 
 export default function LoginPage() {
-  const { login } = usePrivy();
+  const router = useRouter();
+  const { login } = useLogin({
+    onComplete: () => router.push("/dashboard"),
+  });
 
   return (
     <>
