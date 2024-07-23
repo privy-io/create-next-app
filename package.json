@@ -19,7 +19,8 @@
     "@tailwindcss/forms": "^0.5.3",
     "next": "latest",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "viem": "^2.17.10"
   },
   "devDependencies": {
     "@tsconfig/next": "^2.0.0",
