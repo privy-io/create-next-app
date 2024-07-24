@@ -10,6 +10,7 @@ function MyApp({Component, pageProps}: AppProps) {
   return (
     <>
       <Head>
+        
         <link rel="preload" href="/fonts/AdelleSans-Regular.woff" as="font" crossOrigin="" />
         <link rel="preload" href="/fonts/AdelleSans-Regular.woff2" as="font" crossOrigin="" />
         <link rel="preload" href="/fonts/AdelleSans-Semibold.woff" as="font" crossOrigin="" />
@@ -25,7 +26,11 @@ function MyApp({Component, pageProps}: AppProps) {
       </Head>
       <PrivyProvider
         appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ''}
-        onSuccess={() => router.push('/dashboard')}
+        config={{
+          embeddedWallets: { 
+              createOnLogin: 'users-without-wallets' // defaults to 'off'
+          }
+        }}
       >
         <Component {...pageProps} />
       </PrivyProvider>
