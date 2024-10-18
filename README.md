@@ -9,6 +9,7 @@ This demo uses NextJS's [Pages Router](https://nextjs.org/docs/pages/building-yo
 1. Clone this repository and open it in your terminal. 
 ```sh
 git clone https://github.com/privy-io/create-next-app
+cd create-next-app
 ```
 
 2. Install the necessary dependencies (including [Privy Auth](https://www.npmjs.com/package/@privy-io/react-auth)) with `npm`.
