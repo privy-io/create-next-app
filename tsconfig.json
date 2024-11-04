@@ -15,7 +15,7 @@
     "stripInternal": true,
     "allowJs": true,
     "noEmit": true,
-    "module": "ESNext",
+    "module": "esnext",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
@@ -23,7 +23,7 @@
     "noImplicitReturns": false,
     "noPropertyAccessFromIndexSignature": false,
     "exactOptionalPropertyTypes": false,
-    "moduleResolution": "Bundler"
+    "moduleResolution": "bundler"
   },
   "include": [
     "next-env.d.ts",
