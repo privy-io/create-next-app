@@ -23,7 +23,7 @@
     "noImplicitReturns": false,
     "noPropertyAccessFromIndexSignature": false,
     "exactOptionalPropertyTypes": false,
-    "moduleResolution": "NodeNext"
+    "moduleResolution": "bundler"
   },
   "include": [
     "next-env.d.ts",
