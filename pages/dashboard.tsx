@@ -14,7 +14,6 @@ export default function DashboardPage() {
   const { ready, authenticated, user, logout } = usePrivy();
 
   const { client: smartWalletClient } = useSmartWallets();
-  const smartWalletAddress = smartWalletClient?.account.address;
 
   useEffect(() => {
     if (ready && !authenticated) {
@@ -30,7 +29,7 @@ export default function DashboardPage() {
       data: encodeFunctionData({
         abi: mintAbi,
         functionName: "mint",
-        args: [smartWalletAddress],
+        args: [smartWalletClient.account.address],
       }),
     });
   };
@@ -43,7 +42,7 @@ export default function DashboardPage() {
       data: encodeFunctionData({
         abi: erc721Abi,
         functionName: "setApprovalForAll",
-        args: [smartWalletAddress, true],
+        args: [smartWalletClient.account.address, true],
       }),
     });
   };
@@ -59,7 +58,7 @@ export default function DashboardPage() {
           data: encodeFunctionData({
             abi: mintAbi,
             functionName: "mint",
-            args: [smartWalletAddress],
+            args: [smartWalletClient.account.address],
           }),
         },
         {
@@ -67,7 +66,7 @@ export default function DashboardPage() {
           data: encodeFunctionData({
             abi: erc721Abi,
             functionName: "setApprovalForAll",
-            args: [smartWalletAddress, true],
+            args: [smartWalletClient.account.address, true],
           }),
         },
       ],
@@ -81,7 +80,7 @@ export default function DashboardPage() {
       </Head>
 
       <main className="flex flex-col min-h-screen px-4 sm:px-20 py-6 sm:py-10 bg-privy-light-blue">
-        {ready && authenticated && smartWalletAddress ? (
+        {ready && authenticated && smartWalletClient ? (
           <>
             <div className="flex flex-row justify-between">
               <h1 className="text-2xl font-semibold">
