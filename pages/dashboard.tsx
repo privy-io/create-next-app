@@ -3,7 +3,11 @@ import { useSmartWallets } from "@privy-io/react-auth/smart-wallets";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
-import { encodeFunctionData } from "viem";
+import { encodeFunctionData, erc721Abi } from "viem";
+import { mintAbi } from "../components/lib/abis/mint";
+
+const NFT_CONTRACT_ADDRESS =
+  "0x3331AfB9805ccF5d6cb1657a8deD0677884604A7" as const;
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -17,6 +21,58 @@ export default function DashboardPage() {
       router.push("/");
     }
   }, [ready, authenticated, router]);
+
+  const onMint = () => {
+    if (!smartWalletClient) return;
+
+    smartWalletClient.sendTransaction({
+      to: NFT_CONTRACT_ADDRESS,
+      data: encodeFunctionData({
+        abi: mintAbi,
+        functionName: "mint",
+        args: [smartWalletAddress],
+      }),
+    });
+  };
+
+  const onSetApprovalForAll = () => {
+    if (!smartWalletClient) return;
+
+    smartWalletClient.sendTransaction({
+      to: NFT_CONTRACT_ADDRESS,
+      data: encodeFunctionData({
+        abi: erc721Abi,
+        functionName: "setApprovalForAll",
+        args: [smartWalletAddress, true],
+      }),
+    });
+  };
+
+  const onBatchTransaction = () => {
+    if (!smartWalletClient) return;
+
+    smartWalletClient.sendTransaction({
+      account: smartWalletClient.account,
+      calls: [
+        {
+          to: NFT_CONTRACT_ADDRESS,
+          data: encodeFunctionData({
+            abi: mintAbi,
+            functionName: "mint",
+            args: [smartWalletAddress],
+          }),
+        },
+        {
+          to: NFT_CONTRACT_ADDRESS,
+          data: encodeFunctionData({
+            abi: erc721Abi,
+            functionName: "setApprovalForAll",
+            args: [smartWalletAddress, true],
+          }),
+        },
+      ],
+    });
+  };
 
   return (
     <>
@@ -40,33 +96,22 @@ export default function DashboardPage() {
             </div>
             <div className="mt-12 flex gap-4 flex-wrap">
               <button
-                onClick={() =>
-                  smartWalletClient.sendTransaction({
-                    to: "0x3331AfB9805ccF5d6cb1657a8deD0677884604A7",
-                    data: encodeFunctionData({
-                      abi: [
-                        {
-                          inputs: [
-                            {
-                              internalType: "address",
-                              name: "to",
-                              type: "address",
-                            },
-                          ],
-                          name: "mint",
-                          outputs: [],
-                          stateMutability: "nonpayable",
-                          type: "function",
-                        },
-                      ],
-                      functionName: "mint",
-                      args: [smartWalletAddress],
-                    }),
-                  })
-                }
+                onClick={onMint}
                 className="text-sm bg-violet-600 hover:bg-violet-700 py-2 px-4 rounded-md text-white border-none"
               >
                 Mint NFT
+              </button>
+              <button
+                onClick={onSetApprovalForAll}
+                className="text-sm bg-violet-600 hover:bg-violet-700 py-2 px-4 rounded-md text-white border-none"
+              >
+                Approve
+              </button>
+              <button
+                onClick={onBatchTransaction}
+                className="text-sm bg-violet-600 hover:bg-violet-700 py-2 px-4 rounded-md text-white border-none"
+              >
+                Batch Transaction
               </button>
             </div>
 
