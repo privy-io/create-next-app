@@ -32,7 +32,7 @@ NEXT_PUBLIC_PRIVY_APP_ID=<your-privy-app-id>
 
 ## Building locally
 
-In your project directory, run `npm run dev`. You can now visit http://localhost:3000 to see your app and login with smart wallets with Privy!
+In your project directory, run `npm run dev`. You can now visit http://localhost:3000 to see your app and login using smart wallets with Privy!
 
 ## Check out:
 
