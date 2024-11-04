@@ -77,7 +77,7 @@ export default function DashboardPage() {
   return (
     <>
       <Head>
-        <title>Privy Smart Wallets fDemo</title>
+        <title>Privy Smart Wallets Demo</title>
       </Head>
 
       <main className="flex flex-col min-h-screen px-4 sm:px-20 py-6 sm:py-10 bg-privy-light-blue">
