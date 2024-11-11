@@ -15,7 +15,7 @@
     "@headlessui/react": "^1.7.3",
     "@heroicons/react": "^2.0.12",
     "@privy-io/react-auth": "1.93.0",
-    "@privy-io/server-auth": "1.16.1",
+    "@privy-io/server-auth": "1.16.2",
     "@tailwindcss/forms": "^0.5.3",
     "next": "latest",
     "react": "18.2.0",
