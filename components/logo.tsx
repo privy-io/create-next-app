@@ -5,9 +5,9 @@ interface LogoPropsType {
 }
 
 export function Logo(props: LogoPropsType) {
-  const fontColor = props.fontColor || 'white';
-  const width = props.width || '151';
-  const height = props.height || '44';
+  const fontColor = props.fontColor || "white";
+  const width = props.width || "151";
+  const height = props.height || "44";
 
   return (
     <svg
