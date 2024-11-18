@@ -14,10 +14,14 @@
   "dependencies": {
     "@headlessui/react": "^1.7.3",
     "@heroicons/react": "^2.0.12",
-    "@privy-io/react-auth": "1.94.3",
+    "@privy-io/react-auth": "1.94.1-beta-20241113225603",
     "@privy-io/server-auth": "1.16.4",
     "@tailwindcss/forms": "^0.5.3",
     "next": "latest",
+    "@kerneljs/core": "^0.0.1-alpha.19",
+    "@kerneljs/ecdsa-validator": "^0.0.1-alpha.17",
+    "@kerneljs/presets": "^0.0.1-alpha.11",
+    "permissionless": "0.2.10",
     "react": "18.2.0",
     "react-dom": "18.2.0"
   },

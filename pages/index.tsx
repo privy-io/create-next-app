@@ -1,9 +1,10 @@
 import Portal from "../components/graphics/portal";
-import { useLogin } from "@privy-io/react-auth";
+import { useLogin, useLoginWithEmail, usePrivy } from "@privy-io/react-auth";
 import { PrivyClient } from "@privy-io/server-auth";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
+import { useState } from "react";
 
 export const getServerSideProps: GetServerSideProps = async ({ req }) => {
   const cookieAuthToken = req.cookies["privy-token"];
@@ -32,10 +33,21 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
 
 export default function LoginPage() {
   const router = useRouter();
+  const [emailCodeInput, setEmailCodeInput] = useState("");
+  const [email, setEmail] = useState("");
+  const { ready, authenticated } = usePrivy();
+  
   const { login } = useLogin({
     onComplete: () => router.push("/dashboard"),
   });
-
+  const { sendCode, loginWithCode, state } = useLoginWithEmail({
+    onComplete(user, isNewUser, wasAlreadyAuthenticated, loginMethod, loginAccount) {
+      console.log("Here is the onComplete callback")
+      console.log({ user, isNewUser, wasAlreadyAuthenticated, loginMethod, loginAccount });
+    }
+  })
+  
+  console.log({ ready, authenticated, state });
   return (
     <>
       <Head>
@@ -53,7 +65,37 @@ export default function LoginPage() {
                 className="bg-violet-600 hover:bg-violet-700 py-3 px-6 text-white rounded-lg"
                 onClick={login}
               >
-                Log in
+                Log in with Privy UI
+              </button>
+            </div>
+            <div className="flex items-center">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter email address"
+                className="border rounded-lg px-4 py-2"
+              />
+              <button
+                className="bg-green-500 text-white py-3 px-6 text-white rounded-lg ml-2"
+                onClick={() => sendCode({ email })}
+              >
+                Send email code
+              </button>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="text"
+                value={emailCodeInput}
+                onChange={(e) => setEmailCodeInput(e.target.value)}
+                placeholder="Enter verification code"
+                className="border rounded-lg px-4 py-2 ml-2"
+              />
+              <button
+                className="bg-blue-500 text-white py-3 px-6 text-white rounded-lg"
+                onClick={() => loginWithCode({ code: emailCodeInput })}
+              >
+                Login with email code
               </button>
             </div>
           </div>
