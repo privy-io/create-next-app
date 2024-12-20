@@ -14,7 +14,7 @@
   "dependencies": {
     "@headlessui/react": "^1.7.3",
     "@heroicons/react": "^2.0.12",
-    "@privy-io/react-auth": "1.98.3",
+    "@privy-io/react-auth": "^2.0.0-beta-20241220195432",
     "@privy-io/server-auth": "1.17.0",
     "@tailwindcss/forms": "^0.5.3",
     "next": "latest",
