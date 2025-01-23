@@ -46,6 +46,22 @@ function MyApp({ Component, pageProps }: AppProps) {
           embeddedWallets: {
             createOnLogin: "all-users",
           },
+          loginMethodsAndOrder: {
+            primary: [
+              "detected_wallets",
+              "coinbase_wallet",
+              "email",
+              "wallet_connect",
+            ],
+            overflow: [
+              "sms",
+              "google",
+              "discord",
+              "apple",
+              "telegram",
+              "farcaster",
+            ],
+          },
         }}
       >
         <Component {...pageProps} />
