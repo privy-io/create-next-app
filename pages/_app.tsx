@@ -1,6 +1,7 @@
 import "../styles/globals.css";
 import type { AppProps } from "next/app";
 import Head from "next/head";
+import { baseSepolia } from "viem/chains";
 import { PrivyProvider } from "@privy-io/react-auth";
 
 function MyApp({ Component, pageProps }: AppProps) {
@@ -43,7 +44,9 @@ function MyApp({ Component, pageProps }: AppProps) {
       <PrivyProvider
         appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ""}
         config={{
+          supportedChains: [baseSepolia],
           embeddedWallets: {
+            showWalletUIs: false,
             createOnLogin: "all-users",
           },
         }}

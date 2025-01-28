@@ -1,7 +1,10 @@
+import ABI from "../components/nftAbi.json";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { getAccessToken, usePrivy } from "@privy-io/react-auth";
+import { baseSepolia } from "viem/chains";
+import { getAccessToken, usePrivy, useWallets } from "@privy-io/react-auth";
 import Head from "next/head";
+import { Address, createWalletClient, custom, encodeFunctionData } from "viem";
 
 async function verifyToken() {
   const url = "/api/verify";
@@ -15,8 +18,11 @@ async function verifyToken() {
   return await result.json();
 }
 
+export const NFT_ADDRESS = "0x3331AfB9805ccF5d6cb1657a8deD0677884604A7";
+
 export default function DashboardPage() {
   const [verifyResult, setVerifyResult] = useState();
+  const { wallets } = useWallets();
   const router = useRouter();
   const {
     ready,
@@ -54,6 +60,28 @@ export default function DashboardPage() {
   const twitterSubject = user?.twitter?.subject || null;
   const discordSubject = user?.discord?.subject || null;
 
+  const mint = async () => {
+    const embeddedWallet = wallets.find(
+      (wallet) => wallet.walletClientType === "privy"
+    );
+    const provider = await embeddedWallet?.getEthereumProvider();
+    const walletClient = createWalletClient({
+      account: embeddedWallet?.address as Address,
+      chain: baseSepolia,
+      transport: custom(provider!),
+    });
+
+    const sig = await walletClient.signTransaction({
+      to: NFT_ADDRESS,
+      data: encodeFunctionData({
+        abi: ABI,
+        functionName: "mint",
+        args: [embeddedWallet?.address],
+      }),
+    });
+    console.log(sig);
+  };
+
   return (
     <>
       <Head>
@@ -73,6 +101,12 @@ export default function DashboardPage() {
               </button>
             </div>
             <div className="mt-12 flex gap-4 flex-wrap">
+              <button
+                onClick={mint}
+                className="text-sm border border-violet-600 hover:border-violet-700 py-2 px-4 rounded-md text-violet-600 hover:text-violet-700 disabled:border-gray-500 disabled:text-gray-500 hover:disabled:text-gray-500"
+              >
+                Sign mint
+              </button>
               {googleSubject ? (
                 <button
                   onClick={() => {
