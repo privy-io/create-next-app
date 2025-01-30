@@ -2,7 +2,7 @@
 
 This is a template for integrating [**Privy Auth**](https://www.privy.io/) into a [NextJS](https://nextjs.org/) project. Check out the deployed app [here](https://create-next-app.privy.io/)!
 
-This demo uses NextJS's [App Router](https://nextjs.org/docs/pages/building-your-application/routing). If you'd like to see an example using the [Pages Router](https://nextjs.org/docs/app), just change the branch of this repository to [`main`](https://github.com/privy-io/create-next-app). 
+This demo uses NextJS's [App Router](https://nextjs.org/docs/app/building-your-application/routing). If you'd like to see an example using the [Pages Router](https://nextjs.org/docs/pages), just change the branch of this repository to [`main`](https://github.com/privy-io/create-next-app). 
 
 ## Setup
 
