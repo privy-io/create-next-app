@@ -1,11 +1,16 @@
-import "../styles/globals.css";
-import type { AppProps } from "next/app";
+import '../styles/globals.css';
 import Head from "next/head";
-import { PrivyProvider } from "@privy-io/react-auth";
+import PrivyProvider from "../components/privy-provider";
+import { Metadata } from "next";
 
-function MyApp({ Component, pageProps }: AppProps) {
+export const metadata: Metadata = {
+  title: "Privy Auth Starter",
+  description: "Privy Auth Starter",
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
+    <html lang="en">
       <Head>
         <link
           rel="preload"
@@ -40,18 +45,11 @@ function MyApp({ Component, pageProps }: AppProps) {
         <title>Privy Auth Starter</title>
         <meta name="description" content="Privy Auth Starter" />
       </Head>
-      <PrivyProvider
-        appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ""}
-        config={{
-          embeddedWallets: {
-            createOnLogin: "all-users",
-          },
-        }}
-      >
-        <Component {...pageProps} />
-      </PrivyProvider>
-    </>
+      <body>
+        <PrivyProvider>
+          {children}
+        </PrivyProvider>
+      </body>
+    </html>
   );
 }
-
-export default MyApp;
