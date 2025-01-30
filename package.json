@@ -17,9 +17,9 @@
     "@privy-io/react-auth": "2.1.0",
     "@privy-io/server-auth": "1.18.3",
     "@tailwindcss/forms": "^0.5.3",
-    "next": "latest",
-    "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "next": "^15.1.6",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@tsconfig/next": "^2.0.0",

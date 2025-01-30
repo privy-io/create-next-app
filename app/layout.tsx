@@ -4,8 +4,8 @@ import PrivyProvider from "../components/privy-provider";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privy Auth Starter",
-  description: "Privy Auth Starter",
+  title: "Privy Auth Demo",
+  description: "Privy Auth Demo",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -42,8 +42,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="apple-touch-icon" href="/favicons/apple-touch-icon.png" />
         <link rel="manifest" href="/favicons/manifest.json" />
 
-        <title>Privy Auth Starter</title>
-        <meta name="description" content="Privy Auth Starter" />
+        <title>Privy Auth Demo</title>
+        <meta name="description" content="Privy Auth Demo" />
       </Head>
       <body>
         <PrivyProvider>
