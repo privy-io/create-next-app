@@ -15,12 +15,9 @@ export default async function Page() {
 
     try {
       const claims = await client.verifyAuthToken(cookieAuthToken);
-      // Use this result to pass props to a page for server rendering or to drive redirects!
-      // ref https://nextjs.org/docs/pages/api-reference/functions/get-server-side-props
       console.log({ claims });
 
       redirect("/dashboard");
-
     } catch (error) {
       console.error(error);
     }
