@@ -2,7 +2,7 @@
 
 This is a template for integrating [**Privy Auth**](https://www.privy.io/) into a [NextJS](https://nextjs.org/) project. Check out the deployed app [here](https://create-next-app.privy.io/)!
 
-This demo uses NextJS's [Pages Router](https://nextjs.org/docs/pages/building-your-application/routing). If you'd like to see an example using the [App Router](https://nextjs.org/docs/app), just change the branch of this repository to [`app-router`](https://github.com/privy-io/create-next-app/tree/app-router). 
+This demo uses NextJS's [App Router](https://nextjs.org/docs/app/building-your-application/routing). If you'd like to see an example using the [Pages Router](https://nextjs.org/docs/pages), just change the branch of this repository to [`main`](https://github.com/privy-io/create-next-app). 
 
 ## Setup
 
@@ -31,9 +31,9 @@ In your project directory, run `npm run dev`. You can now visit http://localhost
 
 
 ## Check out:
-- `pages/_app.tsx` for how to use the `PrivyProvider` and initialize it with your Privy App ID
-- `pages/index.tsx` for how to use the `usePrivy` hook and implement a simple `login` button
-- `pages/dashboard.tsx` for how to use the `usePrivy` hook, fields like `ready`, `authenticated`, and `user`, and methods like `linkWallet` and `logout`
+- `app/layout.tsx` for how to use the `PrivyProvider` and initialize it with your Privy App ID
+- `app/page.tsx` for how to use the `usePrivy` hook and implement a simple `login` button
+- `app/dashboard/page.tsx` for how to use the `usePrivy` hook, fields like `ready`, `authenticated`, and `user`, and methods like `linkWallet` and `logout`
 
 
 **Check out [our docs](https://docs.privy.io/) for more guidance around using Privy in your app!**
