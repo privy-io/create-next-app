@@ -1,7 +1,5 @@
-import { put, list } from '@vercel/blob';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import fs from 'fs';
-import path from 'path';
+import { Redis } from '@upstash/redis';
 import { PrivyClient } from "@privy-io/server-auth";
 
 type ItemType = 'twitter' | 'telegram' | 'dexscreener' | 'tiktok' | 'instagram' | 'email' | 'discord' | 'private-chat' | 'terminal' | 'filesystem';
@@ -31,6 +29,12 @@ const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
 const PRIVY_APP_SECRET = process.env.PRIVY_APP_SECRET;
 const client = new PrivyClient(PRIVY_APP_ID!, PRIVY_APP_SECRET!);
 
+// Initialize Redis client
+const redis = new Redis({
+  url: process.env.KV_REST_API_URL!,
+  token: process.env.KV_REST_API_TOKEN!,
+});
+
 // Helper function to verify wallet ownership
 async function verifyWalletOwnership(req: NextApiRequest, walletAddress: string) {
   const idToken = req.cookies['privy-id-token'];
@@ -53,6 +57,7 @@ async function verifyWalletOwnership(req: NextApiRequest, walletAddress: string)
     const hasWallet = user.linkedAccounts.some(account => 
       account.type === 'wallet' && 
       account.chainType === 'solana' &&
+      'address' in account &&
       account.address === walletAddress
     );
 
@@ -73,57 +78,17 @@ async function verifyWalletOwnership(req: NextApiRequest, walletAddress: string)
   }
 }
 
-// Helper functions for local development
-const LOCAL_MAPPINGS_PATH = path.join(process.cwd(), 'data', 'page-mappings.json');
-
-const getLocalMappings = (): PageMapping => {
-  try {
-    if (!fs.existsSync(LOCAL_MAPPINGS_PATH)) {
-      // Ensure the directory exists
-      fs.mkdirSync(path.dirname(LOCAL_MAPPINGS_PATH), { recursive: true });
-      // Create empty mappings file
-      fs.writeFileSync(LOCAL_MAPPINGS_PATH, '{}');
-      return {};
-    }
-    const data = fs.readFileSync(LOCAL_MAPPINGS_PATH, 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    console.error('Error reading local mappings:', error);
-    return {};
-  }
-};
-
-const saveLocalMappings = (mappings: PageMapping) => {
-  try {
-    fs.writeFileSync(LOCAL_MAPPINGS_PATH, JSON.stringify(mappings, null, 2));
-  } catch (error) {
-    console.error('Error saving local mappings:', error);
-    throw error;
-  }
-};
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const isDevelopment = process.env.NODE_ENV === 'development';
-
   // GET: Fetch mapping for a specific slug or all mappings
   if (req.method === 'GET') {
     const { slug, walletAddress } = req.query;
     
     try {
-      let mappings: PageMapping = isDevelopment ? getLocalMappings() : {};
-
-      if (!isDevelopment) {
-        const { blobs } = await list();
-        const mappingsBlob = blobs.find(blob => blob.pathname === 'page-mappings.json');
-        
-        if (mappingsBlob) {
-          const response = await fetch(mappingsBlob.url);
-          mappings = await response.json();
-        }
-      }
+      // Get all mappings from Redis
+      const mappings: PageMapping = await redis.get('page-mappings') || {};
 
       // If walletAddress is provided, return pages for that wallet
       if (walletAddress) {
@@ -176,16 +141,8 @@ export default async function handler(
         return res.status(401).json({ error: error instanceof Error ? error.message : 'Authentication failed' });
       }
 
-      let mappings: PageMapping = isDevelopment ? getLocalMappings() : {};
-
-      if (!isDevelopment) {
-        const { blobs } = await list();
-        const mappingsBlob = blobs.find(blob => blob.pathname === 'page-mappings.json');
-        if (mappingsBlob) {
-          const response = await fetch(mappingsBlob.url);
-          mappings = await response.json();
-        }
-      }
+      // Get existing mappings
+      const mappings: PageMapping = await redis.get('page-mappings') || {};
 
       // Check if slug is already taken by a different wallet
       if (mappings[slug] && mappings[slug].walletAddress !== walletAddress) {
@@ -216,17 +173,9 @@ export default async function handler(
         ...(image && { image })
       };
 
-      if (isDevelopment) {
-        saveLocalMappings(mappings);
-        return res.status(200).json({ success: true });
-      } else {
-        const { url } = await put(
-          'page-mappings.json',
-          JSON.stringify(mappings),
-          { access: 'public' }
-        );
-        return res.status(200).json({ success: true, url });
-      }
+      // Save to Redis
+      await redis.set('page-mappings', mappings);
+      return res.status(200).json({ success: true });
     } catch (error) {
       console.error('Error storing page mapping:', error);
       return res.status(500).json({ error: 'Failed to store page mapping' });
@@ -242,7 +191,8 @@ export default async function handler(
         return res.status(400).json({ error: 'Slug is required' });
       }
 
-      let mappings: PageMapping = isDevelopment ? getLocalMappings() : {};
+      // Get existing mappings
+      const mappings: PageMapping = await redis.get('page-mappings') || {};
 
       // Get current mapping to verify ownership
       const currentMapping = mappings[slug];
@@ -260,26 +210,16 @@ export default async function handler(
       // Remove the mapping
       delete mappings[slug];
 
-      if (isDevelopment) {
-        // Save to local file in development
-        saveLocalMappings(mappings);
-        return res.status(200).json({ success: true });
-      } else {
-        // Store in Vercel Blob in production
-        const { url } = await put(
-          'page-mappings.json',
-          JSON.stringify(mappings),
-          { access: 'public' }
-        );
-        return res.status(200).json({ success: true, url });
-      }
+      // Save to Redis
+      await redis.set('page-mappings', mappings);
+      return res.status(200).json({ success: true });
     } catch (error) {
       console.error('Error deleting page mapping:', error);
       return res.status(500).json({ error: 'Failed to delete page mapping' });
     }
   }
 
-  // Add a new PATCH handler to update just the connected token
+  // PATCH: Update existing mapping
   if (req.method === 'PATCH') {
     try {
       const { slug, connectedToken, title, description, image, socials } = req.body;
@@ -288,7 +228,8 @@ export default async function handler(
         return res.status(400).json({ error: 'Slug is required' });
       }
 
-      let mappings: PageMapping = isDevelopment ? getLocalMappings() : {};
+      // Get existing mappings
+      const mappings: PageMapping = await redis.get('page-mappings') || {};
 
       // Get current mapping to verify ownership
       const currentMapping = mappings[slug];
@@ -313,17 +254,9 @@ export default async function handler(
         ...(socials !== undefined && { socials }),
       };
 
-      if (isDevelopment) {
-        saveLocalMappings(mappings);
-        return res.status(200).json({ success: true });
-      } else {
-        const { url } = await put(
-          'page-mappings.json',
-          JSON.stringify(mappings),
-          { access: 'public' }
-        );
-        return res.status(200).json({ success: true, url });
-      }
+      // Save to Redis
+      await redis.set('page-mappings', mappings);
+      return res.status(200).json({ success: true });
     } catch (error) {
       console.error('Error updating page mapping:', error);
       return res.status(500).json({ error: 'Failed to update page mapping' });

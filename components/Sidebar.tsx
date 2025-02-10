@@ -1,6 +1,6 @@
-import { useSolanaWallets, usePrivy, getAccessToken } from "@privy-io/react-auth";
+import { useSolanaWallets, usePrivy } from "@privy-io/react-auth";
 import Spinner from './Spinner';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react"; // You may need to install lucide-react
@@ -15,30 +15,19 @@ type PageMapping = {
   }
 }
 
-// Helper function to get wallet slugs
-const getWalletSlugs = (mappings: PageMapping, walletAddress: string) => {
-  console.log('Mappings received:', mappings);
-  console.log('Wallet address:', walletAddress);
-  
-  if (!mappings || typeof mappings !== 'object') {
-    console.log('Invalid mappings format');
-    return [];
-  }
-  
-  const entries = Object.entries(mappings);
-  console.log('Mappings entries:', entries);
-  
-  const filtered = entries.filter(([_, data]) => {
-    console.log('Checking entry:', _, data);
-    return data && typeof data === 'object' && 'walletAddress' in data && data.walletAddress === walletAddress;
-  });
-  console.log('Filtered entries:', filtered);
-  
-  const slugs = filtered.map(([slug, _]) => slug);
-  console.log('Final slugs:', slugs);
-  
-  return slugs;
-};
+// Update the type guard at the top of the file
+type WalletAccount = {
+  type: 'wallet';
+  chainType: string;
+  address: string;
+  walletClientType: string;
+}
+
+function isWalletAccount(account: any): account is WalletAccount {
+  return account?.type === 'wallet' && 
+         account?.chainType === 'solana' && 
+         'address' in account;
+}
 
 // Add helper function to check if page is incomplete
 const isPageIncomplete = (mapping: any) => {
@@ -60,7 +49,6 @@ interface SidebarProps {
 export default function Sidebar({
   selectedWallet,
   setSelectedWallet,
-  selectedToken,
   setSelectedToken,
   isLoadingMappings,
   mappedSlugs,
@@ -68,45 +56,11 @@ export default function Sidebar({
   setMappedSlugs,
   setMappings
 }: SidebarProps) {
-  const { ready: walletsReady, wallets: solanaWallets } = useSolanaWallets();
+  const { wallets } = useSolanaWallets();
   const { linkWallet, user } = usePrivy();
   
-  // Add debugging
-  useEffect(() => {
-    console.log('Solana Wallets from hook:', solanaWallets);
-    console.log('All linked accounts:', user?.linkedAccounts);
-    
-    // Filter Solana wallets from linked accounts
-    const solanaAccounts = user?.linkedAccounts?.filter(
-      account => account.type === 'wallet' && account.chainType === 'solana'
-    ) || [];
-    console.log('Solana accounts from user:', solanaAccounts);
-  }, [solanaWallets, user]);
-
-  // Update the wallet change watcher
-  useEffect(() => {
-    if (!user) return;
-    
-    const solanaWallets = user.linkedAccounts?.filter(
-      account => account.type === 'wallet' && account.chainType === 'solana'
-    ) || [];
-    
-    if (solanaWallets.length === 0) return;
-
-    // If selected wallet is no longer in the list of wallets, select the first available wallet
-    if (selectedWallet && !solanaWallets.find(w => w.address === selectedWallet)) {
-      handleWalletChange(solanaWallets[0].address);
-      return;
-    }
-
-    // If no wallet is selected but wallets are available, select the first one
-    if (!selectedWallet && solanaWallets.length > 0) {
-      handleWalletChange(solanaWallets[0].address);
-    }
-  }, [user, selectedWallet]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Handle wallet change
-  const handleWalletChange = async (walletAddress: string) => {
+  // Handle wallet change - move this before the useEffect
+  const handleWalletChange = useCallback(async (walletAddress: string) => {
     // Reset states
     setSelectedToken(null);
     setSelectedWallet(walletAddress);
@@ -129,12 +83,40 @@ export default function Sidebar({
     } catch (error) {
       console.error('Error fetching mappings for new wallet:', error);
     }
-  };
+  }, [setSelectedToken, setSelectedWallet, setMappings, setMappedSlugs]);
 
-  // Get Solana wallets from linked accounts
-  const connectedSolanaWallets = user?.linkedAccounts?.filter(
-    account => account.type === 'wallet' && account.chainType === 'solana'
-  ) || [];
+  // Update the wallet change watcher
+  useEffect(() => {
+    if (!user) return;
+    
+    const solanaWallets = wallets?.filter(isWalletAccount) || [];
+    
+    if (solanaWallets.length === 0) return;
+
+    // If selected wallet is no longer in the list of wallets, select the first available wallet
+    if (selectedWallet && !solanaWallets.find(w => w.address === selectedWallet)) {
+      handleWalletChange(solanaWallets[0].address);
+      return;
+    }
+
+    // If no wallet is selected but wallets are available, select the first one
+    if (!selectedWallet && solanaWallets.length > 0) {
+      handleWalletChange(solanaWallets[0].address);
+    }
+  }, [user, selectedWallet, wallets, handleWalletChange]);
+
+  // Update the debugging useEffect
+  useEffect(() => {
+    console.log('Solana Wallets from hook:', wallets);
+    console.log('All linked accounts:', user?.linkedAccounts);
+    
+    // Filter Solana wallets from linked accounts using type guard
+    const solanaAccounts = user?.linkedAccounts?.filter(isWalletAccount) || [];
+    console.log('Solana accounts from user:', solanaAccounts);
+  }, [wallets, user]);
+
+  // Update the wallet filtering to use the type guard
+  const connectedSolanaWallets = user?.linkedAccounts?.filter(isWalletAccount) || [];
 
   // Get currently selected wallet details
   const selectedWalletDetails = connectedSolanaWallets.find(
