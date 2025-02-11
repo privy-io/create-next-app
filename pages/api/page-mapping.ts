@@ -25,6 +25,13 @@ type PageMapping = {
   }
 }
 
+type PrivyUserPages = {
+  pages: Array<{
+    walletAddress: string;
+    slug: string;
+  }>;
+}
+
 const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
 const PRIVY_APP_SECRET = process.env.PRIVY_APP_SECRET;
 const client = new PrivyClient(PRIVY_APP_ID!, PRIVY_APP_SECRET!);
@@ -47,34 +54,124 @@ async function verifyWalletOwnership(req: NextApiRequest, walletAddress: string)
   try {
     const user = await client.getUser({ idToken });
     
-    // Debug log the user data
-    console.log('Checking wallet ownership:', {
+    // More detailed debug logging
+    console.log('Full user data:', JSON.stringify(user, null, 2));
+    console.log('Wallet verification check:', {
       requestedWallet: walletAddress,
-      linkedAccounts: user.linkedAccounts
+      walletAddressType: typeof walletAddress,
+      linkedAccounts: user.linkedAccounts.map(acc => ({
+        type: acc.type,
+        chainType: acc.chainType,
+        ...(acc.type === 'wallet' && { address: (acc as any).verifiedAddress })
+      }))
     });
     
     // Check if the wallet address is in the user's linked accounts
-    const hasWallet = user.linkedAccounts.some(account => 
-      account.type === 'wallet' && 
-      account.chainType === 'solana' &&
-      'address' in account &&
-      account.address === walletAddress
-    );
+    const hasWallet = user.linkedAccounts.some(account => {
+      if (account.type === 'wallet' && account.chainType === 'solana') {
+        const walletAccount = account as { verifiedAddress?: string };
+        const matches = walletAccount.verifiedAddress?.toLowerCase() === walletAddress.toLowerCase();
+        console.log('Checking wallet match:', {
+          accountAddress: walletAccount.verifiedAddress?.toLowerCase(),
+          requestedWallet: walletAddress.toLowerCase(),
+          matches
+        });
+        return matches;
+      }
+      return false;
+    });
 
     if (!hasWallet) {
       console.log('Wallet ownership verification failed:', {
         requestedWallet: walletAddress,
         availableWallets: user.linkedAccounts
           .filter(acc => acc.type === 'wallet' && acc.chainType === 'solana')
-          .map(acc => acc.address)
+          .map(acc => {
+            const walletAcc = acc as { verifiedAddress?: string };
+            return walletAcc.verifiedAddress;
+          })
+          .filter(Boolean)
       });
       throw new Error("Wallet not owned by authenticated user");
     }
 
     return user;
   } catch (error) {
-    console.error('Verification error:', error);
-    throw new Error("Failed to verify wallet ownership");
+    console.error('Verification error details:', error);
+    throw error;
+  }
+}
+
+// Helper function to get the Redis key for a slug
+const getRedisKey = (slug: string) => `page:${slug}`;
+
+// Helper function to get all pages for a wallet
+async function getPagesForWallet(walletAddress: string) {
+  try {
+    // Get user by wallet address
+    const user = await client.getUser(walletAddress);
+    
+    // Get user's pages from metadata
+    const metadata = (user.customMetadata || {}) as unknown as PrivyUserPages;
+    const userPages = metadata?.pages || [];
+    
+    // Get the full page data from Redis for each slug
+    const pages = await Promise.all(
+      userPages
+        .filter(page => page.walletAddress === walletAddress)
+        .map(async (page) => {
+          const pageData = await redis.get<PageMapping[string]>(getRedisKey(page.slug));
+          if (pageData) {
+            return {
+              slug: page.slug,
+              connectedToken: pageData.connectedToken
+            };
+          }
+          return null;
+        })
+    );
+
+    return pages.filter(Boolean);
+  } catch (error) {
+    console.error('Error getting pages for wallet:', error);
+    return [];
+  }
+}
+
+// Helper function to add page to user's metadata
+async function addPageToUserMetadata(userId: string, walletAddress: string, slug: string) {
+  try {
+    const currentMetadata = await client.getUser(userId);
+    const pages = ((currentMetadata.customMetadata || {}) as unknown as PrivyUserPages)?.pages || [];
+    
+    // Add new page if it doesn't exist
+    if (!pages.some(p => p.slug === slug)) {
+      const updatedPages = [...pages, { walletAddress, slug }];
+      // Need to cast to any due to Privy's type limitations
+      await client.setCustomMetadata(userId, {
+        pages: updatedPages as any
+      });
+    }
+  } catch (error) {
+    console.error('Error updating user metadata:', error);
+    throw new Error('Failed to update user metadata');
+  }
+}
+
+// Helper function to remove page from user's metadata
+async function removePageFromUserMetadata(userId: string, slug: string) {
+  try {
+    const currentMetadata = await client.getUser(userId);
+    const pages = ((currentMetadata.customMetadata || {}) as unknown as PrivyUserPages)?.pages || [];
+    
+    const updatedPages = pages.filter(p => p.slug !== slug);
+    // Need to cast to any due to Privy's type limitations
+    await client.setCustomMetadata(userId, {
+      pages: updatedPages as any
+    });
+  } catch (error) {
+    console.error('Error updating user metadata:', error);
+    throw new Error('Failed to update user metadata');
   }
 }
 
@@ -82,40 +179,45 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  // GET: Fetch mapping for a specific slug or all mappings
+  // GET: Fetch mapping for a specific slug or wallet's pages
   if (req.method === 'GET') {
     const { slug, walletAddress } = req.query;
     
     try {
-      // Get all mappings from Redis
-      const mappings: PageMapping = await redis.get('page-mappings') || {};
-
       // If walletAddress is provided, return pages for that wallet
       if (walletAddress) {
-        const walletPages = Object.entries(mappings)
-          .filter(([_, data]) => data.walletAddress === walletAddress)
-          .map(([slug, data]) => ({
-            slug,
-            connectedToken: data.connectedToken
-          }));
-        return res.status(200).json({ pages: walletPages });
+        const pages = await getPagesForWallet(walletAddress as string);
+        return res.status(200).json({ pages });
       }
 
       // If slug is provided, return specific mapping
       if (slug) {
-        const mapping = mappings[slug as string];
-        return res.status(200).json({ mapping });
+        const mapping = await redis.get<PageMapping[string]>(getRedisKey(slug as string));
+        
+        // If there's a mapping, try to verify ownership
+        let isOwner = false;
+        if (mapping) {
+          try {
+            await verifyWalletOwnership(req, mapping.walletAddress);
+            isOwner = true;
+          } catch (error) {
+            // Ignore verification errors - just means user doesn't own the page
+            console.log('User does not own page:', error);
+          }
+        }
+        
+        return res.status(200).json({ mapping, isOwner });
       }
 
-      // Return all mappings
-      return res.status(200).json({ mappings });
+      // Return error if neither slug nor walletAddress provided
+      return res.status(400).json({ error: 'Slug or wallet address is required' });
     } catch (error) {
       console.error('Error fetching page mapping:', error);
       return res.status(500).json({ error: 'Failed to fetch page mapping' });
     }
   }
 
-  // POST: Create or update a mapping
+  // POST: Create a new mapping
   if (req.method === 'POST') {
     try {
       const { 
@@ -124,8 +226,7 @@ export default async function handler(
         isSetupWizard,
         title,
         description,
-        socials,
-        plugins,
+        items,
         connectedToken,
         image
       } = req.body;
@@ -134,47 +235,53 @@ export default async function handler(
         return res.status(400).json({ error: 'Slug and wallet address are required' });
       }
 
-      // Verify wallet ownership
+      // Check if slug exists first
+      const existingPage = await redis.get<PageMapping[string]>(getRedisKey(slug));
+      if (existingPage) {
+        // If page exists but belongs to another user, reject
+        if (existingPage.walletAddress !== walletAddress) {
+          return res.status(400).json({ error: 'This URL is already taken' });
+        }
+      }
+
+      // Verify ownership of the wallet being used to create/update the page
+      let user;
       try {
-        await verifyWalletOwnership(req, walletAddress);
+        user = await verifyWalletOwnership(req, walletAddress);
       } catch (error) {
         return res.status(401).json({ error: error instanceof Error ? error.message : 'Authentication failed' });
       }
 
-      // Get existing mappings
-      const mappings: PageMapping = await redis.get('page-mappings') || {};
-
-      // Check if slug is already taken by a different wallet
-      if (mappings[slug] && mappings[slug].walletAddress !== walletAddress) {
-        return res.status(400).json({ error: 'This URL is already taken' });
+      // For initial setup wizard step, only store minimal data
+      if (isSetupWizard === true) {
+        const initialData = {
+          walletAddress,
+          createdAt: new Date().toISOString()
+        };
+        await redis.set(getRedisKey(slug), initialData);
+        // Add page to user's metadata
+        await addPageToUserMetadata(user.id, walletAddress, slug);
+        return res.status(200).json({ success: true });
       }
 
-      // Check if wallet already has a page, but skip this check during setup wizard
-      if (!isSetupWizard) {
-        const existingSlug = Object.entries(mappings).find(
-          ([_, data]) => data.walletAddress === walletAddress
-        );
-        
-        if (existingSlug) {
-          return res.status(400).json({ 
-            error: 'This wallet already has a page. Delete the existing page first.' 
-          });
-        }
-      }
-
-      // Add new mapping with all fields
-      mappings[slug] = { 
+      // Create/Update page data, preserving existing data
+      const pageData = {
+        ...existingPage,  // Preserve existing data
         walletAddress,
         ...(title && { title }),
         ...(description && { description }),
-        ...(socials && { socials }),
-        ...(plugins && { plugins }),
+        ...(items && { items }),
         ...(connectedToken && { connectedToken }),
-        ...(image && { image })
+        ...(image && { image }),
+        updatedAt: new Date().toISOString()
       };
 
-      // Save to Redis
-      await redis.set('page-mappings', mappings);
+      // Save to Redis with unique key
+      await redis.set(getRedisKey(slug), pageData);
+      // Add page to user's metadata if it's a new page
+      if (!existingPage) {
+        await addPageToUserMetadata(user.id, walletAddress, slug);
+      }
       return res.status(200).json({ success: true });
     } catch (error) {
       console.error('Error storing page mapping:', error);
@@ -191,27 +298,24 @@ export default async function handler(
         return res.status(400).json({ error: 'Slug is required' });
       }
 
-      // Get existing mappings
-      const mappings: PageMapping = await redis.get('page-mappings') || {};
-
       // Get current mapping to verify ownership
-      const currentMapping = mappings[slug];
+      const currentMapping = await redis.get<PageMapping[string]>(getRedisKey(slug));
       if (!currentMapping) {
         return res.status(404).json({ error: 'Page not found' });
       }
 
-      // Verify wallet ownership
+      // Verify wallet ownership and get user
+      let user;
       try {
-        await verifyWalletOwnership(req, currentMapping.walletAddress);
+        user = await verifyWalletOwnership(req, currentMapping.walletAddress);
       } catch (error) {
         return res.status(401).json({ error: error instanceof Error ? error.message : 'Authentication failed' });
       }
 
-      // Remove the mapping
-      delete mappings[slug];
-
-      // Save to Redis
-      await redis.set('page-mappings', mappings);
+      // Remove the mapping from Redis
+      await redis.del(getRedisKey(slug));
+      // Remove page from user's metadata
+      await removePageFromUserMetadata(user.id, slug);
       return res.status(200).json({ success: true });
     } catch (error) {
       console.error('Error deleting page mapping:', error);
@@ -228,11 +332,8 @@ export default async function handler(
         return res.status(400).json({ error: 'Slug is required' });
       }
 
-      // Get existing mappings
-      const mappings: PageMapping = await redis.get('page-mappings') || {};
-
       // Get current mapping to verify ownership
-      const currentMapping = mappings[slug];
+      const currentMapping = await redis.get<PageMapping[string]>(getRedisKey(slug));
       if (!currentMapping) {
         return res.status(404).json({ error: 'Page not found' });
       }
@@ -245,8 +346,8 @@ export default async function handler(
       }
 
       // Update the mapping with new fields
-      mappings[slug] = {
-        ...mappings[slug],
+      const updatedMapping = {
+        ...currentMapping,
         ...(connectedToken !== undefined && { connectedToken }),
         ...(title !== undefined && { title }),
         ...(description !== undefined && { description }),
@@ -255,7 +356,7 @@ export default async function handler(
       };
 
       // Save to Redis
-      await redis.set('page-mappings', mappings);
+      await redis.set(getRedisKey(slug), updatedMapping);
       return res.status(200).json({ success: true });
     } catch (error) {
       console.error('Error updating page mapping:', error);

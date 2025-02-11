@@ -83,6 +83,7 @@ export default function SetupWizard({ onClose, walletAddress, onComplete }: Setu
   const [slug, setSlug] = useState('');
   const [isCheckingSlug, setIsCheckingSlug] = useState(false);
   const [slugError, setSlugError] = useState('');
+  const [currentUserSlug, setCurrentUserSlug] = useState<string | null>(null);
   const [selectedToken, setSelectedToken] = useState<string | null>(null);
   const [tokens, setTokens] = useState<TokenBalance[]>([]);
   const [isLoadingTokens, setIsLoadingTokens] = useState(false);
@@ -108,12 +109,24 @@ export default function SetupWizard({ onClose, walletAddress, onComplete }: Setu
       return false;
     }
 
+    // If this is the same slug the user is currently setting up, allow it
+    if (currentUserSlug === slug) {
+      setSlugError('This will update your existing page');
+      return true;
+    }
+
     setIsCheckingSlug(true);
     try {
-      const response = await fetch('/api/page-mapping');
-      const { mappings } = await response.json();
+      const response = await fetch(`/api/page-mapping?slug=${encodeURIComponent(slug)}`);
+      const data = await response.json();
       
-      if (mappings[slug] && mappings[slug].walletAddress !== walletAddress) {
+      if (data.mapping) {
+        // Check if this page belongs to the current user using the isOwner flag
+        if (data.isOwner) {
+          setCurrentUserSlug(slug);
+          setSlugError('This will update your existing page');
+          return true;
+        }
         setSlugError('This URL is already taken');
         return false;
       }
@@ -121,6 +134,7 @@ export default function SetupWizard({ onClose, walletAddress, onComplete }: Setu
       setSlugError('');
       return true;
     } catch (error) {
+      console.error('Error checking URL availability:', error);
       setSlugError('Error checking URL availability');
       return false;
     } finally {
@@ -178,6 +192,12 @@ export default function SetupWizard({ onClose, walletAddress, onComplete }: Setu
       const isAvailable = await checkSlugAvailability();
       if (!isAvailable) return;
 
+      // If this is a page we already own, skip the POST request
+      if (currentUserSlug === slug) {
+        setStep(step + 1);
+        return;
+      }
+
       // Store the page mapping
       try {
         const response = await fetch('/api/page-mapping', {
@@ -198,10 +218,17 @@ export default function SetupWizard({ onClose, walletAddress, onComplete }: Setu
           setSlugError(error.error || 'Failed to save custom URL');
           return;
         }
+        
+        // Set the current user slug after successful creation
+        setCurrentUserSlug(slug);
       } catch (error) {
+        console.error('Error saving slug:', error);
         setSlugError('Failed to save custom URL');
         return;
       }
+
+      setStep(step + 1);
+      return;
     }
 
     // Add token connection after step 2
@@ -261,10 +288,9 @@ export default function SetupWizard({ onClose, walletAddress, onComplete }: Setu
             title,
             description,
             image: tokenMetadata?.image || null,
-            socials: orderedSocials,
-            plugins: orderedPlugins,
+            items: [...orderedSocials, ...orderedPlugins],
             connectedToken: selectedToken,
-            isSetupWizard: true
+            isSetupWizard: false  // This is final setup, not initial
           }),
           credentials: 'same-origin',
         });
@@ -276,7 +302,8 @@ export default function SetupWizard({ onClose, walletAddress, onComplete }: Setu
         await onComplete();
       } catch (error) {
         console.error('Error saving configuration:', error);
-        // Optionally show error to user
+        // Show error to user
+        alert('Failed to save your page configuration. Please try again.');
       } finally {
         setIsSubmitting(false);
       }
@@ -307,7 +334,13 @@ export default function SetupWizard({ onClose, walletAddress, onComplete }: Setu
                 />
               </div>
               {slugError && (
-                <p className="text-sm text-red-500">{slugError}</p>
+                <p className={`text-sm ${
+                  slugError === 'This will update your existing page' 
+                    ? 'text-amber-600 bg-amber-50 p-2 rounded border border-amber-200'
+                    : 'text-red-500'
+                }`}>
+                  {slugError}
+                </p>
               )}
             </div>
           </div>

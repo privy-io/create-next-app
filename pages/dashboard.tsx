@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { getAccessToken, usePrivy, useSolanaWallets } from "@privy-io/react-auth";
+import { getAccessToken, usePrivy } from "@privy-io/react-auth";
 import Head from "next/head";
 import Sidebar from '../components/Sidebar';
 import {
@@ -23,39 +23,21 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { GripVertical, Trash2 } from 'lucide-react';
 
-async function verifyToken() {
-  const url = "/api/verify";
-  const accessToken = await getAccessToken();
-  const result = await fetch(url, {
-    headers: {
-      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined),
-    },
-  });
-
-  return await result.json();
-}
-
-// Update the TokenBalance type
-type TokenBalance = {
-  mint: string;
-  amount: number;
-  decimals: number;
-  tokenName?: string;
-  symbol?: string;
-  isPumpToken?: boolean;
-};
 
 // Update the PageData type
 type PageData = {
   slug: string;
+  walletAddress: string;
   connectedToken?: string;
+  title?: string;
+  description?: string;
+  socials?: any[];
 }
 
 // Update the PageMapping type
 type PageMapping = {
-  [walletAddress: string]: PageData[];
+  [slug: string]: PageData;
 }
-
 
 type PageDetails = {
   title: string;
@@ -151,27 +133,13 @@ export default function DashboardPage() {
     authenticated,
     user,
     logout,
-    linkEmail,
-    linkWallet,
-    unlinkEmail,
-    linkPhone,
-    unlinkPhone,
-    unlinkWallet,
-    linkGoogle,
-    unlinkGoogle,
-    linkTwitter,
-    unlinkTwitter,
-    linkDiscord,
-    unlinkDiscord,
   } = usePrivy();
-  const [selectedWallet, setSelectedWallet] = useState<string | null>(null);
 
   const [selectedToken, setSelectedToken] = useState<string | null>(null);
   // Add state for mappings
   const [mappedSlugs, setMappedSlugs] = useState<string[]>([]);
   const [isLoadingMappings, setIsLoadingMappings] = useState(false);
   const [mappings, setMappings] = useState<PageMapping>({});
-  const { ready: walletsReady, wallets: solanaWallets } = useSolanaWallets();
   const [pageDetails, setPageDetails] = useState<PageDetails | null>(null);
   const [isEditingPage, setIsEditingPage] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -190,90 +158,7 @@ export default function DashboardPage() {
     }
   }, [ready, authenticated, router]);
 
-  // Add effect to initialize selected wallet
-  useEffect(() => {
-    if (walletsReady && solanaWallets.length > 0 && !selectedWallet) {
-      const firstWallet = solanaWallets[0];
-      if (firstWallet && firstWallet.address) {
-        setSelectedWallet(firstWallet.address);
-      }
-    }
-  }, [walletsReady, solanaWallets, selectedWallet]);
-
-  // Add effect to fetch page mappings
-  useEffect(() => {
-    if (selectedWallet) {
-      const fetchMappings = async () => {
-        setIsLoadingMappings(true);
-        try {
-          const response = await fetch(`/api/page-mapping?walletAddress=${selectedWallet}`);
-          const { pages = [] } = await response.json();
-          setMappedSlugs(pages.map((page: PageData) => page.slug));
-          
-          // Also get full mappings
-          const mappingsResponse = await fetch('/api/page-mapping');
-          const { mappings: fetchedMappings } = await mappingsResponse.json();
-          setMappings(fetchedMappings);
-        } catch (error) {
-          console.error('Error fetching mappings:', error);
-        } finally {
-          setIsLoadingMappings(false);
-        }
-      };
-
-      fetchMappings();
-    }
-  }, [selectedWallet]);
-
-
-  // Add effect to fetch page details
-  useEffect(() => {
-    if (selectedWallet && mappedSlugs.length > 0) {
-      const fetchPageDetails = async () => {
-        try {
-          const response = await fetch(`/api/page-mapping?slug=${mappedSlugs[0]}`);
-          const { mapping } = await response.json();
-          
-          // Convert socials and plugins to items
-          const items = [
-            ...(mapping.socials || []).map(social => ({
-              ...social,
-              isPlugin: false
-            })),
-            ...(mapping.plugins || []).map(plugin => ({
-              id: `${plugin.type}-${Math.random().toString(36).substr(2, 9)}`,
-              type: plugin.type,
-              order: plugin.order,
-              isPlugin: true
-            }))
-          ].sort((a, b) => a.order - b.order);
-
-          setPageDetails({
-            title: mapping.title || '',
-            description: mapping.description || '',
-            items,
-            image: mapping.image || undefined
-          });
-        } catch (error) {
-          console.error('Error fetching page details:', error);
-        }
-      };
-
-      fetchPageDetails();
-    }
-  }, [selectedWallet, mappedSlugs]);
-
-  const numAccounts = user?.linkedAccounts?.length || 0;
-  const canRemoveAccount = numAccounts > 1;
-
-  const email = user?.email;
-  const phone = user?.phone;
-  const wallet = user?.wallet;
-
-  const googleSubject = user?.google?.subject || null;
-  const twitterSubject = user?.twitter?.subject || null;
-  const discordSubject = user?.discord?.subject || null;
-
+  // Handle saving page details
   const handleSavePageDetails = async () => {
     if (!pageDetails || !mappedSlugs.length) return;
 
@@ -348,10 +233,6 @@ export default function DashboardPage() {
       <main className="flex min-h-screen bg-privy-light-blue">
         {/* Sidebar */}
         <Sidebar 
-          selectedWallet={selectedWallet}
-          setSelectedWallet={setSelectedWallet}
-          selectedToken={selectedToken}
-          setSelectedToken={setSelectedToken}
           isLoadingMappings={isLoadingMappings}
           mappedSlugs={mappedSlugs}
           mappings={mappings}
@@ -492,9 +373,6 @@ export default function DashboardPage() {
                 </DndContext>
               </div>
             </div>
-            <pre className="max-w-4xl bg-slate-700 text-slate-50 font-mono p-4 text-xs sm:text-sm rounded-md mt-2">
-              {JSON.stringify(user, null, 2)}
-            </pre>
           </div>
         ) : null}
         </div>
