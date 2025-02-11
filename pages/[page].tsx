@@ -142,10 +142,10 @@ export default function Page({ pageData }: PageProps) {
               rel="stylesheet"
             />
             <style>{`
-              ${pageData.fonts?.global ? `body { font-family: '${pageData.fonts.global}', sans-serif; }` : ''}
-              ${pageData.fonts?.heading ? `h1, h2, h3, h4, h5, h6 { font-family: '${pageData.fonts.heading}', sans-serif; }` : ''}
-              ${pageData.fonts?.paragraph ? `p { font-family: '${pageData.fonts.paragraph}', sans-serif; }` : ''}
-              ${pageData.fonts?.links ? `a, .pf-link-item { font-family: '${pageData.fonts.links}', sans-serif; }` : ''}
+              ${pageData.fonts?.global ? `.pf-page { font-family: '${pageData.fonts.global}', sans-serif; }` : ''}
+              ${pageData.fonts?.heading ? `.pf-page__title { font-family: '${pageData.fonts.heading}', sans-serif; }` : ''}
+              ${pageData.fonts?.paragraph ? `.pf-page__description { font-family: '${pageData.fonts.paragraph}', sans-serif; }` : ''}
+              ${pageData.fonts?.links ? `.pf-link-item { font-family: '${pageData.fonts.links}', sans-serif; }` : ''}
             `}</style>
           </>
         )}
@@ -153,7 +153,7 @@ export default function Page({ pageData }: PageProps) {
       
       {/* Edit Button for page owner */}
       {accessStatus?.isOwner && (
-        <div className="fixed top-4 right-4 z-50">
+        <div className="fixed top-24 right-4 z-40">
           <Button
             onClick={() => router.push(`/edit/${pageData.slug}`)}
             className="bg-violet-600 hover:bg-violet-700 text-white"
@@ -165,7 +165,7 @@ export default function Page({ pageData }: PageProps) {
 
       {/* Token Access Warning */}
       {accessStatus?.tokenRequired && !accessStatus?.hasTokenAccess && (
-        <div className="fixed top-4 left-4 z-50 bg-amber-100 text-amber-800 px-4 py-2 rounded-lg shadow-sm">
+        <div className="fixed top-24 left-4 z-40 bg-amber-100 text-amber-800 px-4 py-2 rounded-lg shadow-sm">
           Some content on this page requires token access
         </div>
       )}

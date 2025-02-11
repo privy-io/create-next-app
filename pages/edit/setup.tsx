@@ -10,7 +10,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Twitter, MessageCircle, BarChart3, Video, Instagram, Mail, MessageSquare, Terminal, HardDrive, MessageSquareMore } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
-import Header from '@/components/Header';
 import { isSolanaWallet } from '@/utils/wallet';
 import Spinner from '@/components/Spinner';
 
@@ -104,8 +103,6 @@ export default function SetupPage() {
   }, [ready, authenticated, router]);
 
   const solanaWallet = user?.linkedAccounts?.find(isSolanaWallet);
-  const numAccounts = user?.linkedAccounts?.length || 0;
-  const canRemoveAccount = numAccounts > 1;
 
   const checkSlugAvailability = async () => {
     if (!slug) {
@@ -582,14 +579,6 @@ export default function SetupPage() {
       <Head>
         <title>Setup Your Page - Page.fun</title>
       </Head>
-
-      <Header
-        solanaWallet={solanaWallet}
-        onLogout={logout}
-        onLinkWallet={linkWallet}
-        onUnlinkWallet={unlinkWallet}
-        canRemoveAccount={canRemoveAccount}
-      />
 
       <main className="min-h-screen bg-privy-light-blue">
         <div className="max-w-2xl mx-auto px-4 py-8">

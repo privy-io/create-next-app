@@ -117,24 +117,23 @@ export default function PagePreview({ pageData }: { pageData: PageData }) {
       const fontStyles = doc.querySelector('style[data-fonts]');
       if (fontStyles) {
         fontStyles.textContent = `
-          body { margin: 0; }
           ${pageData.fonts?.global ? `
-            body { 
+            .pf-page { 
               font-family: '${pageData.fonts.global}', sans-serif !important;
             }
           ` : ''}
           ${pageData.fonts?.heading ? `
-            h1, h2, h3, h4, h5, h6 { 
+            .pf-page__title { 
               font-family: '${pageData.fonts.heading}', sans-serif !important;
             }
           ` : ''}
           ${pageData.fonts?.paragraph ? `
-            p, li, td, th, blockquote { 
+            .pf-page__description { 
               font-family: '${pageData.fonts.paragraph}', sans-serif !important;
             }
           ` : ''}
           ${pageData.fonts?.links ? `
-            a, .link, .pf-link-item { 
+            .pf-link-item { 
               font-family: '${pageData.fonts.links}', sans-serif !important;
             }
           ` : ''}

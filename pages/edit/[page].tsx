@@ -37,7 +37,6 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Trash2, Plus } from 'lucide-react';
 import { ItemType, PageItem } from '@/types';
-import Header from '@/components/Header';
 import { useToast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
 import { isSolanaWallet } from '@/utils/wallet';
@@ -826,28 +825,18 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
 
   if (error) {
     return (
-      <>
-        <Header
-          solanaWallet={user?.linkedAccounts?.find(isSolanaWallet)}
-          onLogout={logout}
-          onLinkWallet={linkWallet}
-          onUnlinkWallet={unlinkWallet}
-          canRemoveAccount={(user?.linkedAccounts?.length || 0) > 1}
-        />
-        <div className="min-h-screen bg-privy-light-blue p-6">
-          <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6">
-            <h1 className="text-2xl font-semibold text-red-600">{error}</h1>
-            <p className="mt-2 text-gray-600">The page "{slug}" could not be found.</p>
-            <Button
-              className="mt-4"
-              onClick={() => router.push('/dashboard')}
-            >
-              Back to Dashboard
-            </Button>
-          </div>
+      <div className="min-h-screen bg-privy-light-blue p-6">
+        <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6">
+          <h1 className="text-2xl font-semibold text-red-600">{error}</h1>
+          <p className="mt-2 text-gray-600">The page "{slug}" could not be found.</p>
+          <Button
+            className="mt-4"
+            onClick={() => router.push('/dashboard')}
+          >
+            Back to Dashboard
+          </Button>
         </div>
-        <Toaster />
-      </>
+      </div>
     );
   }
 
@@ -868,23 +857,18 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
         <link rel="stylesheet" href="/page.css" />
       </Head>
 
-      <Header
-        solanaWallet={user?.linkedAccounts?.find(isSolanaWallet)}
-        onLogout={logout}
-        onLinkWallet={linkWallet}
-        onUnlinkWallet={unlinkWallet}
-        canRemoveAccount={(user?.linkedAccounts?.length || 0) > 1}
-      />
-
-      <main className="min-h-screen bg-privy-light-blue p-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <main className="min-h-screen">
+        <div>
+          <div className="grid grid-cols-1 lg:grid-cols-2">
             {/* Left Column - Settings */}
-            <div className="space-y-8">
-              <div className="bg-white p-6 rounded-lg shadow-sm">
+            <div className="space-y-8 border-r border-gray-100">
+              <div className="bg-white rounded-lg shadow-sm">
                 <div className="flex justify-between items-center mb-6">
                   <Tabs defaultValue="general" className="flex-1">
-                    <div className="flex justify-between items-center">
+                    <div className="flex justify-between  p-6  items-center sticky top-0 right-0 bg-white z-50">
+                      <div className="text-xl font-semibold">
+                        Page.fun
+                      </div>
                       <TabsList>
                         <TabsTrigger value="general">General Settings</TabsTrigger>
                         <TabsTrigger value="links">Links & Features</TabsTrigger>
@@ -894,13 +878,14 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
                       <div className="space-x-2">
                         <Button
                           variant="outline"
-                          onClick={() => router.push('/dashboard')}
+                          size="sm"
+                          onClick={() => router.push('/')}
                           disabled={isSaving}
                         >
                           Cancel
                         </Button>
                         {!authenticated ? (
-                          <Button onClick={linkWallet}>
+                          <Button onClick={linkWallet} size="sm">
                             Connect Wallet to Save
                           </Button>
                         ) : !canEdit ? (
@@ -910,6 +895,7 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
                         ) : (
                           <Button
                             onClick={handleSavePageDetails}
+                            size="sm"
                             disabled={isSaving}
                           >
                             {isSaving ? 'Saving...' : 'Save Changes'}
@@ -919,7 +905,7 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
                     </div>
 
                     <TabsContent value="general" className="mt-6">
-                      <div className="space-y-6">
+                      <div className="space-y-6 px-6">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
                             Image
@@ -983,7 +969,7 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
                       </div>
                     </TabsContent>
 
-                    <TabsContent value="links" className="mt-6">
+                    <TabsContent value="links" className="mt-6 px-6">
                       <div className="space-y-4">
                         <div className="flex justify-between items-center">
                           <Dialog>
@@ -1090,7 +1076,7 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
                       </div>
                     </TabsContent>
 
-                    <TabsContent value="design" className="mt-6">
+                    <TabsContent value="design" className="mt-6 px-6">
                       <div className="space-y-6">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1211,7 +1197,7 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
             </div>
 
             {/* Right Column - Live Preview */}
-            <div className="pf-preview" style={{ height: 'calc(100vh - 12rem)' }}>
+            <div className="pf-preview sticky top-0 right-0" style={{ height: 'calc(100vh)' }}>
               {previewData && <PagePreview pageData={previewData} />}
             </div>
           </div>

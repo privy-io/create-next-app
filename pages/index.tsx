@@ -1,9 +1,10 @@
 import Portal from "../components/graphics/portal";
-import { useLogin } from "@privy-io/react-auth";
+import { useLogin, usePrivy } from "@privy-io/react-auth";
 import { PrivyClient } from "@privy-io/server-auth";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
+import { Toaster } from '@/components/ui/toaster';
 
 export const getServerSideProps: GetServerSideProps = async ({ req }) => {
   const cookieAuthToken = req.cookies["privy-token"];
@@ -17,29 +18,27 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
 
   try {
     const claims = await client.verifyAuthToken(cookieAuthToken);
-    // Use this result to pass props to a page for server rendering or to drive redirects!
-    // ref https://nextjs.org/docs/pages/api-reference/functions/get-server-side-props
-    console.log({ claims });
-
-    return {
-      props: {},
-      redirect: { destination: "/dashboard", permanent: false },
-    };
+    // Since we're not redirecting to dashboard anymore, just return the claims
+    return { props: {} };
   } catch (error) {
     return { props: {} };
   }
 };
 
-export default function LoginPage() {
+export default function HomePage() {
   const router = useRouter();
   const { login } = useLogin({
-    onComplete: () => router.push("/dashboard"),
+    onComplete: () => {
+      // Instead of redirecting, we'll let the page re-render with authenticated state
+      router.replace(router.asPath);
+    },
   });
+  const { ready, authenticated } = usePrivy();
 
   return (
     <>
       <Head>
-        <title>Login · Privy</title>
+        <title>{authenticated ? 'Page.fun' : 'Login · Page.fun'}</title>
       </Head>
 
       <main className="flex min-h-screen min-w-full">
@@ -48,17 +47,31 @@ export default function LoginPage() {
             <div>
               <Portal style={{ maxWidth: "100%", height: "auto" }} />
             </div>
-            <div className="mt-6 flex justify-center text-center">
-              <button
-                className="bg-violet-600 hover:bg-violet-700 py-3 px-6 text-white rounded-lg"
-                onClick={login}
-              >
-                Log in
-              </button>
+            <div className="mt-6 flex flex-col items-center text-center">
+              <h1 className="text-2xl font-semibold mb-4">Welcome to Page.fun!</h1>
+              {authenticated ? (
+                <p className="text-gray-600 mb-4">
+                  Create and manage your pages using the menu in the top right corner.
+                </p>
+              ) : (
+                <>
+                  <p className="text-gray-600 mb-6">
+                    Connect your wallet to get started with your personalized page.
+                  </p>
+                  <button
+                    className="bg-violet-600 hover:bg-violet-700 py-3 px-6 text-white rounded-lg"
+                    onClick={login}
+                  >
+                    Log in
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
       </main>
+
+      <Toaster />
     </>
   );
 }
