@@ -35,7 +35,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Trash2, Plus } from 'lucide-react';
+import { GripVertical, Trash2, Plus, Menu, X } from 'lucide-react';
 import { ItemType, PageItem } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
@@ -54,6 +54,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetClose,
+} from "@/components/ui/sheet";
 
 // Add popular Google Fonts
 const GOOGLE_FONTS = [
@@ -859,49 +865,375 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
 
       <main className="min-h-screen">
         <div>
-          <div className="grid grid-cols-1 lg:grid-cols-2">
-            {/* Left Column - Settings */}
-            <div className="space-y-8 border-r border-gray-100">
-              <div className="bg-white rounded-lg shadow-sm">
+          {/* Mobile Menu Button - Only visible on mobile */}
+          <div className="lg:hidden fixed top-4 left-4 z-50">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <Menu className="h-4 w-4" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[100vw] sm:w-[550px] p-0 flex flex-col">
+                {/* Settings Panel Content */}
+                <div className="flex-1 overflow-y-auto">
+                  <div className="bg-white rounded-lg shadow-sm">
+                    <div className="flex justify-between items-center mb-6">
+                      <Tabs defaultValue="general" className="flex-1">
+                        <div className="flex p-6 gap-4 items-center sticky top-0 right-0 bg-white z-50">
+                          <div className="text-xl font-semibold">
+                            PF
+                          </div>
+                          <TabsList>
+                            <TabsTrigger value="general">General Settings</TabsTrigger>
+                            <TabsTrigger value="links">Links & Features</TabsTrigger>
+                            <TabsTrigger value="design">Design</TabsTrigger>
+                          </TabsList>
+                          <SheetClose asChild>
+                            <Button variant="ghost" size="icon" className="ml-auto">
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </SheetClose>
+                        </div>
+
+                        <TabsContent value="general" className="mt-6">
+                          <div className="space-y-6 px-6">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Image
+                              </label>
+                              <div className="space-y-4">
+                                {pageDetails?.image && (
+                                  <div className="relative w-32 h-32 rounded-lg overflow-hidden">
+                                    <img
+                                      src={pageDetails.image}
+                                      alt={pageDetails.title}
+                                      className="object-cover w-full h-full"
+                                      onError={(e) => {
+                                        (e.target as HTMLImageElement).style.display = 'none';
+                                      }}
+                                    />
+                                  </div>
+                                )}
+                                <Input
+                                  type="text"
+                                  value={pageDetails?.image || ''}
+                                  onChange={(e) => setPageDetails(prev => ({
+                                    ...prev!,
+                                    image: e.target.value
+                                  }))}
+                                  placeholder="Enter image URL"
+                                  className="max-w-md"
+                                />
+                              </div>
+                            </div>
+
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Title
+                              </label>
+                              <Input
+                                type="text"
+                                value={pageDetails?.title || ''}
+                                onChange={(e) => setPageDetails(prev => ({
+                                  ...prev!,
+                                  title: e.target.value
+                                }))}
+                                maxLength={100}
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Description
+                              </label>
+                              <textarea
+                                value={pageDetails?.description || ''}
+                                onChange={(e) => setPageDetails(prev => ({
+                                  ...prev!,
+                                  description: e.target.value
+                                }))}
+                                className="w-full p-2 border rounded-md"
+                                rows={3}
+                                maxLength={500}
+                              />
+                            </div>
+                          </div>
+                        </TabsContent>
+
+                        <TabsContent value="links" className="mt-6 px-6">
+                          <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button size="sm" className="gap-2">
+                                    <Plus className="h-4 w-4" />
+                                    Add Link
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                  <DialogHeader>
+                                    <DialogTitle>Add Link</DialogTitle>
+                                  </DialogHeader>
+                                  <div className="grid gap-4 py-4">
+                                    {[
+                                      { type: 'twitter', label: 'Twitter' },
+                                      { type: 'telegram', label: 'Telegram' },
+                                      { type: 'dexscreener', label: 'DexScreener', showIfToken: true },
+                                      { type: 'tiktok', label: 'TikTok' },
+                                      { type: 'instagram', label: 'Instagram' },
+                                      { type: 'email', label: 'Email' },
+                                      { type: 'discord', label: 'Discord' },
+                                      { type: 'private-chat', label: 'Private Chat', isPlugin: true },
+                                      { type: 'terminal', label: 'Terminal', isPlugin: true },
+                                    ].map(({ type, label, showIfToken, isPlugin }) => {
+                                      if (showIfToken && !pageDetails?.connectedToken) return null;
+                                      const isAdded = pageDetails?.items?.some(item => item.type === type);
+                                      if (isAdded) return null;
+
+                                      return (
+                                        <Button
+                                          key={type}
+                                          variant="outline"
+                                          className="justify-start gap-2"
+                                          onClick={() => {
+                                            const newItem: PageItem = isPlugin ? {
+                                              type: type as ItemType,
+                                              order: (pageDetails?.items?.length || 0),
+                                              isPlugin: true,
+                                              tokenGated: false,
+                                              id: `${type}-${Math.random().toString(36).substr(2, 9)}`
+                                            } : {
+                                              type: type as ItemType,
+                                              url: '',
+                                              id: `${type}-${Math.random().toString(36).substr(2, 9)}`,
+                                              order: (pageDetails?.items?.length || 0)
+                                            };
+
+                                            setPageDetails(prev => {
+                                              if (!prev) return prev;
+                                              return {
+                                                ...prev,
+                                                items: [...(prev.items || []), newItem]
+                                              };
+                                            });
+                                          }}
+                                        >
+                                          <span className="text-xl">{getSocialIcon(type)}</span>
+                                          {label}
+                                        </Button>
+                                      );
+                                    })}
+                                  </div>
+                                </DialogContent>
+                              </Dialog>
+                            </div>
+
+                            <DndContext
+                              sensors={sensors}
+                              collisionDetection={closestCenter}
+                              onDragEnd={handleDragEnd}
+                            >
+                              <SortableContext
+                                items={pageDetails?.items?.map(i => i.id || `${i.type}-${i.order}`) || []}
+                                strategy={verticalListSortingStrategy}
+                              >
+                                <div className="space-y-2">
+                                  {pageDetails?.items?.map((item) => (
+                                    <SortableItem
+                                      key={item.id || `${item.type}-${item.order}`}
+                                      id={item.id || `${item.type}-${item.order}`}
+                                      item={item}
+                                      onUrlChange={!item.isPlugin ? (url) => {
+                                        setPageDetails(prev => ({
+                                          ...prev!,
+                                          items: prev!.items!.map(i =>
+                                            i.id === item.id ? { ...i, url } : i
+                                          )
+                                        }));
+                                      } : undefined}
+                                      onDelete={() => {
+                                        setPageDetails(prev => ({
+                                          ...prev!,
+                                          items: prev!.items!.filter(i => 
+                                            item.id ? i.id !== item.id : i.type !== item.type
+                                          )
+                                        }));
+                                      }}
+                                    />
+                                  ))}
+                                </div>
+                              </SortableContext>
+                            </DndContext>
+                          </div>
+                        </TabsContent>
+
+                        <TabsContent value="design" className="mt-6 px-6">
+                          <div className="space-y-6">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Style
+                              </label>
+                              <Select
+                                value={pageDetails?.designStyle || 'default'}
+                                onValueChange={(value: 'default' | 'minimal' | 'modern') => {
+                                  setPageDetails(prev => ({
+                                    ...prev!,
+                                    designStyle: value
+                                  }));
+                                }}
+                              >
+                                <SelectTrigger className="w-[200px]">
+                                  <SelectValue placeholder="Select style" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="default">Default</SelectItem>
+                                  <SelectItem value="minimal">Minimal</SelectItem>
+                                  <SelectItem value="modern">Modern</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <div className="space-y-4">
+                              <h3 className="text-sm font-medium text-gray-700">Typography</h3>
+                              
+                              <div>
+                                <label className="block text-sm text-gray-600 mb-1">
+                                  Global Font
+                                </label>
+                                <FontSelect
+                                  value={pageDetails?.fonts?.global || 'system'}
+                                  onValueChange={(value: string) => {
+                                    console.log('Setting global font:', value);
+                                    setPageDetails(prev => ({
+                                      ...prev!,
+                                      fonts: {
+                                        ...prev!.fonts,
+                                        global: value === 'system' ? undefined : value
+                                      }
+                                    }));
+                                  }}
+                                  placeholder="Select font"
+                                  defaultValue="system"
+                                />
+                              </div>
+
+                              <div>
+                                <label className="block text-sm text-gray-600 mb-1">
+                                  Heading Font
+                                </label>
+                                <FontSelect
+                                  value={pageDetails?.fonts?.heading || 'inherit'}
+                                  onValueChange={(value: string) => {
+                                    console.log('Setting heading font:', value);
+                                    setPageDetails(prev => ({
+                                      ...prev!,
+                                      fonts: {
+                                        ...prev!.fonts,
+                                        heading: value === 'inherit' ? undefined : value
+                                      }
+                                    }));
+                                  }}
+                                  placeholder="Use global font"
+                                  defaultValue="inherit"
+                                />
+                              </div>
+
+                              <div>
+                                <label className="block text-sm text-gray-600 mb-1">
+                                  Paragraph Font
+                                </label>
+                                <FontSelect
+                                  value={pageDetails?.fonts?.paragraph || 'inherit'}
+                                  onValueChange={(value: string) => {
+                                    console.log('Setting paragraph font:', value);
+                                    setPageDetails(prev => ({
+                                      ...prev!,
+                                      fonts: {
+                                        ...prev!.fonts,
+                                        paragraph: value === 'inherit' ? undefined : value
+                                      }
+                                    }));
+                                  }}
+                                  placeholder="Use global font"
+                                  defaultValue="inherit"
+                                />
+                              </div>
+
+                              <div>
+                                <label className="block text-sm text-gray-600 mb-1">
+                                  Links Font
+                                </label>
+                                <FontSelect
+                                  value={pageDetails?.fonts?.links || 'inherit'}
+                                  onValueChange={(value: string) => {
+                                    console.log('Setting links font:', value);
+                                    setPageDetails(prev => ({
+                                      ...prev!,
+                                      fonts: {
+                                        ...prev!.fonts,
+                                        links: value === 'inherit' ? undefined : value
+                                      }
+                                    }));
+                                  }}
+                                  placeholder="Use global font"
+                                  defaultValue="inherit"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </TabsContent>
+                      </Tabs>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sticky Bottom Bar */}
+                <div className="sticky bottom-0 w-full p-4 bg-white border-t flex justify-end space-x-2 mt-auto">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => router.push('/')}
+                    disabled={isSaving}
+                  >
+                    Cancel
+                  </Button>
+                  {!authenticated ? (
+                    <Button onClick={linkWallet} size="sm">
+                      Connect Wallet to Save
+                    </Button>
+                  ) : !canEdit ? (
+                    <Button disabled>
+                      Not Authorized to Edit
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={handleSavePageDetails}
+                      size="sm"
+                      disabled={isSaving}
+                    >
+                      {isSaving ? 'Saving...' : 'Save Changes'}
+                    </Button>
+                  )}
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
+
+          <div className="flex">
+            {/* Left Column - Settings (Hidden on mobile) */}
+            <div className="hidden lg:block space-y-8 border-r border-gray-100 w-[550px] relative">
+              <div className="bg-white rounded-lg shadow-sm h-[calc(100vh-72px)] overflow-y-auto">
                 <div className="flex justify-between items-center mb-6">
                   <Tabs defaultValue="general" className="flex-1">
-                    <div className="flex justify-between  p-6  items-center sticky top-0 right-0 bg-white z-50">
+                    <div className="flex p-6 gap-4 items-center sticky top-0 right-0 bg-white z-50">
                       <div className="text-xl font-semibold">
-                        Page.fun
+                        PF
                       </div>
                       <TabsList>
                         <TabsTrigger value="general">General Settings</TabsTrigger>
                         <TabsTrigger value="links">Links & Features</TabsTrigger>
                         <TabsTrigger value="design">Design</TabsTrigger>
                       </TabsList>
-                      
-                      <div className="space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => router.push('/')}
-                          disabled={isSaving}
-                        >
-                          Cancel
-                        </Button>
-                        {!authenticated ? (
-                          <Button onClick={linkWallet} size="sm">
-                            Connect Wallet to Save
-                          </Button>
-                        ) : !canEdit ? (
-                          <Button disabled>
-                            Not Authorized to Edit
-                          </Button>
-                        ) : (
-                          <Button
-                            onClick={handleSavePageDetails}
-                            size="sm"
-                            disabled={isSaving}
-                          >
-                            {isSaving ? 'Saving...' : 'Save Changes'}
-                          </Button>
-                        )}
-                      </div>
                     </div>
 
                     <TabsContent value="general" className="mt-6">
@@ -1194,10 +1526,39 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
                   </Tabs>
                 </div>
               </div>
+
+              {/* Desktop Sticky Bottom Bar */}
+              <div className="fixed bottom-0 w-[550px] p-4 bg-white border-t flex justify-end space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => router.push('/')}
+                  disabled={isSaving}
+                >
+                  Cancel
+                </Button>
+                {!authenticated ? (
+                  <Button onClick={linkWallet} size="sm">
+                    Connect Wallet to Save
+                  </Button>
+                ) : !canEdit ? (
+                  <Button disabled>
+                    Not Authorized to Edit
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleSavePageDetails}
+                    size="sm"
+                    disabled={isSaving}
+                  >
+                    {isSaving ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                )}
+              </div>
             </div>
 
             {/* Right Column - Live Preview */}
-            <div className="pf-preview sticky top-0 right-0" style={{ height: 'calc(100vh)' }}>
+            <div className="pf-preview sticky top-0 right-0 flex-1" style={{ height: 'calc(100vh)' }}>
               {previewData && <PagePreview pageData={previewData} />}
             </div>
           </div>
