@@ -1,7 +1,6 @@
 import { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
 
 type ItemType = 'twitter' | 'telegram' | 'dexscreener' | 'tiktok' | 'instagram' | 'email' | 'discord' | 'private-chat' | 'terminal' | 'filesystem';
 
@@ -28,15 +27,6 @@ type PageProps = {
   walletAddress: string | null;
   pageData: PageData | null;
   error?: string;
-};
-
-type TokenBalance = {
-  mint: string;
-  amount: number;
-  decimals: number;
-  tokenName?: string;
-  symbol?: string;
-  isPumpToken?: boolean;
 };
 
 export const getServerSideProps: GetServerSideProps<PageProps> = async ({ params, query }) => {

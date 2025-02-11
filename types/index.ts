@@ -16,6 +16,6 @@ export type PageData = {
   description?: string;
   items?: PageItem[];
   updatedAt?: string;
-  slug: string;
   image?: string;
+  slug: string;
 }; 
