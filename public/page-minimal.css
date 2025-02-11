@@ -1,48 +1,10 @@
 /* Minimal Theme */
 .pf-page {
-  min-height: 100vh;
   background-color: #fafafa;
-  padding: 2rem;
 }
 
-.pf-page__container {
-  max-width: 36rem;
-  margin: 0 auto;
-}
-
-.pf-page__header {
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
-.pf-page__title {
-  font-size: 2rem;
-  font-weight: 300;
-  letter-spacing: -0.5px;
-  margin-bottom: 1rem;
-}
-
-.pf-page__description {
-  color: #666;
-  font-size: 1.1rem;
-  line-height: 1.6;
-}
-
-.pf-links {
-  margin-bottom: 2rem;
-}
-
-.pf-links__title {
-  display: none;
-}
-
-.pf-links__grid {
-  display: grid;
-  gap: 0.75rem;
-}
 
 .pf-link-item {
-  padding: 0.75rem;
   border: 1px solid #eee;
   border-radius: 0.25rem;
   background-color: white;

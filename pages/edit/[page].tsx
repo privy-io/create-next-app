@@ -1,7 +1,7 @@
 import { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import PagePreview from '../../components/PagePreview';
 import { Button } from '@/components/ui/button';
@@ -87,8 +87,243 @@ const GOOGLE_FONTS = [
   'Outfit',
   'Plus Jakarta Sans',
   'Urbanist',
-  'Sora'
+  'Sora',
+  
+  // Adding 50 more fonts
+  // Pixel and Retro Style
+  'Press Start 2P',
+  'VT323',
+  'Silkscreen',
+  'Pixelify Sans',
+  'Minecraft',
+  'DotGothic16',
+  
+  // Fun and Decorative
+  'Pacifico',
+  'Comic Neue',
+  'Fredoka One',
+  'Righteous',
+  'Bangers',
+  'Permanent Marker',
+  'Satisfy',
+  'Lobster',
+  'Caveat',
+  'Dancing Script',
+  'Indie Flower',
+  'Shadows Into Light',
+  'Comfortaa',
+  'Abril Fatface',
+  
+  // Modern and Trendy
+  'Bebas Neue',
+  'Dela Gothic One',
+  'Exo 2',
+  'Orbitron',
+  'Chakra Petch',
+  'Russo One',
+  'Teko',
+  'Audiowide',
+  'Oxanium',
+  'Syncopate',
+  
+  // Clean and Professional
+  'Albert Sans',
+  'Outfit',
+  'Cabinet Grotesk',
+  'General Sans',
+  'Satoshi',
+  'Clash Display',
+  'Switzer',
+  'Supreme',
+  
+  // Unique and Stylish
+  'Grandstander',
+  'Bungee',
+  'Monoton',
+  'Rubik Mono One',
+  'Rubik Glitch',
+  'Nabla',
+  'Bungee Shade',
+  'Londrina Outline',
+  
+  // Handwriting
+  'Homemade Apple',
+  'Kalam',
+  'Patrick Hand',
+  'Architects Daughter',
+  'Rock Salt',
+  'Covered By Your Grace',
+  'Reenie Beanie',
+  'Gloria Hallelujah',
+  
+  // Adding 50 more fun fonts
+  // Playful & Fun
+  'Bubblegum Sans',
+  'Luckiest Guy',
+  'Bungee Inline',
+  'Creepster',
+  'Finger Paint',
+  'Flavors',
+  'Freckle Face',
+  'Frijole',
+  'Fuzzy Bubbles',
+  'Gochi Hand',
+  
+  // Quirky & Unique
+  'Butcherman',
+  'Ewert',
+  'Faster One',
+  'Fontdiner Swanky',
+  'Henny Penny',
+  'Jolly Lodger',
+  'Kranky',
+  'Mystery Quest',
+  'Nosifer',
+  'Ribeye',
+  
+  // Artistic & Decorative
+  'Almendra Display',
+  'Bonbon',
+  'Butterfly Kids',
+  'Codystar',
+  'Eater',
+  'Fascinate',
+  'Fleur De Leah',
+  'Hanalei',
+  'Jacques Francois Shadow',
+  'Kirang Haerang',
+  
+  // Retro & Vintage
+  'Alfa Slab One',
+  'Ceviche One',
+  'Chela One',
+  'Diplomata',
+  'Emblema One',
+  'Fugaz One',
+  'Gorditas',
+  'Irish Grover',
+  'Kumar One',
+  
+  // Whimsical & Cute
+  'Annie Use Your Telescope',
+  'Cabin Sketch',
+  'Chewy',
+  'Coming Soon',
+  'Cookie',
+  'Crafty Girls',
+  'Delius Swash Caps',
+  'Emilys Candy',
+  'Life Savers',
+  'Love Ya Like A Sister'
 ];
+
+// Font categories with their fonts
+const FONT_CATEGORIES: Record<string, string[]> = {
+  'System': ['system'],
+  'Popular': [
+    'Roboto',
+    'Open Sans',
+    'Lato',
+    'Montserrat',
+    'Poppins',
+    'Inter',
+    'Nunito',
+    'Ubuntu'
+  ],
+  'Pixel & Retro': [
+    'Press Start 2P',
+    'VT323',
+    'Silkscreen',
+    'Pixelify Sans',
+    'DotGothic16',
+    'Alfa Slab One',
+    'Bungee Shade',
+    'Ceviche One',
+    'Chela One',
+    'Diplomata'
+  ],
+  'Fun & Decorative': [
+    'Pacifico',
+    'Comic Neue',
+    'Fredoka One',
+    'Righteous',
+    'Bangers',
+    'Permanent Marker',
+    'Satisfy',
+    'Lobster',
+    'Bubblegum Sans',
+    'Luckiest Guy',
+    'Bungee Inline',
+    'Creepster'
+  ],
+  'Quirky & Unique': [
+    'Butcherman',
+    'Ewert',
+    'Faster One',
+    'Fontdiner Swanky',
+    'Henny Penny',
+    'Jolly Lodger',
+    'Kranky',
+    'Mystery Quest',
+    'Nosifer',
+    'Ribeye'
+  ],
+  'Artistic': [
+    'Almendra Display',
+    'Bonbon',
+    'Butterfly Kids',
+    'Codystar',
+    'Eater',
+    'Fascinate',
+    'Fleur De Leah',
+    'Hanalei',
+    'Jacques Francois Shadow',
+    'Kirang Haerang'
+  ],
+  'Whimsical': [
+    'Annie Use Your Telescope',
+    'Cabin Sketch',
+    'Chewy',
+    'Coming Soon',
+    'Cookie',
+    'Crafty Girls',
+    'Delius Swash Caps',
+    'Emilys Candy',
+    'Life Savers',
+    'Love Ya Like A Sister'
+  ],
+  'Modern & Trendy': [
+    'Bebas Neue',
+    'Dela Gothic One',
+    'Exo 2',
+    'Orbitron',
+    'Chakra Petch',
+    'Russo One',
+    'Teko',
+    'Audiowide'
+  ],
+  'Clean & Professional': [
+    'Albert Sans',
+    'Outfit',
+    'Space Grotesk',
+    'Plus Jakarta Sans',
+    'Urbanist',
+    'Sora'
+  ],
+  'Handwriting': [
+    'Homemade Apple',
+    'Kalam',
+    'Patrick Hand',
+    'Architects Daughter',
+    'Rock Salt',
+    'Dancing Script',
+    'Caveat',
+    'Gochi Hand'
+  ]
+};
+
+// Function to get all fonts as a flat array
+const ALL_FONTS = Object.values(FONT_CATEGORIES).flat();
 
 interface PageData {
   walletAddress: string;
@@ -226,6 +461,158 @@ function SortableItem({
           </AccordionContent>
         </AccordionItem>
       </Accordion>
+    </div>
+  );
+}
+
+// Font selector component with lazy loading
+function FontSelect({ 
+  value, 
+  onValueChange, 
+  placeholder, 
+  defaultValue 
+}: { 
+  value: string;
+  onValueChange: (value: string) => void;
+  placeholder: string;
+  defaultValue: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [loadedCategories, setLoadedCategories] = useState<string[]>(['System', 'Popular']);
+  const [searchQuery, setSearchQuery] = useState('');
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    const element = e.target as HTMLDivElement;
+    const isNearBottom = element.scrollHeight - element.scrollTop - element.clientHeight < 200;
+
+    if (isNearBottom && !searchQuery) {
+      const unloadedCategories = Object.keys(FONT_CATEGORIES).filter(
+        cat => !loadedCategories.includes(cat)
+      );
+      
+      if (unloadedCategories.length > 0) {
+        const nextCategory = unloadedCategories[0];
+        if (nextCategory) {
+          setLoadedCategories(prev => [...prev, nextCategory]);
+        }
+      }
+    }
+  }, [loadedCategories, searchQuery]);
+
+  const displayValue = value === defaultValue 
+    ? (defaultValue === 'system' ? 'System Default' : 'Use global font')
+    : value;
+
+  const filteredFonts = useMemo(() => {
+    if (!searchQuery) return null;
+    
+    const allFonts = Object.values(FONT_CATEGORIES).flat();
+    return allFonts.filter(font => 
+      font.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [searchQuery]);
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="flex w-[300px] h-10 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        <span style={{ fontFamily: value !== defaultValue ? value : undefined }}>
+          {displayValue}
+        </span>
+        <span className="opacity-50">▼</span>
+      </button>
+
+      {open && (
+        <>
+          <div 
+            className="fixed inset-0 z-50" 
+            onClick={() => setOpen(false)}
+          />
+          <div 
+            className="absolute z-50 w-[300px] max-h-[300px] overflow-auto rounded-md border bg-white shadow-md mt-1"
+            ref={scrollRef}
+            onScroll={handleScroll}
+          >
+            <div className="sticky top-0 bg-white border-b p-2 z-10">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search fonts..."
+                className="w-full px-2 py-1 text-sm border rounded"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+
+            <div className="p-1">
+              {/* Default option */}
+              <button
+                className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-gray-100 text-gray-600"
+                onClick={() => {
+                  onValueChange(defaultValue);
+                  setOpen(false);
+                }}
+              >
+                {defaultValue === 'system' ? 'System Default' : 'Use global font'}
+              </button>
+
+              {searchQuery ? (
+                // Show search results
+                filteredFonts?.map(font => (
+                  font !== 'system' && (
+                    <button
+                      key={font}
+                      className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-gray-100"
+                      onClick={() => {
+                        onValueChange(font);
+                        setOpen(false);
+                      }}
+                    >
+                      <span style={{ fontFamily: font }}>{font}</span>
+                    </button>
+                  )
+                ))
+              ) : (
+                // Show categorized fonts
+                loadedCategories.map(category => {
+                  const fonts = FONT_CATEGORIES[category] || [];
+                  return (
+                    <div key={category}>
+                      <div className="px-2 py-1.5 text-sm font-semibold text-gray-500 bg-gray-50">
+                        {category}
+                      </div>
+                      {fonts.map((font: string) => (
+                        font !== 'system' && (
+                          <button
+                            key={font}
+                            className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-gray-100"
+                            onClick={() => {
+                              onValueChange(font);
+                              setOpen(false);
+                            }}
+                          >
+                            <span style={{ fontFamily: font }}>{font}</span>
+                          </button>
+                        )
+                      ))}
+                    </div>
+                  );
+                })
+              )}
+
+              {!searchQuery && loadedCategories.length < Object.keys(FONT_CATEGORIES).length && (
+                <div className="px-2 py-1.5 text-sm text-gray-400 text-center">
+                  Scroll for more fonts...
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -736,7 +1123,7 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
                             <label className="block text-sm text-gray-600 mb-1">
                               Global Font
                             </label>
-                            <Select
+                            <FontSelect
                               value={pageDetails?.fonts?.global || 'system'}
                               onValueChange={(value: string) => {
                                 console.log('Setting global font:', value);
@@ -748,26 +1135,16 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
                                   }
                                 }));
                               }}
-                            >
-                              <SelectTrigger className="w-[300px]">
-                                <SelectValue placeholder="Select font" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="system">System Default</SelectItem>
-                                {GOOGLE_FONTS.map(font => (
-                                  <SelectItem key={font} value={font}>
-                                    <span style={{ fontFamily: font }}>{font}</span>
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                              placeholder="Select font"
+                              defaultValue="system"
+                            />
                           </div>
 
                           <div>
                             <label className="block text-sm text-gray-600 mb-1">
                               Heading Font
                             </label>
-                            <Select
+                            <FontSelect
                               value={pageDetails?.fonts?.heading || 'inherit'}
                               onValueChange={(value: string) => {
                                 console.log('Setting heading font:', value);
@@ -779,26 +1156,16 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
                                   }
                                 }));
                               }}
-                            >
-                              <SelectTrigger className="w-[300px]">
-                                <SelectValue placeholder="Use global font" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="inherit">Use global font</SelectItem>
-                                {GOOGLE_FONTS.map(font => (
-                                  <SelectItem key={font} value={font}>
-                                    <span style={{ fontFamily: font }}>{font}</span>
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                              placeholder="Use global font"
+                              defaultValue="inherit"
+                            />
                           </div>
 
                           <div>
                             <label className="block text-sm text-gray-600 mb-1">
                               Paragraph Font
                             </label>
-                            <Select
+                            <FontSelect
                               value={pageDetails?.fonts?.paragraph || 'inherit'}
                               onValueChange={(value: string) => {
                                 console.log('Setting paragraph font:', value);
@@ -810,26 +1177,16 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
                                   }
                                 }));
                               }}
-                            >
-                              <SelectTrigger className="w-[300px]">
-                                <SelectValue placeholder="Use global font" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="inherit">Use global font</SelectItem>
-                                {GOOGLE_FONTS.map(font => (
-                                  <SelectItem key={font} value={font}>
-                                    <span style={{ fontFamily: font }}>{font}</span>
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                              placeholder="Use global font"
+                              defaultValue="inherit"
+                            />
                           </div>
 
                           <div>
                             <label className="block text-sm text-gray-600 mb-1">
                               Links Font
                             </label>
-                            <Select
+                            <FontSelect
                               value={pageDetails?.fonts?.links || 'inherit'}
                               onValueChange={(value: string) => {
                                 console.log('Setting links font:', value);
@@ -841,19 +1198,9 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
                                   }
                                 }));
                               }}
-                            >
-                              <SelectTrigger className="w-[300px]">
-                                <SelectValue placeholder="Use global font" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="inherit">Use global font</SelectItem>
-                                {GOOGLE_FONTS.map(font => (
-                                  <SelectItem key={font} value={font}>
-                                    <span style={{ fontFamily: font }}>{font}</span>
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                              placeholder="Use global font"
+                              defaultValue="inherit"
+                            />
                           </div>
                         </div>
                       </div>

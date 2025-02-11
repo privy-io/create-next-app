@@ -47,7 +47,7 @@ export default function PagePreview({ pageData }: { pageData: PageData }) {
         <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1">
-          <link rel="stylesheet" href="/page.css">
+          <link rel="stylesheet" href="/base.css">
           <link rel="preconnect" href="https://fonts.googleapis.com">
           <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
           <style data-fonts>
@@ -94,15 +94,22 @@ export default function PagePreview({ pageData }: { pageData: PageData }) {
 
     const doc = iframe.contentWindow.document;
     
-    // Update stylesheet
-    const existingStylesheet = doc.querySelector('link[rel="stylesheet"]');
+    // Update theme-specific stylesheet
+    const existingStylesheet = doc.querySelector('link[data-theme]');
+    const newHref = pageData.designStyle === 'default' || !pageData.designStyle
+      ? '/page-default.css'
+      : `/page-${pageData.designStyle}.css`;
+
     if (existingStylesheet) {
-      const newHref = pageData.designStyle === 'default' || !pageData.designStyle
-        ? '/page.css'
-        : `/page-${pageData.designStyle}.css`;
       if (existingStylesheet.getAttribute('href') !== newHref) {
         existingStylesheet.setAttribute('href', newHref);
       }
+    } else {
+      const themeLink = doc.createElement('link');
+      themeLink.rel = 'stylesheet';
+      themeLink.href = newHref;
+      themeLink.setAttribute('data-theme', 'true');
+      doc.head.appendChild(themeLink);
     }
 
     // Function to apply font styles

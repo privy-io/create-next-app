@@ -67,7 +67,6 @@ export default function PageContent({ pageData }: { pageData: PageData }) {
         {/* Social Links & Plugins */}
         {pageData?.items && pageData.items.length > 0 && (
           <div className="pf-links">
-            <h2 className="pf-links__title">Links & Features</h2>
             <div className="pf-links__grid">
               {pageData.items
                 .sort((a: PageItem, b: PageItem) => a.order - b.order)

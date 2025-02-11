@@ -1,18 +1,7 @@
 /* Modern Theme */
 .pf-page {
-  min-height: 100vh;
   background-color: #000;
-  padding: 3rem 1.5rem;
   color: white;
-}
-
-.pf-page__container {
-  max-width: 40rem;
-  margin: 0 auto;
-}
-
-.pf-page__header {
-  margin-bottom: 4rem;
 }
 
 .pf-page__title {
@@ -36,9 +25,7 @@
 }
 
 .pf-links__title {
-  font-size: 1.5rem;
   font-weight: 700;
-  margin-bottom: 2rem;
   color: white;
 }
 

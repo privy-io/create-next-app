@@ -123,6 +123,7 @@ export default function Page({ pageData }: PageProps) {
         {pageData?.description && (
           <meta name="description" content={pageData.description} />
         )}
+        <link rel="stylesheet" href="/base.css" />
         <link 
           rel="stylesheet" 
           href={`/${pageData.designStyle ? `page-${pageData.designStyle}.css` : 'page.css'}`} 
