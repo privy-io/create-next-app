@@ -14,6 +14,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import {
   DndContext,
   closestCenter,
   KeyboardSensor,
@@ -42,6 +48,13 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from "@/components/ui/accordion";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface PageData {
   walletAddress: string;
@@ -53,6 +66,7 @@ interface PageData {
   image?: string;
   slug: string;
   connectedToken?: string;
+  designStyle?: 'default' | 'minimal' | 'modern';
 }
 
 type PageProps = {
@@ -284,6 +298,7 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
           description: pageDetails.description,
           image: pageDetails.image,
           items,
+          designStyle: pageDetails.designStyle,
           isSetupWizard: false
         }),
         credentials: 'same-origin'
@@ -369,6 +384,7 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
     <>
       <Head>
         <title>Edit {pageDetails?.title || slug} - Page.fun</title>
+        <link rel="stylesheet" href="/page.css" />
       </Head>
 
       <Header
@@ -383,46 +399,45 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Left Column - Settings */}
-            <div>
-              <div className="space-y-8">
-                <div className="flex justify-between items-center bg-white p-6 rounded-lg shadow-sm">
-                  <h1 className="text-2xl font-semibold">Edit Page</h1>
-                  <div className="space-x-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => router.push('/dashboard')}
-                      disabled={isSaving}
-                    >
-                      Cancel
-                    </Button>
-                    {!authenticated ? (
-                      <Button onClick={linkWallet}>
-                        Connect Wallet to Save
-                      </Button>
-                    ) : !canEdit ? (
-                      <Button disabled>
-                        Not Authorized to Edit
-                      </Button>
-                    ) : (
-                      <Button
-                        onClick={handleSavePageDetails}
-                        disabled={isSaving}
-                      >
-                        {isSaving ? 'Saving...' : 'Save Changes'}
-                      </Button>
-                    )}
-                  </div>
-                </div>
-
-                <Accordion type="single" defaultValue="general" collapsible className="w-full space-y-4">
-                  <AccordionItem value="general" className="border rounded-lg px-4 bg-white shadow-sm">
-                    <AccordionTrigger className="hover:no-underline">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xl">⚙️</span>
-                        <span>General Settings</span>
+            <div className="space-y-8">
+              <div className="bg-white p-6 rounded-lg shadow-sm">
+                <div className="flex justify-between items-center mb-6">
+                  <Tabs defaultValue="general" className="flex-1">
+                    <div className="flex justify-between items-center">
+                      <TabsList>
+                        <TabsTrigger value="general">General Settings</TabsTrigger>
+                        <TabsTrigger value="links">Links & Features</TabsTrigger>
+                        <TabsTrigger value="design">Design</TabsTrigger>
+                      </TabsList>
+                      
+                      <div className="space-x-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => router.push('/dashboard')}
+                          disabled={isSaving}
+                        >
+                          Cancel
+                        </Button>
+                        {!authenticated ? (
+                          <Button onClick={linkWallet}>
+                            Connect Wallet to Save
+                          </Button>
+                        ) : !canEdit ? (
+                          <Button disabled>
+                            Not Authorized to Edit
+                          </Button>
+                        ) : (
+                          <Button
+                            onClick={handleSavePageDetails}
+                            disabled={isSaving}
+                          >
+                            {isSaving ? 'Saving...' : 'Save Changes'}
+                          </Button>
+                        )}
                       </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="pt-4 border-t">
+                    </div>
+
+                    <TabsContent value="general" className="mt-6">
                       <div className="space-y-6">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -485,126 +500,150 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
                           />
                         </div>
                       </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
+                    </TabsContent>
 
-                <div className="bg-white rounded-lg shadow-sm p-4">
-                  <div className="flex justify-between items-center mb-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl">🔗</span>
-                      <h2 className="text-lg font-semibold">Links & Features</h2>
-                    </div>
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button size="sm" className="gap-2">
-                          <Plus className="h-4 w-4" />
-                          Add Link
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Add Link</DialogTitle>
-                        </DialogHeader>
-                        <div className="grid gap-4 py-4">
-                          {[
-                            { type: 'twitter', label: 'Twitter' },
-                            { type: 'telegram', label: 'Telegram' },
-                            { type: 'dexscreener', label: 'DexScreener', showIfToken: true },
-                            { type: 'tiktok', label: 'TikTok' },
-                            { type: 'instagram', label: 'Instagram' },
-                            { type: 'email', label: 'Email' },
-                            { type: 'discord', label: 'Discord' },
-                            { type: 'private-chat', label: 'Private Chat', isPlugin: true },
-                            { type: 'terminal', label: 'Terminal', isPlugin: true },
-                          ].map(({ type, label, showIfToken, isPlugin }) => {
-                            // Skip if it requires token and no token is connected
-                            if (showIfToken && !pageDetails?.connectedToken) return null;
-
-                            // Skip if already added
-                            const isAdded = pageDetails?.items?.some(item => item.type === type);
-                            if (isAdded) return null;
-
-                            return (
-                              <Button
-                                key={type}
-                                variant="outline"
-                                className="justify-start gap-2"
-                                onClick={() => {
-                                  const newItem: PageItem = isPlugin ? {
-                                    type: type as ItemType,
-                                    order: (pageDetails?.items?.length || 0),
-                                    isPlugin: true,
-                                    tokenGated: false,
-                                    id: `${type}-${Math.random().toString(36).substr(2, 9)}`
-                                  } : {
-                                    type: type as ItemType,
-                                    url: '',
-                                    id: `${type}-${Math.random().toString(36).substr(2, 9)}`,
-                                    order: (pageDetails?.items?.length || 0)
-                                  };
-
-                                  setPageDetails(prev => {
-                                    if (!prev) return prev;
-                                    return {
-                                      ...prev,
-                                      items: [...(prev.items || []), newItem]
-                                    };
-                                  });
-                                }}
-                              >
-                                <span className="text-xl">{getSocialIcon(type)}</span>
-                                {label}
+                    <TabsContent value="links" className="mt-6">
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button size="sm" className="gap-2">
+                                <Plus className="h-4 w-4" />
+                                Add Link
                               </Button>
-                            );
-                          })}
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Add Link</DialogTitle>
+                              </DialogHeader>
+                              <div className="grid gap-4 py-4">
+                                {[
+                                  { type: 'twitter', label: 'Twitter' },
+                                  { type: 'telegram', label: 'Telegram' },
+                                  { type: 'dexscreener', label: 'DexScreener', showIfToken: true },
+                                  { type: 'tiktok', label: 'TikTok' },
+                                  { type: 'instagram', label: 'Instagram' },
+                                  { type: 'email', label: 'Email' },
+                                  { type: 'discord', label: 'Discord' },
+                                  { type: 'private-chat', label: 'Private Chat', isPlugin: true },
+                                  { type: 'terminal', label: 'Terminal', isPlugin: true },
+                                ].map(({ type, label, showIfToken, isPlugin }) => {
+                                  if (showIfToken && !pageDetails?.connectedToken) return null;
+                                  const isAdded = pageDetails?.items?.some(item => item.type === type);
+                                  if (isAdded) return null;
+
+                                  return (
+                                    <Button
+                                      key={type}
+                                      variant="outline"
+                                      className="justify-start gap-2"
+                                      onClick={() => {
+                                        const newItem: PageItem = isPlugin ? {
+                                          type: type as ItemType,
+                                          order: (pageDetails?.items?.length || 0),
+                                          isPlugin: true,
+                                          tokenGated: false,
+                                          id: `${type}-${Math.random().toString(36).substr(2, 9)}`
+                                        } : {
+                                          type: type as ItemType,
+                                          url: '',
+                                          id: `${type}-${Math.random().toString(36).substr(2, 9)}`,
+                                          order: (pageDetails?.items?.length || 0)
+                                        };
+
+                                        setPageDetails(prev => {
+                                          if (!prev) return prev;
+                                          return {
+                                            ...prev,
+                                            items: [...(prev.items || []), newItem]
+                                          };
+                                        });
+                                      }}
+                                    >
+                                      <span className="text-xl">{getSocialIcon(type)}</span>
+                                      {label}
+                                    </Button>
+                                  );
+                                })}
+                              </div>
+                            </DialogContent>
+                          </Dialog>
                         </div>
-                      </DialogContent>
-                    </Dialog>
-                  </div>
-                  <DndContext
-                    sensors={sensors}
-                    collisionDetection={closestCenter}
-                    onDragEnd={handleDragEnd}
-                  >
-                    <SortableContext
-                      items={pageDetails?.items?.map(i => i.id || `${i.type}-${i.order}`) || []}
-                      strategy={verticalListSortingStrategy}
-                    >
-                      <div className="space-y-2">
-                        {pageDetails?.items?.map((item) => (
-                          <SortableItem
-                            key={item.id || `${item.type}-${item.order}`}
-                            id={item.id || `${item.type}-${item.order}`}
-                            item={item}
-                            onUrlChange={!item.isPlugin ? (url) => {
+
+                        <DndContext
+                          sensors={sensors}
+                          collisionDetection={closestCenter}
+                          onDragEnd={handleDragEnd}
+                        >
+                          <SortableContext
+                            items={pageDetails?.items?.map(i => i.id || `${i.type}-${i.order}`) || []}
+                            strategy={verticalListSortingStrategy}
+                          >
+                            <div className="space-y-2">
+                              {pageDetails?.items?.map((item) => (
+                                <SortableItem
+                                  key={item.id || `${item.type}-${item.order}`}
+                                  id={item.id || `${item.type}-${item.order}`}
+                                  item={item}
+                                  onUrlChange={!item.isPlugin ? (url) => {
+                                    setPageDetails(prev => ({
+                                      ...prev!,
+                                      items: prev!.items!.map(i =>
+                                        i.id === item.id ? { ...i, url } : i
+                                      )
+                                    }));
+                                  } : undefined}
+                                  onDelete={() => {
+                                    setPageDetails(prev => ({
+                                      ...prev!,
+                                      items: prev!.items!.filter(i => 
+                                        item.id ? i.id !== item.id : i.type !== item.type
+                                      )
+                                    }));
+                                  }}
+                                />
+                              ))}
+                            </div>
+                          </SortableContext>
+                        </DndContext>
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent value="design" className="mt-6">
+                      <div className="space-y-6">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Style
+                          </label>
+                          <Select
+                            value={pageDetails?.designStyle || 'default'}
+                            onValueChange={(value: 'default' | 'minimal' | 'modern') => {
                               setPageDetails(prev => ({
                                 ...prev!,
-                                items: prev!.items!.map(i =>
-                                  i.id === item.id ? { ...i, url } : i
-                                )
-                              }));
-                            } : undefined}
-                            onDelete={() => {
-                              setPageDetails(prev => ({
-                                ...prev!,
-                                items: prev!.items!.filter(i => 
-                                  item.id ? i.id !== item.id : i.type !== item.type
-                                )
+                                designStyle: value
                               }));
                             }}
-                          />
-                        ))}
+                          >
+                            <SelectTrigger className="w-[200px]">
+                              <SelectValue placeholder="Select style" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="default">Default</SelectItem>
+                              <SelectItem value="minimal">Minimal</SelectItem>
+                              <SelectItem value="modern">Modern</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
-                    </SortableContext>
-                  </DndContext>
+                    </TabsContent>
+                  </Tabs>
                 </div>
               </div>
             </div>
 
             {/* Right Column - Live Preview */}
-            <div className="bg-white rounded-lg shadow-sm overflow-scroll min-h-screen sticky top-0" style={{ height: 'calc(100vh - 12rem)' }}>
-            {previewData && <PagePreview pageData={previewData} />}
+            <div className="pf-preview" style={{ height: 'calc(100vh - 12rem)' }}>
+              {previewData && <PagePreview pageData={previewData} />}
             </div>
           </div>
         </div>

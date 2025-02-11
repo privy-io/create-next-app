@@ -22,6 +22,7 @@ type PageMapping = {
     description?: string;
     image?: string;
     items?: PageItem[];  // Combined socials and plugins
+    designStyle?: 'default' | 'minimal' | 'modern';  // Add design style option
   }
 }
 
@@ -291,7 +292,8 @@ export default async function handler(
         description,
         items,
         connectedToken,
-        image
+        image,
+        designStyle
       } = req.body;
 
       if (!slug || !walletAddress) {
@@ -336,6 +338,7 @@ export default async function handler(
         ...(items && { items }),
         ...(connectedToken && { connectedToken }),
         ...(image && { image }),
+        ...(designStyle && { designStyle }),
         updatedAt: new Date().toISOString()
       };
 
