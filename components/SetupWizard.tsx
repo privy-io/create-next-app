@@ -16,10 +16,30 @@ type TokenBalance = {
   image?: string;
 };
 
+type ItemType = 'twitter' | 'telegram' | 'dexscreener' | 'tiktok' | 'instagram' | 'email' | 'discord' | 'private-chat' | 'terminal' | 'filesystem';
+
+type PageItem = {
+  id: string;
+  type: ItemType;
+  url?: string;
+  order: number;
+  isPlugin?: boolean;
+  tokenGated?: boolean;
+  requiredAmount?: number;
+};
+
 interface SetupWizardProps {
   onClose: () => void;
   walletAddress: string;
   onComplete: () => void;
+  existingSlug?: string | null;
+  existingData?: {
+    connectedToken?: string;
+    title?: string;
+    description?: string;
+    image?: string;
+    items?: PageItem[];
+  };
 }
 
 type SocialLink = {
@@ -78,30 +98,45 @@ type TokenGateConfig = {
   requiredAmount: number;
 };
 
-export default function SetupWizard({ onClose, walletAddress, onComplete }: SetupWizardProps) {
+export default function SetupWizard({ onClose, walletAddress, onComplete, existingSlug, existingData }: SetupWizardProps) {
   const [step, setStep] = useState(1);
-  const [slug, setSlug] = useState('');
+  const [slug, setSlug] = useState(existingSlug || '');
   const [isCheckingSlug, setIsCheckingSlug] = useState(false);
   const [slugError, setSlugError] = useState('');
-  const [currentUserSlug, setCurrentUserSlug] = useState<string | null>(null);
-  const [selectedToken, setSelectedToken] = useState<string | null>(null);
+  const [currentUserSlug, setCurrentUserSlug] = useState<string | null>(existingSlug || null);
+  const [selectedToken, setSelectedToken] = useState<string | null>(existingData?.connectedToken || null);
   const [tokens, setTokens] = useState<TokenBalance[]>([]);
   const [isLoadingTokens, setIsLoadingTokens] = useState(false);
-  const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
+  const [socialLinks, setSocialLinks] = useState<SocialLink[]>(
+    existingData?.items?.filter(item => !item.isPlugin).map(item => ({
+      type: item.type as SocialLink['type'],
+      url: item.url || ''
+    })) || []
+  );
   const [selectedTemplate, setSelectedTemplate] = useState('default');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedPlugins, setSelectedPlugins] = useState<string[]>([]);
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
+  const [selectedPlugins, setSelectedPlugins] = useState<string[]>(
+    existingData?.items?.filter(item => item.isPlugin).map(item => item.type) || []
+  );
+  const [title, setTitle] = useState(existingData?.title || '');
+  const [description, setDescription] = useState(existingData?.description || '');
 
   // Add state for token metadata
   const [tokenMetadata, setTokenMetadata] = useState<TokenMetadata | null>(null);
 
   // Add state for token gating
-  const [tokenGatedPlugins, setTokenGatedPlugins] = useState<string[]>([]);
+  const [tokenGatedPlugins, setTokenGatedPlugins] = useState<string[]>(
+    existingData?.items?.filter(item => item.isPlugin && item.tokenGated).map(item => item.type) || []
+  );
 
   // Update state to include required amounts
-  const [tokenGateConfigs, setTokenGateConfigs] = useState<TokenGateConfig[]>([]);
+  const [tokenGateConfigs, setTokenGateConfigs] = useState<TokenGateConfig[]>(
+    existingData?.items?.filter(item => item.isPlugin && item.tokenGated && item.requiredAmount)
+      .map(item => ({
+        pluginId: item.type,
+        requiredAmount: item.requiredAmount || 1
+      })) || []
+  );
 
   const checkSlugAvailability = async () => {
     if (!slug) {

@@ -62,17 +62,17 @@ async function verifyWalletOwnership(req: NextApiRequest, walletAddress: string)
       linkedAccounts: user.linkedAccounts.map(acc => ({
         type: acc.type,
         chainType: acc.chainType,
-        ...(acc.type === 'wallet' && { address: (acc as any).verifiedAddress })
+        ...(acc.type === 'wallet' && { address: (acc as any).address })
       }))
     });
     
     // Check if the wallet address is in the user's linked accounts
     const hasWallet = user.linkedAccounts.some(account => {
       if (account.type === 'wallet' && account.chainType === 'solana') {
-        const walletAccount = account as { verifiedAddress?: string };
-        const matches = walletAccount.verifiedAddress?.toLowerCase() === walletAddress.toLowerCase();
+        const walletAccount = account as { address?: string };
+        const matches = walletAccount.address?.toLowerCase() === walletAddress.toLowerCase();
         console.log('Checking wallet match:', {
-          accountAddress: walletAccount.verifiedAddress?.toLowerCase(),
+          accountAddress: walletAccount.address?.toLowerCase(),
           requestedWallet: walletAddress.toLowerCase(),
           matches
         });
@@ -87,8 +87,8 @@ async function verifyWalletOwnership(req: NextApiRequest, walletAddress: string)
         availableWallets: user.linkedAccounts
           .filter(acc => acc.type === 'wallet' && acc.chainType === 'solana')
           .map(acc => {
-            const walletAcc = acc as { verifiedAddress?: string };
-            return walletAcc.verifiedAddress;
+            const walletAcc = acc as { address?: string };
+            return walletAcc.address;
           })
           .filter(Boolean)
       });
@@ -106,35 +106,68 @@ async function verifyWalletOwnership(req: NextApiRequest, walletAddress: string)
 const getRedisKey = (slug: string) => `page:${slug}`;
 
 // Helper function to get all pages for a wallet
-async function getPagesForWallet(walletAddress: string) {
+async function getPagesForWallet(walletAddress: string, req: NextApiRequest) {
   try {
-    // Get user by wallet address
-    const user = await client.getUser(walletAddress);
+    // Get authenticated user from request
+    const idToken = req.cookies['privy-id-token'];
+    if (!idToken) {
+      throw new Error("Missing identity token");
+    }
+    
+    const user = await client.getUser({ idToken });
     
     // Get user's pages from metadata
-    const metadata = (user.customMetadata || {}) as unknown as PrivyUserPages;
-    const userPages = metadata?.pages || [];
+    const pagesStr = (user.customMetadata || {})?.pages;
+    let userPages = [];
+    
+    if (pagesStr) {
+      try {
+        userPages = JSON.parse(pagesStr as string);
+      } catch (e) {
+        console.error('Error parsing pages:', e);
+        userPages = [];
+      }
+    }
+    
+    if (!Array.isArray(userPages)) {
+      userPages = [];
+    }
     
     // Get the full page data from Redis for each slug
     const pages = await Promise.all(
       userPages
-        .filter(page => page.walletAddress === walletAddress)
-        .map(async (page) => {
+        .filter((page: any) => page.walletAddress === walletAddress)
+        .map(async (page: any) => {
           const pageData = await redis.get<PageMapping[string]>(getRedisKey(page.slug));
           if (pageData) {
             return {
               slug: page.slug,
-              connectedToken: pageData.connectedToken
+              ...pageData // Return full page data
             };
           }
           return null;
         })
     );
 
-    return pages.filter(Boolean);
+    // Convert array of pages to mapping object
+    const pagesMapping: PageMapping = {};
+    pages.filter(Boolean).forEach((page: any) => {
+      if (page && page.slug) {
+        pagesMapping[page.slug] = {
+          walletAddress: page.walletAddress,
+          connectedToken: page.connectedToken,
+          title: page.title,
+          description: page.description,
+          image: page.image,
+          items: page.items
+        };
+      }
+    });
+
+    return { pages: pages.filter(Boolean), mappings: pagesMapping };
   } catch (error) {
     console.error('Error getting pages for wallet:', error);
-    return [];
+    return { pages: [], mappings: {} };
   }
 }
 
@@ -142,14 +175,29 @@ async function getPagesForWallet(walletAddress: string) {
 async function addPageToUserMetadata(userId: string, walletAddress: string, slug: string) {
   try {
     const currentMetadata = await client.getUser(userId);
-    const pages = ((currentMetadata.customMetadata || {}) as unknown as PrivyUserPages)?.pages || [];
+    const pagesStr = (currentMetadata.customMetadata || {})?.pages;
+    let currentPages = [];
+    
+    // Parse existing pages if they exist
+    if (pagesStr) {
+      try {
+        currentPages = JSON.parse(pagesStr);
+      } catch (e) {
+        console.error('Error parsing pages:', e);
+        currentPages = [];
+      }
+    }
     
     // Add new page if it doesn't exist
-    if (!pages.some(p => p.slug === slug)) {
-      const updatedPages = [...pages, { walletAddress, slug }];
-      // Need to cast to any due to Privy's type limitations
+    if (!Array.isArray(currentPages)) {
+      currentPages = [];
+    }
+
+    if (!currentPages.some((p: any) => p.slug === slug)) {
+      const updatedPages = [...currentPages, { walletAddress, slug }];
+      // Store as stringified JSON
       await client.setCustomMetadata(userId, {
-        pages: updatedPages as any
+        pages: JSON.stringify(updatedPages)
       });
     }
   } catch (error) {
@@ -162,12 +210,27 @@ async function addPageToUserMetadata(userId: string, walletAddress: string, slug
 async function removePageFromUserMetadata(userId: string, slug: string) {
   try {
     const currentMetadata = await client.getUser(userId);
-    const pages = ((currentMetadata.customMetadata || {}) as unknown as PrivyUserPages)?.pages || [];
+    const pagesStr = (currentMetadata.customMetadata || {})?.pages;
+    let currentPages = [];
     
-    const updatedPages = pages.filter(p => p.slug !== slug);
-    // Need to cast to any due to Privy's type limitations
+    // Parse existing pages if they exist
+    if (pagesStr) {
+      try {
+        currentPages = JSON.parse(pagesStr);
+      } catch (e) {
+        console.error('Error parsing pages:', e);
+        currentPages = [];
+      }
+    }
+    
+    if (!Array.isArray(currentPages)) {
+      currentPages = [];
+    }
+
+    const updatedPages = currentPages.filter((p: any) => p.slug !== slug);
+    // Store as stringified JSON
     await client.setCustomMetadata(userId, {
-      pages: updatedPages as any
+      pages: JSON.stringify(updatedPages)
     });
   } catch (error) {
     console.error('Error updating user metadata:', error);
@@ -186,8 +249,8 @@ export default async function handler(
     try {
       // If walletAddress is provided, return pages for that wallet
       if (walletAddress) {
-        const pages = await getPagesForWallet(walletAddress as string);
-        return res.status(200).json({ pages });
+        const result = await getPagesForWallet(walletAddress as string, req);
+        return res.status(200).json({ pages: result });
       }
 
       // If slug is provided, return specific mapping
