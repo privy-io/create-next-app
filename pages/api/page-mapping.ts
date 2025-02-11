@@ -23,6 +23,12 @@ type PageMapping = {
     image?: string;
     items?: PageItem[];  // Combined socials and plugins
     designStyle?: 'default' | 'minimal' | 'modern';  // Add design style option
+    fonts?: {
+      global?: string;
+      heading?: string;
+      paragraph?: string;
+      links?: string;
+    };
   }
 }
 
@@ -160,7 +166,9 @@ async function getPagesForWallet(walletAddress: string, req: NextApiRequest) {
           title: page.title,
           description: page.description,
           image: page.image,
-          items: page.items
+          items: page.items,
+          designStyle: page.designStyle,
+          fonts: page.fonts
         };
       }
     });
@@ -293,7 +301,8 @@ export default async function handler(
         items,
         connectedToken,
         image,
-        designStyle
+        designStyle,
+        fonts
       } = req.body;
 
       if (!slug || !walletAddress) {
@@ -329,6 +338,8 @@ export default async function handler(
         return res.status(200).json({ success: true });
       }
 
+      console.log('Saving page with fonts:', fonts);
+
       // Create/Update page data, preserving existing data
       const pageData = {
         ...existingPage,  // Preserve existing data
@@ -339,8 +350,11 @@ export default async function handler(
         ...(connectedToken && { connectedToken }),
         ...(image && { image }),
         ...(designStyle && { designStyle }),
+        ...(fonts && { fonts }),
         updatedAt: new Date().toISOString()
       };
+
+      console.log('Final page data to save:', pageData);
 
       // Save to Redis with unique key
       await redis.set(getRedisKey(slug), pageData);

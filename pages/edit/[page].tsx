@@ -56,6 +56,40 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+// Add popular Google Fonts
+const GOOGLE_FONTS = [
+  'Roboto',
+  'Open Sans',
+  'Lato',
+  'Montserrat',
+  'Poppins',
+  'Raleway',
+  'Inter',
+  'Nunito',
+  'Ubuntu',
+  'Playfair Display',
+  'Source Sans Pro',
+  'Oswald',
+  'Merriweather',
+  'Quicksand',
+  'Rubik',
+  'Work Sans',
+  'DM Sans',
+  'Mulish',
+  'Noto Sans',
+  'PT Sans',
+  'Fira Sans',
+  'Josefin Sans',
+  'Barlow',
+  'Karla',
+  'Manrope',
+  'Space Grotesk',
+  'Outfit',
+  'Plus Jakarta Sans',
+  'Urbanist',
+  'Sora'
+];
+
 interface PageData {
   walletAddress: string;
   createdAt: string;
@@ -67,6 +101,12 @@ interface PageData {
   slug: string;
   connectedToken?: string;
   designStyle?: 'default' | 'minimal' | 'modern';
+  fonts?: {
+    global?: string;
+    heading?: string;
+    paragraph?: string;
+    links?: string;
+  };
 }
 
 type PageProps = {
@@ -244,13 +284,39 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
 
   // Initialize state after component mounts to prevent hydration mismatch
   useEffect(() => {
-    setPageDetails(pageData);
-    setPreviewData(pageData);
+    if (pageData) {
+      console.log('Initializing with pageData:', pageData);
+      
+      // Initialize fonts object
+      const fonts = {
+        global: pageData.fonts?.global || undefined,
+        heading: pageData.fonts?.heading || undefined,
+        paragraph: pageData.fonts?.paragraph || undefined,
+        links: pageData.fonts?.links || undefined
+      };
+      
+      console.log('Initialized fonts:', fonts);
+      
+      const initialPageData: PageData = {
+        ...pageData,
+        fonts
+      };
+      
+      console.log('Initial page data:', initialPageData);
+      setPageDetails(initialPageData);
+      setPreviewData(initialPageData);
+    }
   }, [pageData]);
 
+  // Update preview data whenever pageDetails changes
   useEffect(() => {
     if (pageDetails) {
-      setPreviewData(pageDetails);
+      setPreviewData({
+        ...pageDetails,
+        fonts: {
+          ...pageDetails.fonts
+        }
+      });
     }
   }, [pageDetails]);
 
@@ -286,27 +352,49 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
         order: index  // Update order based on current position
       }));
 
+      console.log('Current pageDetails:', pageDetails);
+      console.log('Current fonts:', pageDetails.fonts);
+
+      const fonts = {
+        global: pageDetails.fonts?.global === 'system' ? undefined : pageDetails.fonts?.global,
+        heading: pageDetails.fonts?.heading === 'inherit' ? undefined : pageDetails.fonts?.heading,
+        paragraph: pageDetails.fonts?.paragraph === 'inherit' ? undefined : pageDetails.fonts?.paragraph,
+        links: pageDetails.fonts?.links === 'inherit' ? undefined : pageDetails.fonts?.links
+      };
+
+      console.log('Prepared fonts object:', fonts);
+
+      const requestBody = {
+        slug,
+        walletAddress: pageDetails.walletAddress,
+        title: pageDetails.title,
+        description: pageDetails.description,
+        image: pageDetails.image,
+        items,
+        designStyle: pageDetails.designStyle,
+        fonts,
+        isSetupWizard: false
+      };
+
+      console.log('Sending request body:', requestBody);
+
       const response = await fetch('/api/page-mapping', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          slug,
-          walletAddress: pageDetails.walletAddress,
-          title: pageDetails.title,
-          description: pageDetails.description,
-          image: pageDetails.image,
-          items,
-          designStyle: pageDetails.designStyle,
-          isSetupWizard: false
-        }),
+        body: JSON.stringify(requestBody),
         credentials: 'same-origin'
       });
 
       if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Save response error:', errorData);
         throw new Error('Failed to save page details');
       }
+
+      const responseData = await response.json();
+      console.log('Save response:', responseData);
 
       toast({
         title: "Changes saved",
@@ -384,6 +472,12 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
     <>
       <Head>
         <title>Edit {pageDetails?.title || slug} - Page.fun</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link 
+          href={`https://fonts.googleapis.com/css2?family=${GOOGLE_FONTS.map(font => font.replace(' ', '+')).join('&family=')}&display=swap`}
+          rel="stylesheet"
+        />
         <link rel="stylesheet" href="/page.css" />
       </Head>
 
@@ -633,6 +727,134 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
                               <SelectItem value="modern">Modern</SelectItem>
                             </SelectContent>
                           </Select>
+                        </div>
+
+                        <div className="space-y-4">
+                          <h3 className="text-sm font-medium text-gray-700">Typography</h3>
+                          
+                          <div>
+                            <label className="block text-sm text-gray-600 mb-1">
+                              Global Font
+                            </label>
+                            <Select
+                              value={pageDetails?.fonts?.global || 'system'}
+                              onValueChange={(value: string) => {
+                                console.log('Setting global font:', value);
+                                setPageDetails(prev => ({
+                                  ...prev!,
+                                  fonts: {
+                                    ...prev!.fonts,
+                                    global: value === 'system' ? undefined : value
+                                  }
+                                }));
+                              }}
+                            >
+                              <SelectTrigger className="w-[300px]">
+                                <SelectValue placeholder="Select font" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="system">System Default</SelectItem>
+                                {GOOGLE_FONTS.map(font => (
+                                  <SelectItem key={font} value={font}>
+                                    <span style={{ fontFamily: font }}>{font}</span>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div>
+                            <label className="block text-sm text-gray-600 mb-1">
+                              Heading Font
+                            </label>
+                            <Select
+                              value={pageDetails?.fonts?.heading || 'inherit'}
+                              onValueChange={(value: string) => {
+                                console.log('Setting heading font:', value);
+                                setPageDetails(prev => ({
+                                  ...prev!,
+                                  fonts: {
+                                    ...prev!.fonts,
+                                    heading: value === 'inherit' ? undefined : value
+                                  }
+                                }));
+                              }}
+                            >
+                              <SelectTrigger className="w-[300px]">
+                                <SelectValue placeholder="Use global font" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="inherit">Use global font</SelectItem>
+                                {GOOGLE_FONTS.map(font => (
+                                  <SelectItem key={font} value={font}>
+                                    <span style={{ fontFamily: font }}>{font}</span>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div>
+                            <label className="block text-sm text-gray-600 mb-1">
+                              Paragraph Font
+                            </label>
+                            <Select
+                              value={pageDetails?.fonts?.paragraph || 'inherit'}
+                              onValueChange={(value: string) => {
+                                console.log('Setting paragraph font:', value);
+                                setPageDetails(prev => ({
+                                  ...prev!,
+                                  fonts: {
+                                    ...prev!.fonts,
+                                    paragraph: value === 'inherit' ? undefined : value
+                                  }
+                                }));
+                              }}
+                            >
+                              <SelectTrigger className="w-[300px]">
+                                <SelectValue placeholder="Use global font" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="inherit">Use global font</SelectItem>
+                                {GOOGLE_FONTS.map(font => (
+                                  <SelectItem key={font} value={font}>
+                                    <span style={{ fontFamily: font }}>{font}</span>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div>
+                            <label className="block text-sm text-gray-600 mb-1">
+                              Links Font
+                            </label>
+                            <Select
+                              value={pageDetails?.fonts?.links || 'inherit'}
+                              onValueChange={(value: string) => {
+                                console.log('Setting links font:', value);
+                                setPageDetails(prev => ({
+                                  ...prev!,
+                                  fonts: {
+                                    ...prev!.fonts,
+                                    links: value === 'inherit' ? undefined : value
+                                  }
+                                }));
+                              }}
+                            >
+                              <SelectTrigger className="w-[300px]">
+                                <SelectValue placeholder="Use global font" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="inherit">Use global font</SelectItem>
+                                {GOOGLE_FONTS.map(font => (
+                                  <SelectItem key={font} value={font}>
+                                    <span style={{ fontFamily: font }}>{font}</span>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
                         </div>
                       </div>
                     </TabsContent>

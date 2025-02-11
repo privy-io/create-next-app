@@ -14,6 +14,12 @@ interface PageData {
   slug: string;
   connectedToken?: string;
   designStyle?: 'default' | 'minimal' | 'modern';
+  fonts?: {
+    global?: string;
+    heading?: string;
+    paragraph?: string;
+    links?: string;
+  };
 }
 
 interface PageItem {
@@ -26,42 +32,38 @@ interface PageItem {
 }
 
 export default function PagePreview({ pageData }: { pageData: PageData }) {
-  // Generate a unique ID for this preview instance
   const iframeId = `preview-iframe-${pageData.slug}`;
   const rootRef = useRef<any>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
-
-  const htmlContent = `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        ${pageData.designStyle === 'default' || !pageData.designStyle 
-          ? '<link rel="stylesheet" href="/page.css">'
-          : `<link rel="stylesheet" href="/page-${pageData.designStyle}.css">`
-        }
-        <style>
-          body { margin: 0; }
-        </style>
-      </head>
-      <body>
-        <div id="preview-root"></div>
-      </body>
-    </html>
-  `;
 
   // Set up the iframe once on mount
   useEffect(() => {
     const iframe = iframeRef.current;
     if (!iframe) return;
 
-    // Write the initial HTML content
+    const initialHtml = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <link rel="stylesheet" href="/page.css">
+          <link rel="preconnect" href="https://fonts.googleapis.com">
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+          <style data-fonts>
+            body { margin: 0; }
+          </style>
+        </head>
+        <body>
+          <div id="preview-root"></div>
+        </body>
+      </html>
+    `;
+
     iframe.contentWindow?.document.open();
-    iframe.contentWindow?.document.write(htmlContent);
+    iframe.contentWindow?.document.write(initialHtml);
     iframe.contentWindow?.document.close();
 
-    // Set up the React root once the iframe is loaded
     const handleLoad = () => {
       const root = iframe.contentWindow?.document.getElementById('preview-root');
       if (root && !rootRef.current) {
@@ -78,21 +80,21 @@ export default function PagePreview({ pageData }: { pageData: PageData }) {
         rootRef.current = null;
       }
     };
-  }, []); // Empty dependency array since we only want to set up once
+  }, []); // Only run once on mount
 
-  // Update the preview whenever pageData changes
-  useEffect(() => {
-    if (rootRef.current) {
-      rootRef.current.render(<PageContent pageData={pageData} />);
-    }
-  }, [pageData]);
-
-  // Update stylesheet when design style changes
+  // Update the preview content and styles
   useEffect(() => {
     const iframe = iframeRef.current;
     if (!iframe?.contentWindow) return;
 
+    // Update React content
+    if (rootRef.current) {
+      rootRef.current.render(<PageContent pageData={pageData} />);
+    }
+
     const doc = iframe.contentWindow.document;
+    
+    // Update stylesheet
     const existingStylesheet = doc.querySelector('link[rel="stylesheet"]');
     if (existingStylesheet) {
       const newHref = pageData.designStyle === 'default' || !pageData.designStyle
@@ -102,7 +104,79 @@ export default function PagePreview({ pageData }: { pageData: PageData }) {
         existingStylesheet.setAttribute('href', newHref);
       }
     }
-  }, [pageData.designStyle]);
+
+    // Function to apply font styles
+    const applyFontStyles = () => {
+      const fontStyles = doc.querySelector('style[data-fonts]');
+      if (fontStyles) {
+        fontStyles.textContent = `
+          body { margin: 0; }
+          ${pageData.fonts?.global ? `
+            body { 
+              font-family: '${pageData.fonts.global}', sans-serif !important;
+            }
+          ` : ''}
+          ${pageData.fonts?.heading ? `
+            h1, h2, h3, h4, h5, h6 { 
+              font-family: '${pageData.fonts.heading}', sans-serif !important;
+            }
+          ` : ''}
+          ${pageData.fonts?.paragraph ? `
+            p, li, td, th, blockquote { 
+              font-family: '${pageData.fonts.paragraph}', sans-serif !important;
+            }
+          ` : ''}
+          ${pageData.fonts?.links ? `
+            a, .link, .pf-link-item { 
+              font-family: '${pageData.fonts.links}', sans-serif !important;
+            }
+          ` : ''}
+        `;
+      }
+    };
+
+    // Update Google Fonts
+    const existingFontsStylesheet = doc.querySelector('link[href*="fonts.googleapis.com"]');
+    const fonts = [
+      pageData.fonts?.global,
+      pageData.fonts?.heading,
+      pageData.fonts?.paragraph,
+      pageData.fonts?.links
+    ].filter(Boolean);
+
+    if (fonts.length > 0) {
+      const fontsUrl = `https://fonts.googleapis.com/css2?family=${fonts.map(font => font?.replace(' ', '+')).join('&family=')}&display=swap`;
+      
+      if (existingFontsStylesheet) {
+        if (existingFontsStylesheet.getAttribute('href') !== fontsUrl) {
+          // Create new link to trigger font load event
+          const newFontsLink = doc.createElement('link');
+          newFontsLink.rel = 'stylesheet';
+          newFontsLink.href = fontsUrl;
+          
+          // Apply styles after fonts are loaded
+          newFontsLink.onload = applyFontStyles;
+          
+          // Replace old stylesheet with new one
+          existingFontsStylesheet.parentNode?.replaceChild(newFontsLink, existingFontsStylesheet);
+        } else {
+          // If URL hasn't changed, still apply styles
+          applyFontStyles();
+        }
+      } else {
+        const fontsLink = doc.createElement('link');
+        fontsLink.rel = 'stylesheet';
+        fontsLink.href = fontsUrl;
+        fontsLink.onload = applyFontStyles;
+        doc.head.appendChild(fontsLink);
+      }
+    } else {
+      if (existingFontsStylesheet) {
+        existingFontsStylesheet.remove();
+      }
+      applyFontStyles(); // Apply styles even if no custom fonts
+    }
+  }, [pageData]); // Update on any pageData change
 
   return (
     <iframe

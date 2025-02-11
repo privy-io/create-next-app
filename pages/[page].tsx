@@ -19,6 +19,12 @@ interface PageData {
   slug: string;
   connectedToken?: string;
   designStyle?: 'default' | 'minimal' | 'modern';
+  fonts?: {
+    global?: string;
+    heading?: string;
+    paragraph?: string;
+    links?: string;
+  };
 }
 
 interface PageItem {
@@ -121,6 +127,27 @@ export default function Page({ pageData }: PageProps) {
           rel="stylesheet" 
           href={`/${pageData.designStyle ? `page-${pageData.designStyle}.css` : 'page.css'}`} 
         />
+        {(pageData.fonts?.global || pageData.fonts?.heading || pageData.fonts?.paragraph || pageData.fonts?.links) && (
+          <>
+            <link rel="preconnect" href="https://fonts.googleapis.com" />
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+            <link 
+              href={`https://fonts.googleapis.com/css2?family=${[
+                pageData.fonts.global,
+                pageData.fonts.heading,
+                pageData.fonts.paragraph,
+                pageData.fonts.links
+              ].filter(Boolean).map(font => font?.replace(' ', '+')).join('&family=')}&display=swap`}
+              rel="stylesheet"
+            />
+            <style>{`
+              ${pageData.fonts?.global ? `body { font-family: '${pageData.fonts.global}', sans-serif; }` : ''}
+              ${pageData.fonts?.heading ? `h1, h2, h3, h4, h5, h6 { font-family: '${pageData.fonts.heading}', sans-serif; }` : ''}
+              ${pageData.fonts?.paragraph ? `p { font-family: '${pageData.fonts.paragraph}', sans-serif; }` : ''}
+              ${pageData.fonts?.links ? `a, .pf-link-item { font-family: '${pageData.fonts.links}', sans-serif; }` : ''}
+            `}</style>
+          </>
+        )}
       </Head>
       
       {/* Edit Button for page owner */}
