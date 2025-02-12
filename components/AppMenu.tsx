@@ -105,21 +105,18 @@ export default function AppMenu({ className, showLogoName = false }: AppMenuProp
           <Button
             variant="ghost"
             className={cn(
-              "h-7 px-1 gap-0 bg-background text-foreground hover:bg-foreground hover:text-background"
+              "h-7 px-1 py-0 gap-1 bg-background text-foreground hover:bg-foreground hover:text-background"
             )}>
             <Logo />
-            {showLogoName && <span>Page.fun</span>}
+            {showLogoName && <span>Built with Page.fun</span>}
             <ChevronDown className="h-4 w-4" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-80 p-0" align="end">
+        <PopoverContent className="w-[300px] p-0" align="center">
           <div className="p-4 pb-0">
             <div className="flex items-center justify-between mb-4">
-              <Link
-                href="/"
-                className="block font-semibold hover:text-violet-600 transition-colors">
-                Page.fun
-              </Link>
+              <div>Page.fun</div>
+              <div>Simple website for tokens</div>
             </div>
             {ready ? (
               authenticated ? (
@@ -240,7 +237,7 @@ export default function AppMenu({ className, showLogoName = false }: AppMenuProp
                 <Button
                   variant="outline"
                   onClick={logout}
-                  className="text-red-600 w-full hover:text-red-700 hover:bg-red-50">
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50">
                   Logout
                 </Button>
               </div>

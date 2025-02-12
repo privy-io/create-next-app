@@ -1,5 +1,4 @@
 import { ItemType } from "../types";
-import { useState, useEffect } from "react";
 
 interface PageData {
   walletAddress: string;

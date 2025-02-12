@@ -1,12 +1,13 @@
-import { GetServerSideProps } from 'next';
-import Head from 'next/head';
-import { useRouter } from 'next/router';
-import { usePrivy } from '@privy-io/react-auth';
-import { useEffect, useState } from 'react';
-import PageContent from '../components/PageContent';
-import { ItemType } from '../types';
-import { Button } from '@/components/ui/button';
-import { isSolanaWallet } from '@/utils/wallet';
+import { GetServerSideProps } from "next";
+import Head from "next/head";
+import { useRouter } from "next/router";
+import { usePrivy } from "@privy-io/react-auth";
+import { useEffect, useState } from "react";
+import PageContent from "../components/PageContent";
+import { ItemType } from "../types";
+import { Button } from "@/components/ui/button";
+import { isSolanaWallet } from "@/utils/wallet";
+import AppMenu from "@/components/AppMenu";
 
 interface PageData {
   walletAddress: string;
@@ -18,7 +19,7 @@ interface PageData {
   image?: string;
   slug: string;
   connectedToken?: string;
-  designStyle?: 'default' | 'minimal' | 'modern';
+  designStyle?: "default" | "minimal" | "modern";
   fonts?: {
     global?: string;
     heading?: string;
@@ -49,17 +50,23 @@ interface AccessStatus {
   gatedLinks: PageItem[];
 }
 
-export const getServerSideProps: GetServerSideProps<PageProps> = async ({ params, query }) => {
+export const getServerSideProps: GetServerSideProps<PageProps> = async ({
+  params,
+}) => {
   const slug = params?.page as string;
-  
+
   try {
-    const response = await fetch(`${process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : ''}/api/page-store?slug=${slug}`);
+    const response = await fetch(
+      `${
+        process.env.NODE_ENV === "development" ? "http://localhost:3000" : ""
+      }/api/page-store?slug=${slug}`
+    );
     const { mapping } = await response.json();
-    
+
     if (!mapping) {
-      throw new Error('Page not found');
+      throw new Error("Page not found");
     }
-    
+
     return {
       props: {
         slug,
@@ -71,11 +78,11 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async ({ params
       props: {
         slug,
         pageData: {
-          walletAddress: '',
+          walletAddress: "",
           createdAt: new Date().toISOString(),
           slug,
         },
-        error: 'Page not found',
+        error: "Page not found",
       },
     };
   }
@@ -85,17 +92,17 @@ export default function Page({ pageData }: PageProps) {
   const router = useRouter();
   const { user, authenticated } = usePrivy();
   const [accessStatus, setAccessStatus] = useState<AccessStatus | null>(null);
-  
+
   const solanaWallet = user?.linkedAccounts?.find(isSolanaWallet);
 
   useEffect(() => {
     async function checkAccess() {
       if (authenticated && solanaWallet) {
         try {
-          const response = await fetch('/api/verify-page-access', {
-            method: 'POST',
+          const response = await fetch("/api/verify-page-access", {
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
             },
             body: JSON.stringify({
               slug: pageData.slug,
@@ -108,7 +115,7 @@ export default function Page({ pageData }: PageProps) {
             setAccessStatus(data);
           }
         } catch (error) {
-          console.error('Error checking access:', error);
+          console.error("Error checking access:", error);
         }
       }
     }
@@ -124,53 +131,68 @@ export default function Page({ pageData }: PageProps) {
           <meta name="description" content={pageData.description} />
         )}
         <link rel="stylesheet" href="/base.css" />
-        <link 
-          rel="stylesheet" 
-          href={`/${pageData.designStyle ? `page-${pageData.designStyle}.css` : 'page.css'}`} 
+        <link
+          rel="stylesheet"
+          href={`/${
+            pageData.designStyle
+              ? `page-${pageData.designStyle}.css`
+              : "page.css"
+          }`}
         />
-        {(pageData.fonts?.global || pageData.fonts?.heading || pageData.fonts?.paragraph || pageData.fonts?.links) && (
+        {(pageData.fonts?.global ||
+          pageData.fonts?.heading ||
+          pageData.fonts?.paragraph ||
+          pageData.fonts?.links) && (
           <>
             <link rel="preconnect" href="https://fonts.googleapis.com" />
-            <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-            <link 
+            <link
+              rel="preconnect"
+              href="https://fonts.gstatic.com"
+              crossOrigin="anonymous"
+            />
+            <link
               href={`https://fonts.googleapis.com/css2?family=${[
                 pageData.fonts.global,
                 pageData.fonts.heading,
                 pageData.fonts.paragraph,
-                pageData.fonts.links
-              ].filter(Boolean).map(font => font?.replace(' ', '+')).join('&family=')}&display=swap`}
+                pageData.fonts.links,
+              ]
+                .filter(Boolean)
+                .map((font) => font?.replace(" ", "+"))
+                .join("&family=")}&display=swap`}
               rel="stylesheet"
             />
             <style>{`
-              ${pageData.fonts?.global ? `.pf-page { font-family: '${pageData.fonts.global}', sans-serif; }` : ''}
-              ${pageData.fonts?.heading ? `.pf-page__title { font-family: '${pageData.fonts.heading}', sans-serif; }` : ''}
-              ${pageData.fonts?.paragraph ? `.pf-page__description { font-family: '${pageData.fonts.paragraph}', sans-serif; }` : ''}
-              ${pageData.fonts?.links ? `.pf-link-item { font-family: '${pageData.fonts.links}', sans-serif; }` : ''}
+              ${
+                pageData.fonts?.global
+                  ? `.pf-page { font-family: '${pageData.fonts.global}', sans-serif; }`
+                  : ""
+              }
+              ${
+                pageData.fonts?.heading
+                  ? `.pf-page__title { font-family: '${pageData.fonts.heading}', sans-serif; }`
+                  : ""
+              }
+              ${
+                pageData.fonts?.paragraph
+                  ? `.pf-page__description { font-family: '${pageData.fonts.paragraph}', sans-serif; }`
+                  : ""
+              }
+              ${
+                pageData.fonts?.links
+                  ? `.pf-link-item { font-family: '${pageData.fonts.links}', sans-serif; }`
+                  : ""
+              }
             `}</style>
           </>
         )}
       </Head>
+
+      <div className="fixed top-2 left-2 z-50">
+        <AppMenu />
+      </div>
       
-      {/* Edit Button for page owner */}
-      {accessStatus?.isOwner && (
-        <div className="fixed top-24 right-4 z-40">
-          <Button
-            onClick={() => router.push(`/edit/${pageData.slug}`)}
-            className="bg-violet-600 hover:bg-violet-700 text-white"
-          >
-            Edit Page
-          </Button>
-        </div>
-      )}
-
-      {/* Token Access Warning */}
-      {accessStatus?.tokenRequired && !accessStatus?.hasTokenAccess && (
-        <div className="fixed top-24 left-4 z-40 bg-amber-100 text-amber-800 px-4 py-2 rounded-lg shadow-sm">
-          Some content on this page requires token access
-        </div>
-      )}
-
       <PageContent pageData={pageData} />
     </>
   );
-} 
+}

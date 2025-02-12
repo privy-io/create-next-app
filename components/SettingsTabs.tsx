@@ -32,9 +32,9 @@ export function SettingsTabs({
     <div className="flex flex-col h-full">
       <Tabs defaultValue="general" className="flex-1">
         <div className="flex px-2 py-2 mb-5 gap-2 items-center sticky top-0 right-0 bg-background border-b z-50">
-          <AppMenu />
+          <AppMenu  />
           <TabsList>
-            <TabsTrigger value="general">General Settings</TabsTrigger>
+            <TabsTrigger value="general">Settings</TabsTrigger>
             <TabsTrigger value="links">Links & Features</TabsTrigger>
             <TabsTrigger value="design">Design</TabsTrigger>
           </TabsList>
