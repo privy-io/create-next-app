@@ -10,6 +10,38 @@ interface CreatePageModalProps {
   onClose: () => void;
 }
 
+// Default items for new pages
+const DEFAULT_ITEMS = [
+  {
+    id: 'terminal-1',
+    type: 'terminal',
+    order: 0,
+    isPlugin: true,
+    tokenGated: false
+  },
+  {
+    id: 'private-chat-1',
+    type: 'private-chat',
+    order: 1,
+    isPlugin: true,
+    tokenGated: false
+  },
+  {
+    id: 'twitter-1',
+    type: 'twitter',
+    url: '',
+    order: 2,
+    isPlugin: false
+  },
+  {
+    id: 'telegram-1',
+    type: 'telegram',
+    url: '',
+    order: 3,
+    isPlugin: false
+  }
+];
+
 export default function CreatePageModal({
   walletAddress,
   onClose
@@ -42,7 +74,7 @@ export default function CreatePageModal({
         return;
       }
 
-      // Create new page
+      // Create new page with default items
       const response = await fetch('/api/page-store', {
         method: 'POST',
         headers: {
@@ -52,7 +84,17 @@ export default function CreatePageModal({
           slug,
           walletAddress,
           isSetupWizard: false,
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
+          items: DEFAULT_ITEMS,
+          title: 'My Page',
+          description: 'A page for my community',
+          designStyle: 'modern',
+          fonts: {
+            global: 'Inter',
+            heading: 'inherit',
+            paragraph: 'inherit',
+            links: 'inherit'
+          }
         }),
         credentials: 'same-origin',
       });
