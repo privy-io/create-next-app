@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { WalletWithMetadata, usePrivy, useLogin } from "@privy-io/react-auth";
+import { usePrivy, useLogin } from "@privy-io/react-auth";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, Plus } from "lucide-react";
 import Link from "next/link";
@@ -8,19 +8,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PageData } from "@/types";
 import { useEffect, useState } from "react";
 import { Logo } from "./logo";
 import { isSolanaWallet } from "@/utils/wallet";
 import { cn } from "@/lib/utils";
 import CreatePageModal from "./CreatePageModal";
-
-interface SolanaWallet extends WalletWithMetadata {
-  type: "wallet";
-  chainType: "solana";
-  address: string;
-}
 
 type AppMenuProps = {
   className?: string;
@@ -31,11 +24,6 @@ type AppMenuProps = {
 export const isPageIncomplete = (mapping: PageData | undefined) => {
   if (!mapping) return true;
   return !mapping.title || !mapping.items || mapping.items.length === 0;
-};
-
-// Helper function to get wallet display address
-const getDisplayAddress = (address: string) => {
-  return `${address.slice(0, 6)}...${address.slice(-4)}`;
 };
 
 export default function AppMenu({
@@ -183,7 +171,6 @@ export default function AppMenu({
                         })
                         .map((slug) => {
                           const pageData = mappings[slug];
-                          const needsSetup = isPageIncomplete(pageData);
                           const isCurrentPage =
                             router.asPath === `/${slug}` ||
                             router.asPath === `/edit/${slug}`;

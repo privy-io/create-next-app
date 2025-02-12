@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { PrivyClient } from "@privy-io/server-auth";
+import { PageItem } from "@/types";
 
 const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
 const PRIVY_APP_SECRET = process.env.PRIVY_APP_SECRET;
@@ -71,7 +72,7 @@ export default async function handler(
       isOwner,
       hasTokenAccess,
       tokenRequired: !!mapping.connectedToken,
-      gatedLinks: mapping.items?.filter((item) => item.tokenGated) || [],
+      gatedLinks: mapping.items?.filter((item: PageItem) => item.tokenGated) || [],
     });
   } catch (error) {
     console.error("Error verifying page access:", error);

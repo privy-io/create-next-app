@@ -1,12 +1,7 @@
 import { GetServerSideProps } from "next";
 import Head from "next/head";
-import { useRouter } from "next/router";
-import { usePrivy } from "@privy-io/react-auth";
-import { useEffect, useState } from "react";
 import PageContent from "../components/PageContent";
 import { ItemType } from "../types";
-import { Button } from "@/components/ui/button";
-import { isSolanaWallet } from "@/utils/wallet";
 import AppMenu from "@/components/AppMenu";
 
 interface PageData {
@@ -41,13 +36,6 @@ interface PageProps {
   pageData: PageData;
   slug: string;
   error?: string;
-}
-
-interface AccessStatus {
-  isOwner: boolean;
-  hasTokenAccess: boolean;
-  tokenRequired: boolean;
-  gatedLinks: PageItem[];
 }
 
 export const getServerSideProps: GetServerSideProps<PageProps> = async ({
@@ -89,40 +77,6 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async ({
 };
 
 export default function Page({ pageData }: PageProps) {
-  const router = useRouter();
-  const { user, authenticated } = usePrivy();
-  const [accessStatus, setAccessStatus] = useState<AccessStatus | null>(null);
-
-  const solanaWallet = user?.linkedAccounts?.find(isSolanaWallet);
-
-  useEffect(() => {
-    async function checkAccess() {
-      if (authenticated && solanaWallet) {
-        try {
-          const response = await fetch("/api/verify-page-access", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              slug: pageData.slug,
-              walletAddress: solanaWallet.address,
-            }),
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            setAccessStatus(data);
-          }
-        } catch (error) {
-          console.error("Error checking access:", error);
-        }
-      }
-    }
-
-    checkAccess();
-  }, [authenticated, solanaWallet, pageData.slug]);
-
   return (
     <>
       <Head>

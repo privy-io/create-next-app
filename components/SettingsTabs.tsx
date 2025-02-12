@@ -4,8 +4,8 @@ import { LinksTab } from "./tabs/LinksTab";
 import { DesignTab } from "./tabs/DesignTab";
 import { SaveBar } from "./SaveBar";
 import { PageData } from "@/types";
-import { Logo } from "./logo";
 import AppMenu from "./AppMenu";
+import { useState } from "react";
 
 interface SettingsTabsProps {
   pageDetails: PageData | null;
@@ -30,6 +30,8 @@ export function SettingsTabs({
   onSave,
   onConnect,
 }: SettingsTabsProps) {
+  const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({});
+
   return (
     <div className="flex flex-col h-full">
       <Tabs defaultValue="general" className="flex-1">
@@ -51,7 +53,12 @@ export function SettingsTabs({
         </TabsContent>
 
         <TabsContent value="links" className="flex-1">
-          <LinksTab pageDetails={pageDetails} setPageDetails={setPageDetails} />
+          <LinksTab 
+            pageDetails={pageDetails} 
+            setPageDetails={setPageDetails}
+            validationErrors={validationErrors}
+            setValidationErrors={setValidationErrors}
+          />
         </TabsContent>
 
         <TabsContent value="design">

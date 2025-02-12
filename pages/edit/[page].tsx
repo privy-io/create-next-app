@@ -7,15 +7,13 @@ import { PrivyClient } from "@privy-io/server-auth";
 import PagePreview from '@/components/PagePreview';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, X } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
 import { isSolanaWallet } from '@/utils/wallet';
 import { SettingsTabs } from '@/components/SettingsTabs';
-import { SaveBar } from '@/components/SaveBar';
 import { GOOGLE_FONTS } from '@/lib/fonts';
 import { PageData } from '@/types';
-import { TabsContent } from '@/components/ui/tabs';
 import { LinksTab } from '@/components/tabs/LinksTab';
 
 interface PageProps {
@@ -304,7 +302,7 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
       <div className="min-h-screen bg-privy-light-blue p-6">
         <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6">
           <h1 className="text-2xl font-semibold text-red-600">{error}</h1>
-          <p className="mt-2 text-gray-600">The page "{slug}" could not be found.</p>
+          <p className="mt-2 text-gray-600">The page &quot;{slug}&quot; could not be found.</p>
           <Button
             className="mt-4"
             onClick={() => router.push('/dashboard')}
@@ -330,7 +328,6 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
           href={`https://fonts.googleapis.com/css2?family=${GOOGLE_FONTS.map(font => font.replace(' ', '+')).join('&family=')}&display=swap`}
           rel="stylesheet"
         />
-        <link rel="stylesheet" href="/page.css" />
       </Head>
 
       <main className="min-h-screen">

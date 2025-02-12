@@ -7,7 +7,8 @@ export type ItemType =
   | 'email'
   | 'discord'
   | 'private-chat'
-  | 'terminal';
+  | 'terminal'
+  | 'filesystem';
 
 export interface PageItem {
   id: string;

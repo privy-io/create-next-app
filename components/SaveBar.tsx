@@ -1,6 +1,5 @@
 import { useRouter } from 'next/router';
 import { Button } from '@/components/ui/button';
-import { ExternalLink } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 interface SaveBarProps {
@@ -39,6 +38,7 @@ export function SaveBar({
         <a
           href={`https://${page}.page.fun`}
           target="_blank"
+          rel="noreferrer"
           className={`gap-2 inline-flex text-sm items-center text-muted-foreground hover:text-foreground ${showJiggle ? 'animate-wiggle' : ''}`}
         >
           page.fun/{page}

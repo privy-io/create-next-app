@@ -4,21 +4,8 @@ import Head from "next/head";
 import { PrivyProvider } from "@privy-io/react-auth";
 import { toSolanaWalletConnectors } from "@privy-io/react-auth/solana";
 
-function AppContent({ Component, pageProps }: AppProps) {
-  return (
-    <>
-      <Component {...pageProps} />
-    </>
-  );
-}
-
 function MyApp({ Component, pageProps }: AppProps) {
   const solanaConnectors = toSolanaWalletConnectors();
-
-  const handleLogin = () => {
-    console.log("Privy login successful");
-    console.log("Cookies:", document.cookie);
-  };
 
   return (
     <>
@@ -30,7 +17,6 @@ function MyApp({ Component, pageProps }: AppProps) {
       </Head>
       <PrivyProvider
         appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ""}
-        onSuccess={handleLogin}
         config={{
           appearance: {
             // Defaults to true
@@ -38,9 +24,6 @@ function MyApp({ Component, pageProps }: AppProps) {
             walletChainType: "solana-only",
             theme: "light",
             accentColor: "#676FFF",
-          },
-          identityTokens: {
-            enabled: true,
           },
           solanaClusters: [
             {
@@ -54,7 +37,7 @@ function MyApp({ Component, pageProps }: AppProps) {
           },
         }}
       >
-        <AppContent Component={Component} pageProps={pageProps} />
+        <Component {...pageProps} />
       </PrivyProvider>
     </>
   );
