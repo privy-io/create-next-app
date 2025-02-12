@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import { Logo } from "./logo";
 import { isSolanaWallet } from "@/utils/wallet";
 import { cn } from "@/lib/utils";
+import CreatePageModal from "./CreatePageModal";
 
 interface SolanaWallet extends WalletWithMetadata {
   type: "wallet";
@@ -50,6 +51,7 @@ export default function AppMenu({ className, showLogoName = false }: AppMenuProp
   const [isLoadingMappings, setIsLoadingMappings] = useState(false);
   const [mappings, setMappings] = useState<{ [key: string]: PageData }>({});
   const [open, setOpen] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   const solanaWallet = user?.linkedAccounts?.find(isSolanaWallet);
   const numAccounts = user?.linkedAccounts?.length || 0;
@@ -116,7 +118,7 @@ export default function AppMenu({ className, showLogoName = false }: AppMenuProp
           <Button
             variant="ghost"
             className={cn(
-              "h-7 px-1 py-0 gap-1 bg-background text-foreground hover:bg-foreground hover:text-background"
+              "h-7 px-1 py-0 gap-1 bg-background border border-primary text-foreground hover:bg-foreground hover:text-background"
             )}>
             <Logo />
             {showLogoName && <span>Built with Page.fun</span>}
@@ -134,133 +136,124 @@ export default function AppMenu({ className, showLogoName = false }: AppMenuProp
           <div className="p-4">
             {ready && authenticated && (
               <div className="space-y-4">
-                <Tabs defaultValue="my-pages" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="my-pages">My Pages</TabsTrigger>
-                    <TabsTrigger value="following">Following</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="my-pages" className="mt-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <Button
-                        size="sm"
-                        onClick={() => router.push("/edit/setup")}
-                        className="w-full">
-                        <Plus className="h-4 w-4" />
-                        New Page
-                      </Button>
-                    </div>
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        setShowCreateModal(true);
+                        setOpen(false);
+                      }}
+                      className="w-full">
+                      <Plus className="h-4 w-4" />
+                      New Page
+                    </Button>
+                  </div>
 
-                    <div className="space-y-3 max-h-[300px] overflow-y-auto">
-                      {isLoadingMappings ? (
-                        <div className="text-sm text-gray-600">
-                          Loading pages...
-                        </div>
-                      ) : mappedSlugs.length === 0 ? (
-                        <div className="text-sm text-gray-600">
-                          No pages created yet
+                  <div className="space-y-3 max-h-[300px] overflow-y-auto">
+                    {isLoadingMappings ? (
+                      <div className="text-sm text-gray-600">
+                        Loading pages...
+                      </div>
+                    ) : mappedSlugs.length === 0 ? (
+                      <div className="text-sm text-gray-600">
+                        No pages created yet
+                      </div>
+                    ) : (
+                      // Sort pages so current page is first
+                      [...mappedSlugs].sort((a, b) => {
+                        const isCurrentA = router.asPath === `/${a}` || router.asPath === `/edit/${a}`;
+                        const isCurrentB = router.asPath === `/${b}` || router.asPath === `/edit/${b}`;
+                        if (isCurrentA) return -1;
+                        if (isCurrentB) return 1;
+                        return 0;
+                      }).map((slug) => {
+                        const pageData = mappings[slug];
+                        const needsSetup = isPageIncomplete(pageData);
+                        const isCurrentPage = router.asPath === `/${slug}` || router.asPath === `/edit/${slug}`;
+
+                        return (
+                          <div
+                            key={slug}
+                            className={cn(
+                              "p-3 rounded-lg space-y-2",
+                              isCurrentPage ? "bg-violet-50 ring-1 ring-violet-200" : "bg-gray-50"
+                            )}>
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="space-y-1 min-w-0">
+                                <Link
+                                  href={`/${slug}`}
+                                  className={cn(
+                                    "block text-sm font-medium truncate",
+                                    isCurrentPage ? "text-violet-700" : "text-violet-600 hover:text-violet-800"
+                                  )}>
+                                  page.fun/{slug}
+                                  {pageData?.walletAddress === solanaWallet?.address && (
+                                    <span className="ml-1.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-violet-100 text-violet-700">Owner</span>
+                                  )}
+                                </Link>
+                                {pageData?.title && (
+                                  <p className="text-xs text-gray-600 truncate">
+                                    {pageData.title}
+                                  </p>
+                                )}
+                              </div>
+                              <Link
+                                href={
+                                  needsSetup
+                                    ? `/edit/setup?slug=${slug}`
+                                    : `/edit/${slug}`
+                                }
+                                passHref>
+                                <Button
+                                  size="sm"
+                                  variant={needsSetup ? "default" : "outline"}
+                                  className="shrink-0">
+                                  {needsSetup ? "Setup" : "Edit"}
+                                </Button>
+                              </Link>
+                            </div>
+                            {needsSetup && (
+                              <div className="text-xs bg-amber-50 text-amber-600 p-2 rounded border border-amber-200">
+                                This page needs to be set up
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+                {ready ? (
+                  authenticated ? (
+                    <>
+                      {solanaWallet ? (
+                        <div className="space-y-2">
+                          <div className="text-sm text-gray-600">
+                            {getDisplayAddress(solanaWallet.address)}
+                          </div>
+                          {canRemoveAccount && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => unlinkWallet(solanaWallet.address)}
+                              className="w-full">
+                              Disconnect Wallet
+                            </Button>
+                          )}
                         </div>
                       ) : (
-                        // Sort pages so current page is first
-                        [...mappedSlugs].sort((a, b) => {
-                          const isCurrentA = router.asPath === `/${a}` || router.asPath === `/edit/${a}`;
-                          const isCurrentB = router.asPath === `/${b}` || router.asPath === `/edit/${b}`;
-                          if (isCurrentA) return -1;
-                          if (isCurrentB) return 1;
-                          return 0;
-                        }).map((slug) => {
-                          const pageData = mappings[slug];
-                          const needsSetup = isPageIncomplete(pageData);
-                          const isCurrentPage = router.asPath === `/${slug}` || router.asPath === `/edit/${slug}`;
-
-                          return (
-                            <div
-                              key={slug}
-                              className={cn(
-                                "p-3 rounded-lg space-y-2",
-                                isCurrentPage ? "bg-violet-50 ring-1 ring-violet-200" : "bg-gray-50"
-                              )}>
-                              <div className="flex items-start justify-between gap-2">
-                                <div className="space-y-1 min-w-0">
-                                  <Link
-                                    href={`/${slug}`}
-                                    className={cn(
-                                      "block text-sm font-medium truncate",
-                                      isCurrentPage ? "text-violet-700" : "text-violet-600 hover:text-violet-800"
-                                    )}>
-                                    page.fun/{slug}
-                                    {pageData?.walletAddress === solanaWallet?.address && (
-                                      <span className="ml-1.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-violet-100 text-violet-700">Owner</span>
-                                    )}
-                                  </Link>
-                                  {pageData?.title && (
-                                    <p className="text-xs text-gray-600 truncate">
-                                      {pageData.title}
-                                    </p>
-                                  )}
-                                </div>
-                                <Link
-                                  href={
-                                    needsSetup
-                                      ? `/edit/setup?slug=${slug}`
-                                      : `/edit/${slug}`
-                                  }
-                                  passHref>
-                                  <Button
-                                    size="sm"
-                                    variant={needsSetup ? "default" : "outline"}
-                                    className="shrink-0">
-                                    {needsSetup ? "Setup" : "Edit"}
-                                  </Button>
-                                </Link>
-                              </div>
-                              {needsSetup && (
-                                <div className="text-xs bg-amber-50 text-amber-600 p-2 rounded border border-amber-200">
-                                  This page needs to be set up
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })
-                      )}
-                    </div>
-                  </TabsContent>
-                  <TabsContent value="following" className="mt-4">
-                    <div className="text-sm text-gray-600">
-                      Coming soon - You'll be able to follow other pages and see
-                      them here.
-                    </div>
-                  </TabsContent>
-                </Tabs>
-                {ready ? (
-              authenticated ? (
-                <>
-                  {solanaWallet ? (
-                    <div className="space-y-2">
-                      <div className="text-sm text-gray-600">
-                        {getDisplayAddress(solanaWallet.address)}
-                      </div>
-                      {canRemoveAccount && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => unlinkWallet(solanaWallet.address)}
-                          className="w-full">
-                          Disconnect Wallet
+                        <Button onClick={linkWallet} className="w-full">
+                          Connect Wallet
                         </Button>
                       )}
-                    </div>
+                    </>
                   ) : (
-                    <Button onClick={linkWallet} className="w-full">
-                      Connect Wallet
-                    </Button>
-                  )}
-                </>
-              ) : (
-                <Button onClick={login}>Sign In</Button>
-              )
-            ) : (
-              <div className="text-sm text-gray-600">Loading...</div>
-            )}
+                    <Button onClick={login}>Sign In</Button>
+                  )
+                ) : (
+                  <div className="text-sm text-gray-600">Loading...</div>
+                )}
                 <Button
                   variant="outline"
                   onClick={logout}
@@ -272,6 +265,13 @@ export default function AppMenu({ className, showLogoName = false }: AppMenuProp
           </div>
         </PopoverContent>
       </Popover>
+
+      {showCreateModal && solanaWallet && (
+        <CreatePageModal
+          walletAddress={solanaWallet.address}
+          onClose={() => setShowCreateModal(false)}
+        />
+      )}
     </div>
   );
 }

@@ -1,8 +1,8 @@
 import { usePrivy, WalletWithMetadata } from "@privy-io/react-auth";
 import Spinner from './Spinner';
 import { useState } from 'react';
-import SetupWizard from './SetupWizard';
 import DeleteConfirmationModal from './DeleteConfirmationModal';
+import CreatePageModal from './CreatePageModal';
 
 // Types
 type PageData = {
@@ -52,7 +52,7 @@ export default function Sidebar({
   // Get the first Solana wallet if one exists
   const solanaWallet = user?.linkedAccounts?.find(isSolanaWallet);
 
-  const [showSetupWizard, setShowSetupWizard] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [slugToDelete, setSlugToDelete] = useState<string | null>(null);
 
   // Update the delete handler to return a Promise
@@ -104,121 +104,62 @@ export default function Sidebar({
   };
 
   return (
-    <div className="w-64 bg-white shadow-lg">
+    <div className="h-screen border-r border-gray-100">
       <div className="p-4">
-        <h2 className="text-lg font-semibold mb-4">Your Wallet</h2>
-        
-        {/* Wallet Section */}
-        <div className="relative mb-6">
-          {solanaWallet ? (
-            <div className="space-y-2">
-              <div className="p-3 bg-gray-50 rounded-md">
-                <div className="flex flex-col">
-                  <span className="text-sm">
-                    {getDisplayAddress(solanaWallet.address)}
-                  </span>
-                </div>
+        {/* Wallet Connection */}
+        {solanaWallet ? (
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-sm text-gray-600">
+                {getDisplayAddress(solanaWallet.address)}
               </div>
               <button
                 onClick={handleDisconnectWallet}
-                className="w-full text-red-600 hover:text-red-700 text-sm py-2 px-4 rounded-md border border-red-600 hover:border-red-700"
+                className="text-xs text-red-600 hover:text-red-700"
               >
-                Disconnect Wallet
+                Disconnect
               </button>
             </div>
-          ) : (
+          </div>
+        ) : (
+          <div className="mb-6">
             <button
               onClick={linkWallet}
               className="w-full bg-violet-600 hover:bg-violet-700 text-white py-2 px-4 rounded-md text-sm"
             >
               Connect Wallet
             </button>
-          )}
-        </div>
-
-        {/* Page.fun Address Section */}
-        {solanaWallet && (
-          <div className="mt-6">
-            <h3 className="text-sm font-medium mb-2">Your Pages</h3>
-            <div className="space-y-2">
-              {/* Custom mapped URLs */}
-              {isLoadingMappings ? (
-                <div className="p-3 bg-gray-50 rounded-md">
-                  <Spinner className="h-4 w-4" />
-                </div>
-              ) : mappedSlugs.length > 0 ? (
-                mappedSlugs.map(slug => (
-                  <div key={slug} className="p-3 bg-gray-50 rounded-md space-y-2">
-                    <div className="flex justify-between items-center">
-                      <a 
-                        href={`/${slug}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-violet-600 hover:text-violet-800"
-                      >
-                        page.fun/{slug}
-                      </a>
-                      <button
-                        onClick={() => setSlugToDelete(slug)}
-                        className="text-xs text-red-500 hover:text-red-700"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm text-gray-500 p-3 bg-gray-50 rounded-md">
-                  No custom pages created yet
-                </p>
-              )}
-            </div>
           </div>
         )}
 
-        {/* Show Setup Wizard button when no pages exist or when page is incomplete */}
-        {solanaWallet && !isLoadingMappings && (
-          <>
-            {mappedSlugs.length === 0 || isPageIncomplete(getFirstMappedSlugData()) ? (
-              <div className="mb-6">
-                <button
-                  onClick={() => setShowSetupWizard(true)}
-                  className="w-full bg-violet-600 hover:bg-violet-700 text-white py-2 px-4 rounded-md text-sm"
-                >
-                  {mappedSlugs.length === 0 ? 'Setup Your Page' : 'Complete Your Page Setup'}
-                </button>
-              </div>
-            ) : null}
-          </>
+        {/* Loading State */}
+        {isLoadingMappings && (
+          <div className="flex items-center justify-center py-4">
+            <Spinner className="h-5 w-5" />
+          </div>
         )}
 
-        {showSetupWizard && solanaWallet && (
-          <SetupWizard
+        {/* Create Page Button */}
+        {solanaWallet && !isLoadingMappings && (
+          <div className="mb-6">
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="w-full bg-violet-600 hover:bg-violet-700 text-white py-2 px-4 rounded-md text-sm"
+            >
+              Create New Page
+            </button>
+          </div>
+        )}
+
+        {/* Create Page Modal */}
+        {showCreateModal && solanaWallet && (
+          <CreatePageModal
             walletAddress={solanaWallet.address}
-            onClose={() => setShowSetupWizard(false)}
-            onComplete={() => {
-              setShowSetupWizard(false);
-              // Refresh mappings after setup
-              const fetchMappings = async () => {
-                try {
-                  const response = await fetch(`/api/page-store?walletAddress=${solanaWallet.address}`);
-                  const { pages = [] } = await response.json();
-                  setMappedSlugs(pages.map((page: any) => page.slug));
-                  
-                  // Also get full mappings
-                  const mappingsResponse = await fetch('/api/page-store');
-                  const { mappings: fetchedMappings } = await mappingsResponse.json();
-                  setMappings(fetchedMappings);
-                } catch (error) {
-                  console.error('Error fetching mappings:', error);
-                }
-              };
-              fetchMappings();
-            }}
+            onClose={() => setShowCreateModal(false)}
           />
         )}
 
-        {/* Add the confirmation modal */}
+        {/* Delete Confirmation Modal */}
         {slugToDelete && (
           <DeleteConfirmationModal
             slug={slugToDelete}
