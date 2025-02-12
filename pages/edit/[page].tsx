@@ -327,9 +327,6 @@ const FONT_CATEGORIES: Record<string, string[]> = {
   ]
 };
 
-// Function to get all fonts as a flat array
-const ALL_FONTS = Object.values(FONT_CATEGORIES).flat();
-
 interface PageData {
   walletAddress: string;
   createdAt: string;
