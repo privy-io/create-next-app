@@ -28,7 +28,7 @@ type AppMenuProps = {
 };
 
 // Helper function to check if page is incomplete
-const isPageIncomplete = (mapping: PageData | undefined) => {
+export const isPageIncomplete = (mapping: PageData | undefined) => {
   if (!mapping) return true;
   return !mapping.title || !mapping.items || mapping.items.length === 0;
 };
@@ -38,8 +38,12 @@ const getDisplayAddress = (address: string) => {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 };
 
-export default function AppMenu({ className, showLogoName = false }: AppMenuProps) {
-  const { ready, authenticated, linkWallet, user, logout, unlinkWallet } = usePrivy();
+export default function AppMenu({
+  className,
+  showLogoName = false,
+}: AppMenuProps) {
+  const { ready, authenticated, linkWallet, user, logout, unlinkWallet } =
+    usePrivy();
   const { login } = useLogin({
     onComplete: () => {
       // Refresh the page to update the state
@@ -77,7 +81,7 @@ export default function AppMenu({ className, showLogoName = false }: AppMenuProp
         setIsLoadingMappings(true);
         try {
           const response = await fetch(
-            `/api/page-store?walletAddress=${solanaWallet.address}`
+            `/api/page-store?walletAddress=${solanaWallet.address}`,
           );
           const data = await response.json();
           const {
@@ -105,9 +109,9 @@ export default function AppMenu({ className, showLogoName = false }: AppMenuProp
       setOpen(true);
     };
 
-    window.addEventListener('openAppMenu', handleOpenMenu);
+    window.addEventListener("openAppMenu", handleOpenMenu);
     return () => {
-      window.removeEventListener('openAppMenu', handleOpenMenu);
+      window.removeEventListener("openAppMenu", handleOpenMenu);
     };
   }, []);
 
@@ -118,8 +122,9 @@ export default function AppMenu({ className, showLogoName = false }: AppMenuProp
           <Button
             variant="ghost"
             className={cn(
-              "h-7 px-1 py-0 gap-1 bg-background border border-primary text-foreground hover:bg-foreground hover:text-background"
-            )}>
+              "h-7 px-1 py-0 gap-1 bg-background border border-primary text-foreground hover:bg-foreground hover:text-background",
+            )}
+          >
             <Logo />
             {showLogoName && <span>Built with Page.fun</span>}
             <ChevronDown className="h-4 w-4" />
@@ -129,12 +134,14 @@ export default function AppMenu({ className, showLogoName = false }: AppMenuProp
           <div className="p-4 pb-0">
             <div className="mb-4">
               <div>Page.fun</div>
-              <div className="text-sm text-gray-600">Simple, fun tokenized websites</div>
+              <div className="text-sm text-gray-600">
+                Simple, fun tokenized websites
+              </div>
             </div>
           </div>
 
           <div className="p-4">
-            {ready && authenticated && (
+            {ready && authenticated ? (
               <div className="space-y-4">
                 <div>
                   <div className="flex items-center justify-between mb-4">
@@ -144,7 +151,8 @@ export default function AppMenu({ className, showLogoName = false }: AppMenuProp
                         setShowCreateModal(true);
                         setOpen(false);
                       }}
-                      className="w-full">
+                      className="w-full"
+                    >
                       <Plus className="h-4 w-4" />
                       New Page
                     </Button>
@@ -161,66 +169,70 @@ export default function AppMenu({ className, showLogoName = false }: AppMenuProp
                       </div>
                     ) : (
                       // Sort pages so current page is first
-                      [...mappedSlugs].sort((a, b) => {
-                        const isCurrentA = router.asPath === `/${a}` || router.asPath === `/edit/${a}`;
-                        const isCurrentB = router.asPath === `/${b}` || router.asPath === `/edit/${b}`;
-                        if (isCurrentA) return -1;
-                        if (isCurrentB) return 1;
-                        return 0;
-                      }).map((slug) => {
-                        const pageData = mappings[slug];
-                        const needsSetup = isPageIncomplete(pageData);
-                        const isCurrentPage = router.asPath === `/${slug}` || router.asPath === `/edit/${slug}`;
+                      [...mappedSlugs]
+                        .sort((a, b) => {
+                          const isCurrentA =
+                            router.asPath === `/${a}` ||
+                            router.asPath === `/edit/${a}`;
+                          const isCurrentB =
+                            router.asPath === `/${b}` ||
+                            router.asPath === `/edit/${b}`;
+                          if (isCurrentA) return -1;
+                          if (isCurrentB) return 1;
+                          return 0;
+                        })
+                        .map((slug) => {
+                          const pageData = mappings[slug];
+                          const needsSetup = isPageIncomplete(pageData);
+                          const isCurrentPage =
+                            router.asPath === `/${slug}` ||
+                            router.asPath === `/edit/${slug}`;
 
-                        return (
-                          <div
-                            key={slug}
-                            className={cn(
-                              "p-3 rounded-lg space-y-2",
-                              isCurrentPage ? "bg-violet-50 ring-1 ring-violet-200" : "bg-gray-50"
-                            )}>
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="space-y-1 min-w-0">
-                                <Link
-                                  href={`/${slug}`}
-                                  className={cn(
-                                    "block text-sm font-medium truncate",
-                                    isCurrentPage ? "text-violet-700" : "text-violet-600 hover:text-violet-800"
-                                  )}>
-                                  page.fun/{slug}
-                                  {pageData?.walletAddress === solanaWallet?.address && (
-                                    <span className="ml-1.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-violet-100 text-violet-700">Owner</span>
+                          return (
+                            <div
+                              key={slug}
+                              className={cn(
+                                "p-3 rounded-lg space-y-2",
+                                isCurrentPage
+                                  ? "bg-primary/5 ring-1 ring-primary/10"
+                                  : "bg-muted",
+                              )}
+                            >
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="space-y-1 min-w-0">
+                                  <Link
+                                    href={`/${slug}`}
+                                    className={cn(
+                                      "block text-sm font-medium truncate",
+                                      isCurrentPage
+                                        ? "text-primary"
+                                        : "text-primary hover:text-primary/80",
+                                    )}
+                                  >
+                                    page.fun/{slug}
+                                  </Link>
+                                  {pageData?.title && (
+                                    <p className="text-xs text-muted-foreground truncate">
+                                      {pageData.title}
+                                    </p>
                                   )}
+                                </div>
+                                <Link
+                                  href={`/edit/${slug}`}
+                                  passHref
+                                >
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="shrink-0"
+                                  >
+                                    Edit
+                                  </Button>
                                 </Link>
-                                {pageData?.title && (
-                                  <p className="text-xs text-gray-600 truncate">
-                                    {pageData.title}
-                                  </p>
-                                )}
                               </div>
-                              <Link
-                                href={
-                                  needsSetup
-                                    ? `/edit/setup?slug=${slug}`
-                                    : `/edit/${slug}`
-                                }
-                                passHref>
-                                <Button
-                                  size="sm"
-                                  variant={needsSetup ? "default" : "outline"}
-                                  className="shrink-0">
-                                  {needsSetup ? "Setup" : "Edit"}
-                                </Button>
-                              </Link>
                             </div>
-                            {needsSetup && (
-                              <div className="text-xs bg-amber-50 text-amber-600 p-2 rounded border border-amber-200">
-                                This page needs to be set up
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })
+                          );
+                        })
                     )}
                   </div>
                 </div>
@@ -229,15 +241,29 @@ export default function AppMenu({ className, showLogoName = false }: AppMenuProp
                     <>
                       {solanaWallet ? (
                         <div className="space-y-2">
-                          <div className="text-sm text-gray-600">
-                            {getDisplayAddress(solanaWallet.address)}
+                          <div className="flex gap-2 items-center">
+                            <input
+                              type="text"
+                              value={solanaWallet.address}
+                              disabled
+                              className="flex-1 text-sm text-muted-foreground bg-muted px-2 py-1 rounded-md border"
+                            />
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={logout}
+                              className="shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            >
+                              Logout
+                            </Button>
                           </div>
                           {canRemoveAccount && (
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() => unlinkWallet(solanaWallet.address)}
-                              className="w-full">
+                              className="w-full"
+                            >
                               Disconnect Wallet
                             </Button>
                           )}
@@ -252,15 +278,15 @@ export default function AppMenu({ className, showLogoName = false }: AppMenuProp
                     <Button onClick={login}>Sign In</Button>
                   )
                 ) : (
-                  <div className="text-sm text-gray-600">Loading...</div>
+                  <div className="text-sm text-muted-foreground">Loading...</div>
                 )}
-                <Button
-                  variant="outline"
-                  onClick={logout}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50">
-                  Logout
-                </Button>
               </div>
+            ) : ready ? (
+                <Button onClick={login} className="w-full">
+                  Sign In
+                </Button>
+            ) : (
+              <div className="text-sm text-gray-600">Loading...</div>
             )}
           </div>
         </PopoverContent>
@@ -270,6 +296,7 @@ export default function AppMenu({ className, showLogoName = false }: AppMenuProp
         <CreatePageModal
           walletAddress={solanaWallet.address}
           onClose={() => setShowCreateModal(false)}
+          open={showCreateModal}
         />
       )}
     </div>

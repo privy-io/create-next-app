@@ -59,7 +59,7 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async ({
     const response = await fetch(
       `${
         process.env.NODE_ENV === "development" ? "http://localhost:3000" : ""
-      }/api/page-store?slug=${slug}`
+      }/api/page-store?slug=${slug}`,
     );
     const { mapping } = await response.json();
 
@@ -191,7 +191,7 @@ export default function Page({ pageData }: PageProps) {
       <div className="fixed top-2 left-2 z-50">
         <AppMenu />
       </div>
-      
+
       <PageContent pageData={pageData} />
     </>
   );

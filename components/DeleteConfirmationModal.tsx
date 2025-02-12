@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { X } from 'lucide-react';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import Spinner from './Spinner';
+import { useState } from "react";
+import { X } from "lucide-react";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import Spinner from "./Spinner";
 
 interface DeleteConfirmationModalProps {
   slug: string;
@@ -13,18 +13,18 @@ interface DeleteConfirmationModalProps {
 export default function DeleteConfirmationModal({
   slug,
   onConfirm,
-  onCancel
+  onCancel,
 }: DeleteConfirmationModalProps) {
-  const [confirmSlug, setConfirmSlug] = useState('');
-  const [error, setError] = useState('');
+  const [confirmSlug, setConfirmSlug] = useState("");
+  const [error, setError] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleConfirm = async () => {
     if (confirmSlug !== slug) {
-      setError('The URL does not match');
+      setError("The URL does not match");
       return;
     }
-    
+
     setIsDeleting(true);
     try {
       await onConfirm();
@@ -47,7 +47,8 @@ export default function DeleteConfirmationModal({
           <div className="text-red-600">
             <p className="font-medium">Warning: This action cannot be undone</p>
             <p className="text-sm mt-1">
-              This will permanently delete your page at page.fun/{slug} and all associated data.
+              This will permanently delete your page at page.fun/{slug} and all
+              associated data.
             </p>
           </div>
 
@@ -60,7 +61,7 @@ export default function DeleteConfirmationModal({
               value={confirmSlug}
               onChange={(e) => {
                 setConfirmSlug(e.target.value);
-                setError('');
+                setError("");
               }}
               placeholder={slug}
               className="w-full"
@@ -70,11 +71,7 @@ export default function DeleteConfirmationModal({
           </div>
 
           <div className="flex justify-end space-x-3 mt-6">
-            <Button
-              variant="outline"
-              onClick={onCancel}
-              disabled={isDeleting}
-            >
+            <Button variant="outline" onClick={onCancel} disabled={isDeleting}>
               Cancel
             </Button>
             <Button
@@ -88,7 +85,7 @@ export default function DeleteConfirmationModal({
                   Deleting...
                 </>
               ) : (
-                'Delete Page'
+                "Delete Page"
               )}
             </Button>
           </div>
@@ -96,4 +93,4 @@ export default function DeleteConfirmationModal({
       </div>
     </div>
   );
-} 
+}

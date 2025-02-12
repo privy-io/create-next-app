@@ -2,7 +2,7 @@ import "../styles/globals.css";
 import type { AppProps } from "next/app";
 import Head from "next/head";
 import { PrivyProvider } from "@privy-io/react-auth";
-import { toSolanaWalletConnectors } from '@privy-io/react-auth/solana';
+import { toSolanaWalletConnectors } from "@privy-io/react-auth/solana";
 
 function AppContent({ Component, pageProps }: AppProps) {
   return (
@@ -16,8 +16,8 @@ function MyApp({ Component, pageProps }: AppProps) {
   const solanaConnectors = toSolanaWalletConnectors();
 
   const handleLogin = () => {
-    console.log('Privy login successful');
-    console.log('Cookies:', document.cookie);
+    console.log("Privy login successful");
+    console.log("Cookies:", document.cookie);
   };
 
   return (
@@ -35,20 +35,23 @@ function MyApp({ Component, pageProps }: AppProps) {
           appearance: {
             // Defaults to true
             showWalletLoginFirst: true,
-            walletChainType: 'solana-only',
-            theme: 'light',
-            accentColor: '#676FFF',
+            walletChainType: "solana-only",
+            theme: "light",
+            accentColor: "#676FFF",
           },
           identityTokens: {
             enabled: true,
           },
-          solanaClusters: [{
-            name: 'mainnet-beta', 
-            rpcUrl: 'https://mainnet.helius-rpc.com/?api-key=3951525f-0f9c-4aab-b67b-7dbe9d79e547'
-          }],
+          solanaClusters: [
+            {
+              name: "mainnet-beta",
+              rpcUrl:
+                "https://mainnet.helius-rpc.com/?api-key=3951525f-0f9c-4aab-b67b-7dbe9d79e547",
+            },
+          ],
           externalWallets: {
-            solana: {connectors: solanaConnectors}
-          }
+            solana: { connectors: solanaConnectors },
+          },
         }}
       >
         <AppContent Component={Component} pageProps={pageProps} />

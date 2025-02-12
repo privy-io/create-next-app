@@ -31,13 +31,6 @@ interface PageItem {
   tokenGated?: boolean;
 }
 
-type TokenMetadata = {
-  name: string;
-  description?: string;
-  symbol?: string;
-  image?: string;
-};
-
 // Helper function to get icon for social link
 const getSocialIcon = (type: ItemType) => {
   switch (type) {
@@ -116,7 +109,8 @@ export default function PageContent({ pageData }: { pageData: PageData }) {
                     key={item.id}
                     className={`pf-link-item ${
                       item.tokenGated ? "pf-link-item--token-gated" : ""
-                    }`}>
+                    }`}
+                  >
                     <div className="pf-link-item__header">
                       <div className="pf-link-item__info">
                         <span className="pf-link-item__icon">
@@ -137,7 +131,8 @@ export default function PageContent({ pageData }: { pageData: PageData }) {
                         href={item.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="pf-link-item__url">
+                        className="pf-link-item__url"
+                      >
                         {item.url}
                       </a>
                     )}

@@ -1,8 +1,9 @@
 import { usePrivy, WalletWithMetadata } from "@privy-io/react-auth";
-import Spinner from './Spinner';
-import { useState } from 'react';
-import DeleteConfirmationModal from './DeleteConfirmationModal';
-import CreatePageModal from './CreatePageModal';
+import Spinner from "./Spinner";
+import { useState } from "react";
+import DeleteConfirmationModal from "./DeleteConfirmationModal";
+import CreatePageModal from "./CreatePageModal";
+import { isPageIncomplete } from './AppMenu';
 
 // Types
 type PageData = {
@@ -12,24 +13,26 @@ type PageData = {
   title?: string;
   description?: string;
   socials?: any[];
-}
+};
 
 type PageMapping = {
   [slug: string]: PageData;
-}
+};
 
 // Type guard for Solana wallets
 function isSolanaWallet(account: any): account is WalletWithMetadata {
-  return (
-    account?.type === 'wallet' &&
-    account?.chainType === 'solana'
-  );
+  return account?.type === "wallet" && account?.chainType === "solana";
 }
 
 // Add helper function to check if page is incomplete
 const isPageIncomplete = (mapping: PageData | undefined) => {
   if (!mapping) return true;
-  return !mapping.title || !mapping.description || !mapping.socials || mapping.socials.length === 0;
+  return (
+    !mapping.title ||
+    !mapping.description ||
+    !mapping.socials ||
+    mapping.socials.length === 0
+  );
 };
 
 interface SidebarProps {
@@ -45,10 +48,10 @@ export default function Sidebar({
   mappedSlugs,
   mappings,
   setMappedSlugs,
-  setMappings
+  setMappings,
 }: SidebarProps) {
   const { user, linkWallet, unlinkWallet } = usePrivy();
-  
+
   // Get the first Solana wallet if one exists
   const solanaWallet = user?.linkedAccounts?.find(isSolanaWallet);
 
@@ -58,26 +61,26 @@ export default function Sidebar({
   // Update the delete handler to return a Promise
   const handleDelete = async (slug: string): Promise<void> => {
     try {
-      const response = await fetch('/api/page-store', {
-        method: 'DELETE',
+      const response = await fetch("/api/page-store", {
+        method: "DELETE",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ slug }),
-        credentials: 'same-origin',
+        credentials: "same-origin",
       });
-      
+
       if (response.ok) {
         setMappedSlugs(mappedSlugs.filter((s: string) => s !== slug));
         setSlugToDelete(null); // Close modal after successful deletion
       } else {
         const error = await response.json();
-        console.error('Error response:', error);
-        alert(error.error || 'Failed to remove URL');
+        console.error("Error response:", error);
+        alert(error.error || "Failed to remove URL");
       }
     } catch (error) {
-      console.error('Error deleting mapping:', error);
-      alert('Failed to remove URL');
+      console.error("Error deleting mapping:", error);
+      alert("Failed to remove URL");
     }
   };
 
@@ -99,7 +102,7 @@ export default function Sidebar({
     try {
       await unlinkWallet(solanaWallet.address);
     } catch (error) {
-      console.error('Error disconnecting wallet:', error);
+      console.error("Error disconnecting wallet:", error);
     }
   };
 
@@ -170,4 +173,4 @@ export default function Sidebar({
       </div>
     </div>
   );
-} 
+}

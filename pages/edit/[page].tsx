@@ -15,6 +15,8 @@ import { SettingsTabs } from '@/components/SettingsTabs';
 import { SaveBar } from '@/components/SaveBar';
 import { GOOGLE_FONTS } from '@/lib/fonts';
 import { PageData } from '@/types';
+import { TabsContent } from '@/components/ui/tabs';
+import { LinksTab } from '@/components/tabs/LinksTab';
 
 interface PageProps {
   slug: string;
@@ -110,6 +112,7 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [pageDetails, setPageDetails] = useState<PageData | null>(null);
   const [previewData, setPreviewData] = useState<PageData | null>(null);
+  const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({});
 
   // Check ownership and redirect if not owner
   useEffect(() => {
@@ -251,10 +254,31 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
         const errorData = await response.json();
         if (errorData.details) {
           // Handle validation errors
-          const errorMessage = errorData.details
-            .map((issue: any) => `${issue.path.join('.')}: ${issue.message}`)
-            .join('\n');
-          throw new Error(`Validation failed:\n${errorMessage}`);
+          const validationErrors: { [key: string]: string } = {};
+          
+          errorData.details.forEach((issue: any) => {
+            const [itemsStr, index, field] = issue.path;
+            if (itemsStr === 'items' && typeof index === 'number') {
+              const item = items[index];
+              if (item) {
+                validationErrors[item.id] = issue.message;
+              }
+            }
+          });
+
+          if (Object.keys(validationErrors).length > 0) {
+            // Update validation errors in LinksTab
+            setValidationErrors((prev: { [key: string]: string }) => ({
+              ...prev,
+              ...validationErrors
+            }));
+            toast({
+              title: "Validation Error",
+              description: "Please fix the highlighted errors in your links.",
+              variant: "destructive",
+            });
+            return;
+          }
         }
         throw new Error(errorData.error || 'Failed to save page details');
       }

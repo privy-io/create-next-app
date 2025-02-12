@@ -31,13 +31,13 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
 };
 
 interface SolanaWallet extends WalletWithMetadata {
-  type: 'wallet';
-  chainType: 'solana';
+  type: "wallet";
+  chainType: "solana";
   address: string;
 }
 
 const isSolanaWallet = (account: any): account is SolanaWallet => {
-  return account.type === 'wallet' && account.chainType === 'solana';
+  return account.type === "wallet" && account.chainType === "solana";
 };
 
 export default function HomePage() {
@@ -60,14 +60,16 @@ export default function HomePage() {
   useEffect(() => {
     const checkUserPages = async () => {
       if (!solanaWallet) return;
-      
+
       setIsLoading(true);
       try {
-        const response = await fetch(`/api/page-store?walletAddress=${solanaWallet.address}`);
+        const response = await fetch(
+          `/api/page-store?walletAddress=${solanaWallet.address}`,
+        );
         const data = await response.json();
         setHasPages(data.pages?.pages?.length > 0);
       } catch (error) {
-        console.error('Error checking user pages:', error);
+        console.error("Error checking user pages:", error);
       } finally {
         setIsLoading(false);
       }
@@ -83,7 +85,7 @@ export default function HomePage() {
   return (
     <>
       <Head>
-        <title>{authenticated ? "Page.fun" : "Login · Page.fun"}</title>
+        <title>Page.fun - Linktree alternative for tokens and memes.</title>
       </Head>
 
       <div className="fixed top-2 left-2 z-50">
@@ -105,10 +107,18 @@ export default function HomePage() {
             </p>
             {authenticated ? (
               <Button
-                onClick={hasPages ? handleDashboardClick : () => setShowCreateModal(true)}
+                onClick={
+                  hasPages
+                    ? handleDashboardClick
+                    : () => setShowCreateModal(true)
+                }
                 disabled={isLoading}
               >
-                {isLoading ? 'Loading...' : hasPages ? 'Dashboard' : 'Create Page'}
+                {isLoading
+                  ? "Loading..."
+                  : hasPages
+                    ? "Dashboard"
+                    : "Create Page"}
               </Button>
             ) : (
               <Button onClick={login}>Login</Button>
