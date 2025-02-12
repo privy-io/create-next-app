@@ -96,7 +96,7 @@ export default function HomePage() {
         <div className="flex flex-1 items-center max-w-[400px] px-4 w-full mx-auto">
           <div>
             <h1 className="text-xl  mb-4 flex items-center gap-2">
-              <Logo />
+              <Logo className="w-8 h-8" />
               page.fun
             </h1>
             <h1 className="text-2xl font-semibold mb-4">

@@ -24,7 +24,6 @@ import {
 import { SortableItem } from "@/components/SortableItem";
 import { ItemType, PageData, PageItem } from "@/types";
 import React from "react";
-import { useState } from "react";
 
 interface LinksTabProps {
   pageDetails: PageData | null;
@@ -104,7 +103,7 @@ export function LinksTab({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-6">
       <div className="flex justify-between items-center">
         <Dialog>
           <DialogTrigger asChild>
