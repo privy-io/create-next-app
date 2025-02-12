@@ -40,13 +40,10 @@ function MyApp({ Component, pageProps }: AppProps) {
   return (
     <>
       <Head>
-        <link rel="icon" href="/favicons/favicon.ico" sizes="any" />
         <link rel="icon" href="/favicons/icon.svg" type="image/svg+xml" />
-        <link rel="apple-touch-icon" href="/favicons/apple-touch-icon.png" />
         <link rel="manifest" href="/favicons/manifest.json" />
-
-        <title>Privy Auth Starter</title>
-        <meta name="description" content="Privy Auth Starter" />
+        <title>Page.fun</title>
+        <meta name="description" content="Tokenize yourself" />
       </Head>
       <PrivyProvider
         appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ""}

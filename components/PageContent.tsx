@@ -1,5 +1,36 @@
-import { ItemType, PageItem, PageData } from "../types";
+import { ItemType } from "../types";
 import { useState, useEffect } from "react";
+
+interface PageData {
+  walletAddress: string;
+  createdAt: string;
+  title?: string;
+  description?: string;
+  items?: PageItem[];
+  updatedAt?: string;
+  image?: string;
+  slug: string;
+  connectedToken?: string;
+  tokenSymbol?: string;
+  showToken?: boolean;
+  showSymbol?: boolean;
+  designStyle?: "default" | "minimal" | "modern";
+  fonts?: {
+    global?: string;
+    heading?: string;
+    paragraph?: string;
+    links?: string;
+  };
+}
+
+interface PageItem {
+  id: string;
+  type: ItemType;
+  url?: string;
+  order: number;
+  isPlugin?: boolean;
+  tokenGated?: boolean;
+}
 
 type TokenMetadata = {
   name: string;
@@ -79,38 +110,40 @@ export default function PageContent({ pageData }: { pageData: PageData }) {
         {pageData?.items && pageData.items.length > 0 && (
           <div className="pf-links">
             <div className="pf-links__grid">
-              {pageData.items.map((item: PageItem) => (
-                <div
-                  key={item.id}
-                  className={`pf-link-item ${
-                    item.tokenGated ? "pf-link-item--token-gated" : ""
-                  }`}>
-                  <div className="pf-link-item__header">
-                    <div className="pf-link-item__info">
-                      <span className="pf-link-item__icon">
-                        {getSocialIcon(item.type)}
-                      </span>
-                      <span className="pf-link-item__type">
-                        {item.type.replace("-", " ")}
-                      </span>
+              {pageData.items
+                .sort((a: PageItem, b: PageItem) => a.order - b.order)
+                .map((item: PageItem) => (
+                  <div
+                    key={item.id}
+                    className={`pf-link-item ${
+                      item.tokenGated ? "pf-link-item--token-gated" : ""
+                    }`}>
+                    <div className="pf-link-item__header">
+                      <div className="pf-link-item__info">
+                        <span className="pf-link-item__icon">
+                          {getSocialIcon(item.type)}
+                        </span>
+                        <span className="pf-link-item__type">
+                          {item.type.replace("-", " ")}
+                        </span>
+                      </div>
+                      {item.tokenGated && (
+                        <span className="pf-link-item__token-badge">
+                          Token Required
+                        </span>
+                      )}
                     </div>
-                    {item.tokenGated && (
-                      <span className="pf-link-item__token-badge">
-                        Token Required
-                      </span>
+                    {item.url && (
+                      <a
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="pf-link-item__url">
+                        {item.url}
+                      </a>
                     )}
                   </div>
-                  {item.url && (
-                    <a
-                      href={item.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="pf-link-item__url">
-                      {item.url}
-                    </a>
-                  )}
-                </div>
-              ))}
+                ))}
             </div>
           </div>
         )}

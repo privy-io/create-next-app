@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Spinner from './Spinner';
-import { Checkbox } from "@/components/ui/checkbox";
 
 type TokenBalance = {
   mint: string;
@@ -92,7 +90,7 @@ export default function TokenSelector({
   return (
     <div className="space-y-4">
       <Select 
-        value={selectedToken || ''} 
+        value={selectedToken || ''}
         onValueChange={handleTokenSelect}
         onOpenChange={(open) => {
           if (open && !hasInitiallyFetched) {

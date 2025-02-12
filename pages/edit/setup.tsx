@@ -227,15 +227,19 @@ export default function SetupPage() {
     if (step === 5) {
       setIsSubmitting(true);
       try {
-        // Prepare all items
-        const items = [...socialLinks, ...selectedPlugins.map(pluginId => ({
+        // Prepare the socials array with order numbers
+        const orderedSocials = socialLinks.map((social, index) => ({
+          ...social,
+          id: `${social.type}-${Math.random().toString(36).substr(2, 9)}`,
+          order: index
+        }));
+
+        // Prepare the plugins array with token gating information
+        const orderedPlugins = selectedPlugins.map((pluginId, index) => ({
           type: pluginId,
-          url: ''
-        }))].map((item) => ({
-          ...item,
-          id: `${item.type}-${Math.random().toString(36).substr(2, 9)}`,
-          tokenGated: tokenGatedPlugins.includes(item.type),
-          requiredAmount: tokenGateConfigs.find(c => c.pluginId === item.type)?.requiredAmount
+          order: index,
+          tokenGated: tokenGatedPlugins.includes(pluginId),
+          requiredAmount: tokenGateConfigs.find(c => c.pluginId === pluginId)?.requiredAmount
         }));
 
         // Save all configuration
@@ -250,7 +254,7 @@ export default function SetupPage() {
             title,
             description,
             image: tokenMetadata?.image || null,
-            items,
+            items: [...orderedSocials, ...orderedPlugins],
             connectedToken: selectedToken,
             tokenSymbol: tokenMetadata?.symbol,
             isSetupWizard: false
@@ -413,9 +417,9 @@ export default function SetupPage() {
                       checked={socialLinks.some(link => link.type === type)}
                       onCheckedChange={(checked) => {
                         if (checked) {
-                          setSocialLinks(socialLinks.filter(link => link.type !== type));
-                        } else {
                           setSocialLinks([...socialLinks, { type: type as any, url: '' }]);
+                        } else {
+                          setSocialLinks(socialLinks.filter(link => link.type !== type));
                         }
                       }}
                     />

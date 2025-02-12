@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import Spinner from './Spinner';
 import { X, ChevronRight, ChevronLeft, Twitter, MessageCircle, BarChart3, Video, Instagram, Mail, MessageSquare, Terminal, HardDrive, MessageSquareMore } from 'lucide-react';
 import { Checkbox } from "@/components/ui/checkbox";
+import { LucideIcon } from 'lucide-react';
 
 type TokenBalance = {
   mint: string;
@@ -48,12 +49,11 @@ type SocialLink = {
 };
 
 type Plugin = {
-  id: 'terminal' | 'filesystem' | 'private-chat';
+  id: 'terminal' | 'filesystem' | 'private-chat' | 'telegram';
   name: string;
   description: string;
-  icon: any;
+  icon: LucideIcon;
   comingSoon?: boolean;
-  tokenGated?: boolean;
 };
 
 const TEMPLATES = [
@@ -81,7 +81,14 @@ const PLUGINS: Plugin[] = [
     description: 'Upload videos, images and txt files only accessible to token holders',
     icon: HardDrive,
     comingSoon: true
-  }
+  },
+  {
+    id: 'telegram',
+    name: 'Telegram Channel',
+    description: 'Create a token-gated Telegram channel for your community',
+    icon: MessageSquareMore,
+    comingSoon: false,
+  },
 ];
 
 // Add type for token metadata
@@ -577,7 +584,7 @@ export default function SetupWizard({ onClose, walletAddress, onComplete, existi
                       {/* Add token gating option */}
                       {selectedPlugins.includes(plugin.id) && 
                        selectedToken && 
-                       (plugin.id === 'private-chat' || plugin.id === 'terminal') && (
+                       (plugin.id === 'private-chat' || plugin.id === 'terminal' || plugin.id === 'telegram') && (
                         <div className="mt-3 pl-6 border-l-2 border-violet-200 space-y-3">
                           <label className="flex items-center space-x-2">
                             <Checkbox 
@@ -589,10 +596,8 @@ export default function SetupWizard({ onClose, walletAddress, onComplete, existi
                                     : prev.filter(id => id !== plugin.id)
                                 );
                                 if (checked) {
-                                  // Add default config when enabling token gating
                                   setTokenGateConfigs(prev => [...prev, { pluginId: plugin.id, requiredAmount: 1 }]);
                                 } else {
-                                  // Remove config when disabling token gating
                                   setTokenGateConfigs(prev => prev.filter(config => config.pluginId !== plugin.id));
                                 }
                               }}
@@ -633,10 +638,38 @@ export default function SetupWizard({ onClose, walletAddress, onComplete, existi
                                 }}
                                 className="w-full h-2 bg-violet-200 rounded-lg appearance-none cursor-pointer"
                               />
-                              <div className="flex justify-between text-xs text-gray-500">
-                                <span>1</span>
-                                <span>1B</span>
-                              </div>
+                              
+                              {plugin.id === 'telegram' && (
+                                <div className="mt-4 space-y-2">
+                                  <label className="block text-sm text-gray-600">
+                                    Telegram Invite Link
+                                  </label>
+                                  <Input
+                                    type="text"
+                                    placeholder="https://t.me/..."
+                                    value={existingData?.items?.find(item => item.type === 'telegram')?.url || ''}
+                                    onChange={(e) => {
+                                      const newUrl = e.target.value;
+                                      if (existingData) {
+                                        const updatedItems = existingData.items?.map(item => 
+                                          item.type === 'telegram'
+                                            ? { ...item, url: newUrl }
+                                            : item
+                                        ) || [];
+                                        
+                                        onComplete({
+                                          ...existingData,
+                                          items: updatedItems
+                                        });
+                                      }
+                                    }}
+                                    className="w-full"
+                                  />
+                                  <p className="text-xs text-gray-500">
+                                    Create a Telegram channel and paste its invite link here. Users will get access after token verification.
+                                  </p>
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
