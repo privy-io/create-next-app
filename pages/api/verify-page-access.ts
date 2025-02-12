@@ -43,7 +43,7 @@ export default async function handler(
     }
 
     // Fetch page data to check ownership and token requirements
-    const pageResponse = await fetch(`${process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : ''}/api/page-mapping?slug=${slug}`);
+    const pageResponse = await fetch(`${process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : ''}/api/page-store?slug=${slug}`);
     const { mapping } = await pageResponse.json();
 
     if (!mapping) {

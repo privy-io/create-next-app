@@ -58,7 +58,7 @@ export default function Sidebar({
   // Update the delete handler to return a Promise
   const handleDelete = async (slug: string): Promise<void> => {
     try {
-      const response = await fetch('/api/page-mapping', {
+      const response = await fetch('/api/page-store', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -201,12 +201,12 @@ export default function Sidebar({
               // Refresh mappings after setup
               const fetchMappings = async () => {
                 try {
-                  const response = await fetch(`/api/page-mapping?walletAddress=${solanaWallet.address}`);
+                  const response = await fetch(`/api/page-store?walletAddress=${solanaWallet.address}`);
                   const { pages = [] } = await response.json();
                   setMappedSlugs(pages.map((page: any) => page.slug));
                   
                   // Also get full mappings
-                  const mappingsResponse = await fetch('/api/page-mapping');
+                  const mappingsResponse = await fetch('/api/page-store');
                   const { mappings: fetchedMappings } = await mappingsResponse.json();
                   setMappings(fetchedMappings);
                 } catch (error) {

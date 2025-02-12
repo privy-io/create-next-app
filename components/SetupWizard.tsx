@@ -152,7 +152,7 @@ export default function SetupWizard({ onClose, walletAddress, onComplete, existi
 
     setIsCheckingSlug(true);
     try {
-      const response = await fetch(`/api/page-mapping?slug=${encodeURIComponent(slug)}`);
+      const response = await fetch(`/api/page-store?slug=${encodeURIComponent(slug)}`);
       const data = await response.json();
       
       if (data.mapping) {
@@ -235,7 +235,7 @@ export default function SetupWizard({ onClose, walletAddress, onComplete, existi
 
       // Store the page mapping
       try {
-        const response = await fetch('/api/page-mapping', {
+        const response = await fetch('/api/page-store', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -269,7 +269,7 @@ export default function SetupWizard({ onClose, walletAddress, onComplete, existi
     // Add token connection after step 2
     if (step === 2 && selectedToken) {
       try {
-        const response = await fetch('/api/page-mapping', {
+        const response = await fetch('/api/page-store', {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
@@ -312,7 +312,7 @@ export default function SetupWizard({ onClose, walletAddress, onComplete, existi
         }));
 
         // Save all configuration
-        const response = await fetch('/api/page-mapping', {
+        const response = await fetch('/api/page-store', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

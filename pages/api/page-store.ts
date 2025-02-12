@@ -14,29 +14,23 @@ type PageItem = {
   requiredAmount?: number;  // Add this
 }
 
-type PageMapping = {
-  [slug: string]: {
-    walletAddress: string;
-    connectedToken?: string;
-    title?: string;
-    description?: string;
-    image?: string;
-    items?: PageItem[];  // Combined socials and plugins
-    designStyle?: 'default' | 'minimal' | 'modern';  // Add design style option
-    fonts?: {
-      global?: string;
-      heading?: string;
-      paragraph?: string;
-      links?: string;
-    };
-  }
-}
-
-type PrivyUserPages = {
-  pages: Array<{
-    walletAddress: string;
-    slug: string;
-  }>;
+type PageData = {
+  walletAddress: string;
+  connectedToken?: string;
+  showToken?: boolean;  // Add this field
+  title?: string;
+  description?: string;
+  image?: string;
+  items?: PageItem[];  // Combined socials and plugins
+  designStyle?: 'default' | 'minimal' | 'modern';  // Add design style option
+  fonts?: {
+    global?: string;
+    heading?: string;
+    paragraph?: string;
+    links?: string;
+  };
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
@@ -68,8 +62,10 @@ async function verifyWalletOwnership(req: NextApiRequest, walletAddress: string)
       walletAddressType: typeof walletAddress,
       linkedAccounts: user.linkedAccounts.map(acc => ({
         type: acc.type,
-        chainType: acc.chainType,
-        ...(acc.type === 'wallet' && { address: (acc as any).address })
+        ...(acc.type === 'wallet' && { 
+          address: (acc as any).address,
+          chainType: (acc as any).chainType 
+        })
       }))
     });
     
@@ -145,7 +141,7 @@ async function getPagesForWallet(walletAddress: string, req: NextApiRequest) {
       userPages
         .filter((page: any) => page.walletAddress === walletAddress)
         .map(async (page: any) => {
-          const pageData = await redis.get<PageMapping[string]>(getRedisKey(page.slug));
+          const pageData = await redis.get<PageData>(getRedisKey(page.slug));
           if (pageData) {
             return {
               slug: page.slug,
@@ -157,7 +153,7 @@ async function getPagesForWallet(walletAddress: string, req: NextApiRequest) {
     );
 
     // Convert array of pages to mapping object
-    const pagesMapping: PageMapping = {};
+    const pagesMapping: { [slug: string]: PageData } = {};
     pages.filter(Boolean).forEach((page: any) => {
       if (page && page.slug) {
         pagesMapping[page.slug] = {
@@ -168,7 +164,9 @@ async function getPagesForWallet(walletAddress: string, req: NextApiRequest) {
           image: page.image,
           items: page.items,
           designStyle: page.designStyle,
-          fonts: page.fonts
+          fonts: page.fonts,
+          createdAt: page.createdAt,
+          updatedAt: page.updatedAt
         };
       }
     });
@@ -190,7 +188,7 @@ async function addPageToUserMetadata(userId: string, walletAddress: string, slug
     // Parse existing pages if they exist
     if (pagesStr) {
       try {
-        currentPages = JSON.parse(pagesStr);
+        currentPages = JSON.parse(pagesStr as string);
       } catch (e) {
         console.error('Error parsing pages:', e);
         currentPages = [];
@@ -225,7 +223,7 @@ async function removePageFromUserMetadata(userId: string, slug: string) {
     // Parse existing pages if they exist
     if (pagesStr) {
       try {
-        currentPages = JSON.parse(pagesStr);
+        currentPages = JSON.parse(pagesStr as string);
       } catch (e) {
         console.error('Error parsing pages:', e);
         currentPages = [];
@@ -251,7 +249,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  // GET: Fetch mapping for a specific slug or wallet's pages
+  // GET: Fetch page data for a specific slug or wallet's pages
   if (req.method === 'GET') {
     const { slug, walletAddress } = req.query;
     
@@ -262,15 +260,15 @@ export default async function handler(
         return res.status(200).json({ pages: result });
       }
 
-      // If slug is provided, return specific mapping
+      // If slug is provided, return specific page data
       if (slug) {
-        const mapping = await redis.get<PageMapping[string]>(getRedisKey(slug as string));
+        const pageData = await redis.get<PageData>(getRedisKey(slug as string));
         
-        // If there's a mapping, try to verify ownership
+        // If there's data, try to verify ownership
         let isOwner = false;
-        if (mapping) {
+        if (pageData) {
           try {
-            await verifyWalletOwnership(req, mapping.walletAddress);
+            await verifyWalletOwnership(req, pageData.walletAddress);
             isOwner = true;
           } catch (error) {
             // Ignore verification errors - just means user doesn't own the page
@@ -278,18 +276,18 @@ export default async function handler(
           }
         }
         
-        return res.status(200).json({ mapping, isOwner });
+        return res.status(200).json({ mapping: pageData, isOwner });
       }
 
       // Return error if neither slug nor walletAddress provided
       return res.status(400).json({ error: 'Slug or wallet address is required' });
     } catch (error) {
-      console.error('Error fetching page mapping:', error);
-      return res.status(500).json({ error: 'Failed to fetch page mapping' });
+      console.error('Error fetching page data:', error);
+      return res.status(500).json({ error: 'Failed to fetch page data' });
     }
   }
 
-  // POST: Create a new mapping
+  // POST: Create or update a page
   if (req.method === 'POST') {
     try {
       const { 
@@ -300,6 +298,9 @@ export default async function handler(
         description,
         items,
         connectedToken,
+        tokenSymbol,
+        showToken,
+        showSymbol,
         image,
         designStyle,
         fonts
@@ -310,7 +311,7 @@ export default async function handler(
       }
 
       // Check if slug exists first
-      const existingPage = await redis.get<PageMapping[string]>(getRedisKey(slug));
+      const existingPage = await redis.get<PageData>(getRedisKey(slug));
       if (existingPage) {
         // If page exists but belongs to another user, reject
         if (existingPage.walletAddress !== walletAddress) {
@@ -328,7 +329,7 @@ export default async function handler(
 
       // For initial setup wizard step, only store minimal data
       if (isSetupWizard === true) {
-        const initialData = {
+        const initialData: PageData = {
           walletAddress,
           createdAt: new Date().toISOString()
         };
@@ -341,13 +342,16 @@ export default async function handler(
       console.log('Saving page with fonts:', fonts);
 
       // Create/Update page data, preserving existing data
-      const pageData = {
+      const pageData: PageData = {
         ...existingPage,  // Preserve existing data
         walletAddress,
         ...(title && { title }),
         ...(description && { description }),
         ...(items && { items }),
         ...(connectedToken && { connectedToken }),
+        ...(tokenSymbol && { tokenSymbol }),
+        ...(typeof showToken === 'boolean' && { showToken }),
+        ...(typeof showSymbol === 'boolean' && { showSymbol }),
         ...(image && { image }),
         ...(designStyle && { designStyle }),
         ...(fonts && { fonts }),
@@ -364,12 +368,12 @@ export default async function handler(
       }
       return res.status(200).json({ success: true });
     } catch (error) {
-      console.error('Error storing page mapping:', error);
-      return res.status(500).json({ error: 'Failed to store page mapping' });
+      console.error('Error storing page data:', error);
+      return res.status(500).json({ error: 'Failed to store page data' });
     }
   }
 
-  // DELETE: Remove a mapping
+  // DELETE: Remove a page
   if (req.method === 'DELETE') {
     try {
       const { slug } = req.body;
@@ -378,69 +382,70 @@ export default async function handler(
         return res.status(400).json({ error: 'Slug is required' });
       }
 
-      // Get current mapping to verify ownership
-      const currentMapping = await redis.get<PageMapping[string]>(getRedisKey(slug));
-      if (!currentMapping) {
+      // Get current page data to verify ownership
+      const currentPage = await redis.get<PageData>(getRedisKey(slug));
+      if (!currentPage) {
         return res.status(404).json({ error: 'Page not found' });
       }
 
       // Verify wallet ownership and get user
       let user;
       try {
-        user = await verifyWalletOwnership(req, currentMapping.walletAddress);
+        user = await verifyWalletOwnership(req, currentPage.walletAddress);
       } catch (error) {
         return res.status(401).json({ error: error instanceof Error ? error.message : 'Authentication failed' });
       }
 
-      // Remove the mapping from Redis
+      // Remove the page from Redis
       await redis.del(getRedisKey(slug));
       // Remove page from user's metadata
       await removePageFromUserMetadata(user.id, slug);
       return res.status(200).json({ success: true });
     } catch (error) {
-      console.error('Error deleting page mapping:', error);
-      return res.status(500).json({ error: 'Failed to delete page mapping' });
+      console.error('Error deleting page:', error);
+      return res.status(500).json({ error: 'Failed to delete page' });
     }
   }
 
-  // PATCH: Update existing mapping
+  // PATCH: Update existing page
   if (req.method === 'PATCH') {
     try {
-      const { slug, connectedToken, title, description, image, socials } = req.body;
+      const { slug, connectedToken, title, description, image, items } = req.body;
 
       if (!slug) {
         return res.status(400).json({ error: 'Slug is required' });
       }
 
-      // Get current mapping to verify ownership
-      const currentMapping = await redis.get<PageMapping[string]>(getRedisKey(slug));
-      if (!currentMapping) {
+      // Get current page data to verify ownership
+      const currentPage = await redis.get<PageData>(getRedisKey(slug));
+      if (!currentPage) {
         return res.status(404).json({ error: 'Page not found' });
       }
 
       // Verify wallet ownership
       try {
-        await verifyWalletOwnership(req, currentMapping.walletAddress);
+        await verifyWalletOwnership(req, currentPage.walletAddress);
       } catch (error) {
         return res.status(401).json({ error: error instanceof Error ? error.message : 'Authentication failed' });
       }
 
-      // Update the mapping with new fields
-      const updatedMapping = {
-        ...currentMapping,
+      // Update the page data with new fields
+      const updatedPage: PageData = {
+        ...currentPage,
         ...(connectedToken !== undefined && { connectedToken }),
         ...(title !== undefined && { title }),
         ...(description !== undefined && { description }),
         ...(image !== undefined && { image }),
-        ...(socials !== undefined && { socials }),
+        ...(items !== undefined && { items }),
+        updatedAt: new Date().toISOString()
       };
 
       // Save to Redis
-      await redis.set(getRedisKey(slug), updatedMapping);
+      await redis.set(getRedisKey(slug), updatedPage);
       return res.status(200).json({ success: true });
     } catch (error) {
-      console.error('Error updating page mapping:', error);
-      return res.status(500).json({ error: 'Failed to update page mapping' });
+      console.error('Error updating page:', error);
+      return res.status(500).json({ error: 'Failed to update page' });
     }
   }
 

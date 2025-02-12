@@ -77,7 +77,7 @@ export default function Header({
         setIsLoadingMappings(true);
         try {
           const response = await fetch(
-            `/api/page-mapping?walletAddress=${solanaWallet.address}`
+            `/api/page-store?walletAddress=${solanaWallet.address}`
           );
           const data = await response.json();
           const {

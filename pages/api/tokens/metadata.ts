@@ -48,6 +48,7 @@ export default async function handler(
 
     const data = await response.json();
     const content = data.result.content || {};
+    console.log(content.metadata);
     const metadata = content.metadata || {};
     const files = content.files || [];
 
@@ -61,7 +62,7 @@ export default async function handler(
         name: metadata.name || 'Unknown Token',
         description: metadata.description,
         symbol: metadata.symbol,
-        image: imageUrl
+        image: imageUrl,
       }
     });
     

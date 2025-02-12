@@ -7,7 +7,7 @@ import Header from '@/components/Header';
 import { isSolanaWallet } from '@/utils/wallet';
 
 function AppContent({ Component, pageProps }: AppProps) {
-  const { user, logout, linkWallet, unlinkWallet } = usePrivy();
+  const { user, logout, unlinkWallet } = usePrivy();
   const solanaWallet = user?.linkedAccounts?.find(isSolanaWallet);
   const numAccounts = user?.linkedAccounts?.length || 0;
   const canRemoveAccount = numAccounts > 1;
@@ -19,7 +19,6 @@ function AppContent({ Component, pageProps }: AppProps) {
         <Header
           solanaWallet={solanaWallet}
           onLogout={logout}
-          onLinkWallet={linkWallet}
           onUnlinkWallet={unlinkWallet}
           canRemoveAccount={canRemoveAccount}
         />

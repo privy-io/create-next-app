@@ -1,3 +1,8 @@
+:root {
+  --pf-background-color: #f9f9f9;
+  --pf-image-radius: 0.5rem;
+}
+
 /* Base styles that are common across all themes */
 * {
   margin: 0;
@@ -8,11 +13,11 @@
 html,
 body {
   min-height: 100vh;
-
+  font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  background-color: #fff;
+  background-color: var(--pf-background-color);
 }
 
 img {
@@ -66,6 +71,13 @@ button {
     margin: 0 auto;
 }
 
+.pf-page__image {
+  max-width: 100px;
+  height: auto;
+  margin: 0 auto 1.5rem;
+  border-radius: var(--pf-image-radius);
+}
+
 .pf-page__header {
     margin-bottom: 2rem;
     text-align: center;
@@ -80,10 +92,15 @@ button {
 .pf-page__description {
     font-size: 1.1rem;
     line-height: 1.6;
+    margin-bottom: 1rem;
 }
 
 .pf-links {
     margin-bottom: 1.5rem;
+}
+
+.pf-page__token code {
+  font-size: .75rem;
 }
 
 .pf-links__title {
@@ -99,4 +116,9 @@ button {
 
 .pf-link-item {
     padding: 0.5rem;
+}
+
+.pf-link-item__header {
+    display: flex;
+    
 }

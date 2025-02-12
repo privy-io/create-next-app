@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
 import { isSolanaWallet } from '@/utils/wallet';
 import Spinner from '@/components/Spinner';
+import TokenSelector from '@/components/TokenSelector';
 
 // Types
 type TokenBalance = {
@@ -112,7 +113,7 @@ export default function SetupPage() {
 
     setIsCheckingSlug(true);
     try {
-      const response = await fetch(`/api/page-mapping?slug=${encodeURIComponent(slug)}`);
+      const response = await fetch(`/api/page-store?slug=${encodeURIComponent(slug)}`);
       const data = await response.json();
       
       if (data.mapping) {
@@ -173,7 +174,7 @@ export default function SetupPage() {
       if (!isAvailable) return;
 
       try {
-        const response = await fetch('/api/page-mapping', {
+        const response = await fetch('/api/page-store', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -200,14 +201,15 @@ export default function SetupPage() {
 
     if (step === 2 && selectedToken) {
       try {
-        const response = await fetch('/api/page-mapping', {
+        const response = await fetch('/api/page-store', {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
             slug,
-            connectedToken: selectedToken
+            connectedToken: selectedToken,
+            tokenSymbol: tokenMetadata?.symbol
           }),
           credentials: 'same-origin'
         });
@@ -225,23 +227,19 @@ export default function SetupPage() {
     if (step === 5) {
       setIsSubmitting(true);
       try {
-        // Prepare the socials array with order numbers
-        const orderedSocials = socialLinks.map((social, index) => ({
-          ...social,
-          id: `${social.type}-${Math.random().toString(36).substr(2, 9)}`,
-          order: index
-        }));
-
-        // Prepare the plugins array with token gating information
-        const orderedPlugins = selectedPlugins.map((pluginId, index) => ({
+        // Prepare all items
+        const items = [...socialLinks, ...selectedPlugins.map(pluginId => ({
           type: pluginId,
-          order: index,
-          tokenGated: tokenGatedPlugins.includes(pluginId),
-          requiredAmount: tokenGateConfigs.find(c => c.pluginId === pluginId)?.requiredAmount
+          url: ''
+        }))].map((item) => ({
+          ...item,
+          id: `${item.type}-${Math.random().toString(36).substr(2, 9)}`,
+          tokenGated: tokenGatedPlugins.includes(item.type),
+          requiredAmount: tokenGateConfigs.find(c => c.pluginId === item.type)?.requiredAmount
         }));
 
         // Save all configuration
-        const response = await fetch('/api/page-mapping', {
+        const response = await fetch('/api/page-store', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -252,8 +250,9 @@ export default function SetupPage() {
             title,
             description,
             image: tokenMetadata?.image || null,
-            items: [...orderedSocials, ...orderedPlugins],
+            items,
             connectedToken: selectedToken,
+            tokenSymbol: tokenMetadata?.symbol,
             isSetupWizard: false
           }),
           credentials: 'same-origin',
@@ -316,51 +315,23 @@ export default function SetupPage() {
           <div className="space-y-4">
             <h2 className="text-lg font-semibold">Connect a Token (Optional)</h2>
             <div className="space-y-4">
-              {!tokens.length ? (
-                <Button 
-                  onClick={fetchTokens}
-                  disabled={isLoadingTokens}
-                >
-                  {isLoadingTokens ? (
-                    <Spinner className="h-4 w-4 mr-2" />
-                  ) : null}
-                  Fetch Tokens
-                </Button>
-              ) : (
-                <>
-                  <Select 
-                    value={selectedToken || ''} 
-                    onValueChange={handleTokenSelect}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a token" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {tokens.map((token) => (
-                        <SelectItem key={token.mint} value={token.mint}>
-                          {token.tokenName || 'Unknown Token'} 
-                          {token.symbol && ` (${token.symbol})`}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  {tokenMetadata?.image && (
-                    <div className="mt-4">
-                      <p className="text-sm text-gray-600 mb-2">Token Image:</p>
-                      <div className="relative w-24 h-24 rounded-lg overflow-hidden">
-                        <img
-                          src={tokenMetadata.image}
-                          alt={tokenMetadata.name}
-                          className="object-cover w-full h-full"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = 'none';
-                          }}
-                        />
-                      </div>
-                    </div>
-                  )}
-                </>
+              {solanaWallet && (
+                <TokenSelector
+                  walletAddress={solanaWallet.address}
+                  selectedToken={selectedToken}
+                  onTokenSelect={(tokenAddress) => {
+                    if (!tokenAddress) return;
+                    setSelectedToken(tokenAddress);
+                  }}
+                  onMetadataLoad={(metadata) => {
+                    if (!metadata) return;
+                    setTokenMetadata(metadata);
+                    if (!title) setTitle(metadata.name);
+                    if (!description && metadata.description) {
+                      setDescription(metadata.description);
+                    }
+                  }}
+                />
               )}
             </div>
             {selectedToken && tokenMetadata && (
@@ -442,9 +413,9 @@ export default function SetupPage() {
                       checked={socialLinks.some(link => link.type === type)}
                       onCheckedChange={(checked) => {
                         if (checked) {
-                          setSocialLinks([...socialLinks, { type: type as any, url: '' }]);
-                        } else {
                           setSocialLinks(socialLinks.filter(link => link.type !== type));
+                        } else {
+                          setSocialLinks([...socialLinks, { type: type as any, url: '' }]);
                         }
                       }}
                     />

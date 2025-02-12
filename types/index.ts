@@ -4,7 +4,6 @@ export type PageItem = {
   id: string;
   type: ItemType;
   url?: string;
-  order: number;
   isPlugin?: boolean;
   tokenGated?: boolean;
 };
@@ -18,4 +17,15 @@ export type PageData = {
   updatedAt?: string;
   image?: string;
   slug: string;
+  connectedToken?: string;
+  tokenSymbol?: string;
+  showToken?: boolean;
+  showSymbol?: boolean;
+  designStyle?: "default" | "minimal" | "modern";
+  fonts?: {
+    global?: string;
+    heading?: string;
+    paragraph?: string;
+    links?: string;
+  };
 }; 

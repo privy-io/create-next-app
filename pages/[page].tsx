@@ -53,7 +53,7 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async ({ params
   const slug = params?.page as string;
   
   try {
-    const response = await fetch(`${process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : ''}/api/page-mapping?slug=${slug}`);
+    const response = await fetch(`${process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : ''}/api/page-store?slug=${slug}`);
     const { mapping } = await response.json();
     
     if (!mapping) {
