@@ -103,11 +103,9 @@ export default function AppMenu({ className, showLogoName = false }: AppMenuProp
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
-            size="icon"
-            variant="outline"
+            variant="ghost"
             className={cn(
-              "h-10 gap-2 bg-white shadow-md hover:bg-gray-50",
-              showLogoName ? "w-auto px-3" : "w-10 rounded-full"
+              "h-7 px-1 gap-0 bg-background text-foreground hover:bg-foreground hover:text-background"
             )}>
             <Logo />
             {showLogoName && <span>Page.fun</span>}

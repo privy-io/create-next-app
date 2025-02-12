@@ -36,15 +36,13 @@ export function SaveBar({
   return (
     <div className={`sticky bottom-0 w-full px-6 py-3 bg-background border-t flex justify-between space-x-2 ${className}`}>
       <div>
-        <Button
-          variant="ghost"
-          size="sm"
-          className={`gap-2 text-muted-foreground hover:text-foreground ${showJiggle ? 'animate-wiggle' : ''}`}
-          onClick={() => window.open(`/${page}`, '_blank')}
+        <a
+          href={`https://${page}.page.fun`}
+          target="_blank"
+          className={`gap-2 inline-flex text-sm items-center text-muted-foreground hover:text-foreground ${showJiggle ? 'animate-wiggle' : ''}`}
         >
-          {page}.page.fun
-          <ExternalLink className="h-4 w-4" />
-        </Button>
+          page.fun/{page}
+        </a>
       </div>
 
       <div className="flex gap-2">

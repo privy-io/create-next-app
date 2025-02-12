@@ -1,29 +1,12 @@
 import "../styles/globals.css";
 import type { AppProps } from "next/app";
 import Head from "next/head";
-import { PrivyProvider, usePrivy } from "@privy-io/react-auth";
+import { PrivyProvider } from "@privy-io/react-auth";
 import { toSolanaWalletConnectors } from '@privy-io/react-auth/solana';
-import Header from '@/components/Header';
-import { isSolanaWallet } from '@/utils/wallet';
 
 function AppContent({ Component, pageProps }: AppProps) {
-  const { user, logout, unlinkWallet } = usePrivy();
-  const solanaWallet = user?.linkedAccounts?.find(isSolanaWallet);
-  const numAccounts = user?.linkedAccounts?.length || 0;
-  const canRemoveAccount = numAccounts > 1;
-
   return (
     <>
-      {/* Fixed position header */}
-      <div className="fixed top-0 left-0 right-0 z-50">
-        <Header
-          solanaWallet={solanaWallet}
-          onLogout={logout}
-          onUnlinkWallet={unlinkWallet}
-          canRemoveAccount={canRemoveAccount}
-        />
-      </div>
-      
       <Component {...pageProps} />
     </>
   );

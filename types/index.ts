@@ -16,6 +16,7 @@ export interface PageItem {
   order: number;
   isPlugin?: boolean;
   tokenGated?: boolean;
+  requiredAmount?: number;
 }
 
 export interface PageData {

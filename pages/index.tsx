@@ -4,7 +4,8 @@ import { PrivyClient } from "@privy-io/server-auth";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { Toaster } from '@/components/ui/toaster';
+import { Toaster } from "@/components/ui/toaster";
+import AppMenu from "@/components/AppMenu";
 
 export const getServerSideProps: GetServerSideProps = async ({ req }) => {
   const cookieAuthToken = req.cookies["privy-token"];
@@ -38,8 +39,12 @@ export default function HomePage() {
   return (
     <>
       <Head>
-        <title>{authenticated ? 'Page.fun' : 'Login · Page.fun'}</title>
+        <title>{authenticated ? "Page.fun" : "Login · Page.fun"}</title>
       </Head>
+
+      <div className="fixed top-2 left-2 z-50">
+        <AppMenu />
+      </div>
 
       <main className="flex min-h-screen min-w-full">
         <div className="flex bg-privy-light-blue flex-1 p-6 justify-center items-center">
@@ -48,20 +53,23 @@ export default function HomePage() {
               <Portal style={{ maxWidth: "100%", height: "auto" }} />
             </div>
             <div className="mt-6 flex flex-col items-center text-center">
-              <h1 className="text-2xl font-semibold mb-4">Welcome to Page.fun!</h1>
+              <h1 className="text-2xl font-semibold mb-4">
+                Welcome to Page.fun!
+              </h1>
               {authenticated ? (
                 <p className="text-gray-600 mb-4">
-                  Create and manage your pages using the menu in the top right corner.
+                  Create and manage your pages using the menu in the top right
+                  corner.
                 </p>
               ) : (
                 <>
                   <p className="text-gray-600 mb-6">
-                    Connect your wallet to get started with your personalized page.
+                    Connect your wallet to get started with your personalized
+                    page.
                   </p>
                   <button
                     className="bg-violet-600 hover:bg-violet-700 py-3 px-6 text-white rounded-lg"
-                    onClick={login}
-                  >
+                    onClick={login}>
                     Log in
                   </button>
                 </>

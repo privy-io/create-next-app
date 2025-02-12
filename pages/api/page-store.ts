@@ -1,6 +1,81 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { Redis } from '@upstash/redis';
 import { PrivyClient } from "@privy-io/server-auth";
+import { z } from 'zod';
+
+// Validation schemas
+const urlPattern = /^[a-zA-Z0-9-]+$/;
+const urlRegex = /^https?:\/\/[^\s/$.?#].[^\s]*$/i;
+
+const FontsSchema = z.object({
+  global: z.string().optional(),
+  heading: z.string().optional(),
+  paragraph: z.string().optional(),
+  links: z.string().optional(),
+}).optional();
+
+const PageItemSchema = z.object({
+  id: z.string().min(1),
+  type: z.enum(['twitter', 'telegram', 'dexscreener', 'tiktok', 'instagram', 'email', 'discord', 'private-chat', 'terminal', 'filesystem']),
+  url: z.union([
+    z.string().regex(urlRegex, 'Invalid URL format'),
+    z.string().email('Invalid email format'),
+    z.string().length(0),
+    z.null(),
+    z.undefined()
+  ]).optional(),
+  order: z.number().int().min(0),
+  isPlugin: z.boolean().optional(),
+  tokenGated: z.boolean().optional(),
+  requiredAmount: z.number().optional(),
+}).refine((data) => {
+  // Only validate URL if one is provided and it's not empty
+  if (data.url && data.url.length > 0) {
+    if (data.type === 'email') {
+      // For email type, check if it's a valid email or starts with mailto:
+      return data.url.includes('@') || data.url.startsWith('mailto:');
+    } else if (!data.isPlugin) {
+      // For non-plugin items with URLs, ensure it's a valid URL
+      return data.url.match(urlRegex) !== null;
+    }
+  }
+  return true;
+}, {
+  message: "Invalid URL format for this item type",
+  path: ["url"]
+});
+
+const PageDataSchema = z.object({
+  walletAddress: z.string().min(1),
+  connectedToken: z.string().nullable().optional(),
+  tokenSymbol: z.string().nullable().optional(),
+  showToken: z.boolean().optional().default(false),
+  showSymbol: z.boolean().optional().default(false),
+  title: z.string().max(100).optional(),
+  description: z.string().max(500).optional(),
+  image: z.string().regex(urlRegex).nullable().optional(),
+  items: z.array(PageItemSchema).optional(),
+  designStyle: z.enum(['default', 'minimal', 'modern']).optional(),
+  fonts: FontsSchema,
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
+});
+
+const CreatePageSchema = z.object({
+  slug: z.string().regex(urlPattern, 'Only letters, numbers, and hyphens allowed').min(1).max(50),
+  walletAddress: z.string().min(1),
+  isSetupWizard: z.boolean().optional(),
+  title: z.string().max(100).optional(),
+  description: z.string().max(500).optional(),
+  items: z.array(PageItemSchema).optional(),
+  connectedToken: z.string().nullable().optional(),
+  tokenSymbol: z.string().nullable().optional(),
+  showToken: z.boolean().optional().default(false),
+  showSymbol: z.boolean().optional().default(false),
+  image: z.string().regex(urlRegex).nullable().optional(),
+  designStyle: z.enum(['default', 'minimal', 'modern']).optional(),
+  fonts: FontsSchema,
+});
 
 type ItemType = 'twitter' | 'telegram' | 'dexscreener' | 'tiktok' | 'instagram' | 'email' | 'discord' | 'private-chat' | 'terminal' | 'filesystem';
 
@@ -290,6 +365,16 @@ export default async function handler(
   // POST: Create or update a page
   if (req.method === 'POST') {
     try {
+      // Validate request body against schema
+      const validationResult = CreatePageSchema.safeParse(req.body);
+      
+      if (!validationResult.success) {
+        return res.status(400).json({ 
+          error: 'Invalid request data',
+          details: validationResult.error.issues 
+        });
+      }
+
       const { 
         slug, 
         walletAddress, 
@@ -304,11 +389,7 @@ export default async function handler(
         image,
         designStyle,
         fonts
-      } = req.body;
-
-      if (!slug || !walletAddress) {
-        return res.status(400).json({ error: 'Slug and wallet address are required' });
-      }
+      } = validationResult.data;
 
       // Check if slug exists first
       const existingPage = await redis.get<PageData>(getRedisKey(slug));
@@ -329,20 +410,18 @@ export default async function handler(
 
       // For initial setup wizard step, only store minimal data
       if (isSetupWizard === true) {
-        const initialData: PageData = {
+        const initialData = PageDataSchema.parse({
           walletAddress,
           createdAt: new Date().toISOString()
-        };
+        });
         await redis.set(getRedisKey(slug), initialData);
         // Add page to user's metadata
         await addPageToUserMetadata(user.id, walletAddress, slug);
         return res.status(200).json({ success: true });
       }
 
-      console.log('Saving page with fonts:', fonts);
-
       // Create/Update page data, preserving existing data
-      const pageData: PageData = {
+      const pageData = PageDataSchema.parse({
         ...existingPage,  // Preserve existing data
         walletAddress,
         ...(title && { title }),
@@ -356,9 +435,7 @@ export default async function handler(
         ...(designStyle && { designStyle }),
         ...(fonts && { fonts }),
         updatedAt: new Date().toISOString()
-      };
-
-      console.log('Final page data to save:', pageData);
+      });
 
       // Save to Redis with unique key
       await redis.set(getRedisKey(slug), pageData);
@@ -369,6 +446,12 @@ export default async function handler(
       return res.status(200).json({ success: true });
     } catch (error) {
       console.error('Error storing page data:', error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          error: 'Invalid data format',
+          details: error.issues 
+        });
+      }
       return res.status(500).json({ error: 'Failed to store page data' });
     }
   }
@@ -429,8 +512,8 @@ export default async function handler(
         return res.status(401).json({ error: error instanceof Error ? error.message : 'Authentication failed' });
       }
 
-      // Update the page data with new fields
-      const updatedPage: PageData = {
+      // Validate the update data
+      const updateData = {
         ...currentPage,
         ...(connectedToken !== undefined && { connectedToken }),
         ...(title !== undefined && { title }),
@@ -440,11 +523,20 @@ export default async function handler(
         updatedAt: new Date().toISOString()
       };
 
+      // Validate the complete page data
+      const validatedData = PageDataSchema.parse(updateData);
+
       // Save to Redis
-      await redis.set(getRedisKey(slug), updatedPage);
+      await redis.set(getRedisKey(slug), validatedData);
       return res.status(200).json({ success: true });
     } catch (error) {
       console.error('Error updating page:', error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          error: 'Invalid data format',
+          details: error.issues 
+        });
+      }
       return res.status(500).json({ error: 'Failed to update page' });
     }
   }

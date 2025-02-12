@@ -5,6 +5,7 @@ import { DesignTab } from './tabs/DesignTab';
 import { SaveBar } from './SaveBar';
 import { PageData } from '@/types';
 import { Logo } from "./logo";
+import AppMenu from "./AppMenu";
 
 interface SettingsTabsProps {
   pageDetails: PageData | null;
@@ -30,8 +31,8 @@ export function SettingsTabs({
   return (
     <div className="flex flex-col h-full">
       <Tabs defaultValue="general" className="flex-1">
-        <div className="flex px-6 py-2 mb-5 gap-4 items-center sticky top-0 right-0 bg-background border-b z-50">
-          <Logo />
+        <div className="flex px-2 py-2 mb-5 gap-2 items-center sticky top-0 right-0 bg-background border-b z-50">
+          <AppMenu />
           <TabsList>
             <TabsTrigger value="general">General Settings</TabsTrigger>
             <TabsTrigger value="links">Links & Features</TabsTrigger>

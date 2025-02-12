@@ -120,10 +120,33 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
     
     setIsSaving(true);
     try {
-      const items = pageDetails.items?.map((item, index) => ({
-        ...item,
-        order: index
-      }));
+      const items = pageDetails.items?.map((item, index) => {
+        // Ensure each item has an id
+        const id = item.id || `item-${index}`;
+        
+        // Format URL based on item type
+        let url = item.url;
+        if (item.type === 'email' && url && !url.startsWith('mailto:')) {
+          url = `mailto:${url}`;
+        }
+        
+        // For plugins, make sure url is undefined/null
+        if (item.isPlugin) {
+          url = undefined;
+        }
+        
+        return {
+          ...item,
+          id,
+          url,
+          order: index,
+          // Ensure boolean fields are properly set
+          isPlugin: !!item.isPlugin,
+          tokenGated: !!item.tokenGated,
+          // Only include requiredAmount if tokenGated is true
+          ...(item.tokenGated ? { requiredAmount: item.requiredAmount || 0 } : {})
+        };
+      }) || [];
 
       const fonts = {
         global: pageDetails.fonts?.global === 'system' ? undefined : pageDetails.fonts?.global,
@@ -166,7 +189,15 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to save page details');
+        const errorData = await response.json();
+        if (errorData.details) {
+          // Handle validation errors
+          const errorMessage = errorData.details
+            .map((issue: any) => `${issue.path.join('.')}: ${issue.message}`)
+            .join('\n');
+          throw new Error(`Validation failed:\n${errorMessage}`);
+        }
+        throw new Error(errorData.error || 'Failed to save page details');
       }
 
       toast({
@@ -177,7 +208,7 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
       console.error('Error saving page details:', error);
       toast({
         title: "Error saving changes",
-        description: "Please try again.",
+        description: error instanceof Error ? error.message : "Please try again.",
         variant: "destructive",
       });
     } finally {
