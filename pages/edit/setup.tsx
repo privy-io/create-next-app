@@ -13,6 +13,11 @@ import { Toaster } from '@/components/ui/toaster';
 import { isSolanaWallet } from '@/utils/wallet';
 import Spinner from '@/components/Spinner';
 import TokenSelector from '@/components/TokenSelector';
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Menu } from "lucide-react";
+import PagePreview from "@/components/PagePreview";
+import { GOOGLE_FONTS } from '@/lib/fonts';
+import { ItemType } from '@/types';
 
 // Types
 type TokenBalance = {
@@ -43,6 +48,38 @@ type Plugin = {
   icon: any;
   comingSoon?: boolean;
   tokenGated?: boolean;
+};
+
+type PageData = {
+  walletAddress: string;
+  createdAt: string;
+  title?: string;
+  description?: string;
+  items?: PageItem[];
+  updatedAt?: string;
+  image?: string;
+  slug: string;
+  connectedToken?: string;
+  tokenSymbol?: string;
+  showToken?: boolean;
+  showSymbol?: boolean;
+  designStyle?: 'default' | 'minimal' | 'modern';
+  fonts?: {
+    global?: string;
+    heading?: string;
+    paragraph?: string;
+    links?: string;
+  };
+};
+
+type PageItem = {
+  id: string;
+  type: ItemType;
+  url?: string;
+  order: number;
+  isPlugin?: boolean;
+  tokenGated?: boolean;
+  requiredAmount?: number;
 };
 
 const PLUGINS: Plugin[] = [
@@ -96,6 +133,7 @@ export default function SetupPage() {
   const [selectedPlugins, setSelectedPlugins] = useState<string[]>([]);
   const [tokenGatedPlugins, setTokenGatedPlugins] = useState<string[]>([]);
   const [tokenGateConfigs, setTokenGateConfigs] = useState<{ pluginId: string; requiredAmount: number; }[]>([]);
+  const [previewData, setPreviewData] = useState<PageData | null>(null);
 
   useEffect(() => {
     if (ready && !authenticated) {
@@ -182,7 +220,8 @@ export default function SetupPage() {
           body: JSON.stringify({
             slug,
             walletAddress: solanaWallet?.address,
-            isSetupWizard: true
+            isSetupWizard: true,
+            createdAt: new Date().toISOString()
           }),
           credentials: 'same-origin',
         });
@@ -209,7 +248,9 @@ export default function SetupPage() {
           body: JSON.stringify({
             slug,
             connectedToken: selectedToken,
-            tokenSymbol: tokenMetadata?.symbol
+            tokenSymbol: tokenMetadata?.symbol,
+            showToken: true,
+            showSymbol: true
           }),
           credentials: 'same-origin'
         });
@@ -229,15 +270,19 @@ export default function SetupPage() {
       try {
         // Prepare the socials array with order numbers
         const orderedSocials = socialLinks.map((social, index) => ({
-          ...social,
-          id: `${social.type}-${Math.random().toString(36).substr(2, 9)}`,
-          order: index
+          id: `social-${index}`,
+          type: social.type,
+          url: social.url || '',
+          order: index,
+          isPlugin: false
         }));
 
         // Prepare the plugins array with token gating information
         const orderedPlugins = selectedPlugins.map((pluginId, index) => ({
-          type: pluginId,
-          order: index,
+          id: `plugin-${index}`,
+          type: pluginId as ItemType,
+          order: socialLinks.length + index,
+          isPlugin: true,
           tokenGated: tokenGatedPlugins.includes(pluginId),
           requiredAmount: tokenGateConfigs.find(c => c.pluginId === pluginId)?.requiredAmount
         }));
@@ -251,19 +296,30 @@ export default function SetupPage() {
           body: JSON.stringify({
             slug,
             walletAddress: solanaWallet?.address,
-            title,
-            description,
+            title: title || (tokenMetadata?.name || 'My Page'),
+            description: description || tokenMetadata?.description || '',
             image: tokenMetadata?.image || null,
             items: [...orderedSocials, ...orderedPlugins],
-            connectedToken: selectedToken,
-            tokenSymbol: tokenMetadata?.symbol,
+            connectedToken: selectedToken || null,
+            tokenSymbol: tokenMetadata?.symbol || null,
+            showToken: !!selectedToken,
+            showSymbol: !!selectedToken && !!tokenMetadata?.symbol,
+            designStyle: 'modern',
+            fonts: {
+              global: 'Inter',
+              heading: 'inherit',
+              paragraph: 'inherit',
+              links: 'inherit'
+            },
+            createdAt: new Date().toISOString(),
             isSetupWizard: false
           }),
           credentials: 'same-origin',
         });
 
         if (!response.ok) {
-          throw new Error('Failed to save page configuration');
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to save page configuration');
         }
 
         // Navigate to edit page
@@ -273,7 +329,7 @@ export default function SetupPage() {
         console.error('Error saving configuration:', error);
         toast({
           title: "Error",
-          description: "Failed to save your page configuration. Please try again.",
+          description: error instanceof Error ? error.message : "Failed to save your page configuration. Please try again.",
           variant: "destructive",
         });
       } finally {
@@ -284,6 +340,58 @@ export default function SetupPage() {
 
     setStep(step + 1);
   };
+
+  useEffect(() => {
+    const currentPageDetails = {
+      title: title || (tokenMetadata?.name || 'My Page'),
+      description: description || tokenMetadata?.description || '',
+      image: tokenMetadata?.image || '',
+      walletAddress: solanaWallet?.address || '',
+      connectedToken: selectedToken || '',
+      tokenSymbol: tokenMetadata?.symbol || '',
+      showToken: true,
+      showSymbol: true,
+      designStyle: 'modern' as const,
+      fonts: {
+        global: 'Inter',
+        heading: 'inherit',
+        paragraph: 'inherit',
+        links: 'inherit'
+      },
+      createdAt: new Date().toISOString(),
+      slug: slug || ''
+    };
+
+    const items = [];
+      
+    // Add social links to preview
+    if (socialLinks.length > 0) {
+      items.push(...socialLinks.map((link, index) => ({
+        id: `social-${index}`,
+        type: link.type,
+        url: link.url || '',
+        order: index,
+        isPlugin: false
+      })));
+    }
+
+    // Add selected plugins to preview
+    if (selectedPlugins.length > 0) {
+      items.push(...selectedPlugins.map((pluginId, index) => ({
+        id: `plugin-${index}`,
+        type: pluginId as ItemType,
+        order: socialLinks.length + index,
+        isPlugin: true,
+        tokenGated: tokenGatedPlugins.includes(pluginId),
+        requiredAmount: tokenGateConfigs.find(c => c.pluginId === pluginId)?.requiredAmount
+      })));
+    }
+
+    setPreviewData({
+      ...currentPageDetails,
+      items
+    });
+  }, [title, description, socialLinks, selectedPlugins, tokenGatedPlugins, tokenGateConfigs, tokenMetadata, selectedToken, solanaWallet, slug]);
 
   const renderStep = () => {
     switch (step) {
@@ -553,48 +661,120 @@ export default function SetupPage() {
     <>
       <Head>
         <title>Setup Your Page - Page.fun</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link 
+          href={`https://fonts.googleapis.com/css2?family=${GOOGLE_FONTS.map(font => font.replace(' ', '+')).join('&family=')}&display=swap`}
+          rel="stylesheet"
+        />
+        <link rel="stylesheet" href="/page.css" />
       </Head>
 
-      <main className="min-h-screen bg-privy-light-blue">
-        <div className="max-w-2xl mx-auto px-4 py-8">
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="mb-8">
-              <h1 className="text-2xl font-bold mb-2">Setup Your Page</h1>
-              <p className="text-gray-600">Step {step} of 5</p>
-            </div>
-
-            <div className="mb-8">
-              {renderStep()}
-            </div>
-
-            <div className="flex justify-between">
-              {step > 1 && (
-                <Button
-                  variant="outline"
-                  onClick={() => setStep(step - 1)}
-                >
-                  Back
+      <main className="min-h-screen">
+        <div>
+          {/* Mobile Menu Button - Only visible on mobile */}
+          <div className="lg:hidden fixed top-4 left-4 z-50">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <Menu className="h-4 w-4" />
                 </Button>
-              )}
-              <div className="flex space-x-2 ml-auto">
-                {step < 5 && step > 1 && (
-                  <Button
-                    variant="outline"
-                    onClick={() => setStep(step + 1)}
-                  >
-                    Skip
-                  </Button>
-                )}
-                <Button
-                  onClick={handleNext}
-                  disabled={isCheckingSlug || isSubmitting || (step === 1 && !slug)}
-                >
-                  {isCheckingSlug || isSubmitting ? (
-                    <Spinner className="h-4 w-4 mr-2" />
-                  ) : null}
-                  {step === 5 ? 'Complete Setup' : 'Next'}
-                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[440px] p-0 flex flex-col">
+                <div className="flex-1 overflow-y-auto">
+                  <div className="bg-white rounded-lg shadow-sm p-6">
+                    <div className="mb-8">
+                      <h1 className="text-2xl font-bold mb-2">Setup Your Page</h1>
+                      <p className="text-gray-600">Step {step} of 5</p>
+                    </div>
+
+                    <div className="mb-8">
+                      {renderStep()}
+                    </div>
+
+                    <div className="flex justify-between">
+                      {step > 1 && (
+                        <Button
+                          variant="outline"
+                          onClick={() => setStep(step - 1)}
+                        >
+                          Back
+                        </Button>
+                      )}
+                      <div className="flex space-x-2 ml-auto">
+                        {step < 5 && step > 1 && (
+                          <Button
+                            variant="outline"
+                            onClick={() => setStep(step + 1)}
+                          >
+                            Skip
+                          </Button>
+                        )}
+                        <Button
+                          onClick={handleNext}
+                          disabled={isCheckingSlug || isSubmitting || (step === 1 && !slug)}
+                        >
+                          {isCheckingSlug || isSubmitting ? (
+                            <Spinner className="h-4 w-4 mr-2" />
+                          ) : null}
+                          {step === 5 ? 'Complete Setup' : 'Next'}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
+
+          <div className="flex">
+            {/* Left Column - Setup Wizard (Hidden on mobile) */}
+            <div className="w-[440px] hidden lg:block space-y-8 border-r border-gray-100 relative">
+              <div className="bg-background overflow-y-auto h-screen p-6">
+                <div className="mb-8">
+                  <h1 className="text-2xl font-bold mb-2">Setup Your Page</h1>
+                  <p className="text-gray-600">Step {step} of 5</p>
+                </div>
+
+                <div className="mb-8">
+                  {renderStep()}
+                </div>
+
+                <div className="flex justify-between">
+                  {step > 1 && (
+                    <Button
+                      variant="outline"
+                      onClick={() => setStep(step - 1)}
+                    >
+                      Back
+                    </Button>
+                  )}
+                  <div className="flex space-x-2 ml-auto">
+                    {step < 5 && step > 1 && (
+                      <Button
+                        variant="outline"
+                        onClick={() => setStep(step + 1)}
+                      >
+                        Skip
+                      </Button>
+                    )}
+                    <Button
+                      onClick={handleNext}
+                      disabled={isCheckingSlug || isSubmitting || (step === 1 && !slug)}
+                    >
+                      {isCheckingSlug || isSubmitting ? (
+                        <Spinner className="h-4 w-4 mr-2" />
+                      ) : null}
+                      {step === 5 ? 'Complete Setup' : 'Next'}
+                    </Button>
+                  </div>
+                </div>
               </div>
+            </div>
+
+            {/* Right Column - Live Preview */}
+            <div className="pf-preview sticky top-0 right-0 flex-1" style={{ height: 'calc(100vh)' }}>
+              {previewData && <PagePreview pageData={previewData} />}
             </div>
           </div>
         </div>

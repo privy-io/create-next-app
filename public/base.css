@@ -3,13 +3,6 @@
   --pf-image-radius: 0.5rem;
 }
 
-/* Base styles that are common across all themes */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
 html,
 body {
   min-height: 100vh;
@@ -19,47 +12,6 @@ body {
   text-rendering: optimizeLegibility;
   background-color: var(--pf-background-color);
 }
-
-img {
-  max-width: 100%;
-  height: auto;
-  display: block;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-button {
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  font: inherit;
-  color: inherit;
-}
-
-/* Basic utility classes */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-/* Ensure proper box model for all elements */
-*,
-*::before,
-*::after {
-  box-sizing: inherit;
-} 
-
 
 .pf-page {
     padding: 2rem;
@@ -86,13 +38,15 @@ button {
 .pf-page__title {
     font-size: 2rem;
     font-weight: 300;
-    margin-bottom: 1rem;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
 }
 
 .pf-page__description {
     font-size: 1.1rem;
     line-height: 1.6;
-    margin-bottom: 1rem;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
 }
 
 .pf-page__token code {

@@ -6,6 +6,8 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { Toaster } from "@/components/ui/toaster";
 import AppMenu from "@/components/AppMenu";
+import { Logo } from "@/components/logo";
+import { Button } from "@/components/ui/button";
 
 export const getServerSideProps: GetServerSideProps = async ({ req }) => {
   const cookieAuthToken = req.cookies["privy-token"];
@@ -46,37 +48,26 @@ export default function HomePage() {
         <AppMenu />
       </div>
 
-      <main className="flex min-h-screen min-w-full">
-        <div className="flex bg-privy-light-blue flex-1 p-6 justify-center items-center">
+      <main className="flex min-h-screen  bg-muted min-w-full grid sm:grid-cols-2">
+        <div className="flex flex-1 items-center max-w-[400px] px-4 w-full mx-auto">
           <div>
-            <div>
-              <Portal style={{ maxWidth: "100%", height: "auto" }} />
-            </div>
-            <div className="mt-6 flex flex-col items-center text-center">
-              <h1 className="text-2xl font-semibold mb-4">
-                Welcome to Page.fun!
-              </h1>
-              {authenticated ? (
-                <p className="text-gray-600 mb-4">
-                  Create and manage your pages using the menu in the top right
-                  corner.
-                </p>
-              ) : (
-                <>
-                  <p className="text-gray-600 mb-6">
-                    Connect your wallet to get started with your personalized
-                    page.
-                  </p>
-                  <button
-                    className="bg-violet-600 hover:bg-violet-700 py-3 px-6 text-white rounded-lg"
-                    onClick={login}>
-                    Log in
-                  </button>
-                </>
-              )}
-            </div>
+            <h1 className="text-xl  mb-4 flex items-center gap-2">
+              <Logo />
+              page.fun
+            </h1>
+            <h1 className="text-2xl font-semibold mb-4">
+              Linktree for memes & tokens.
+            </h1>
+            {authenticated ? (
+              <Button onClick={() => window.dispatchEvent(new CustomEvent('openAppMenu'))}>
+                Dashboard
+              </Button>
+            ) : (
+              <Button onClick={login}>Login</Button>
+            )}
           </div>
         </div>
+        <div className="bg-primary">asdf</div>
       </main>
 
       <Toaster />

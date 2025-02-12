@@ -1,6 +1,11 @@
 /* Modern Theme */
+
+:root {
+  --pf-background-color: #000;
+  --pf-image-radius: 0.5rem;
+}
+
 .pf-page {
-  background-color: #000;
   color: white;
 }
 

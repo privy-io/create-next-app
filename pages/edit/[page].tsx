@@ -3,6 +3,7 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
+import { PrivyClient } from "@privy-io/server-auth";
 import PagePreview from '@/components/PagePreview';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -21,10 +22,15 @@ interface PageProps {
   error?: string;
 }
 
-export const getServerSideProps: GetServerSideProps<PageProps> = async ({ params }) => {
+const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
+const PRIVY_APP_SECRET = process.env.PRIVY_APP_SECRET;
+const privyClient = new PrivyClient(PRIVY_APP_ID!, PRIVY_APP_SECRET!);
+
+export const getServerSideProps: GetServerSideProps<PageProps> = async ({ params, req }) => {
   const slug = params?.page as string;
 
   try {
+    // First get the page data
     const pageResponse = await fetch(`${process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : ''}/api/page-store?slug=${slug}`);
     const { mapping } = await pageResponse.json();
 
@@ -35,6 +41,47 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async ({ params
           pageData: null,
           error: 'Page not found'
         }
+      };
+    }
+
+    // Check authentication and ownership
+    const idToken = req.cookies['privy-id-token'];
+    if (!idToken) {
+      return {
+        redirect: {
+          destination: `/${slug}`,
+          permanent: false,
+        },
+      };
+    }
+
+    try {
+      const user = await privyClient.getUser({ idToken });
+      
+      // Check if the wallet is in user's linked accounts
+      const hasWallet = user.linkedAccounts.some(account => {
+        if (account.type === 'wallet' && account.chainType === 'solana') {
+          const walletAccount = account as { address?: string };
+          return walletAccount.address?.toLowerCase() === mapping.walletAddress.toLowerCase();
+        }
+        return false;
+      });
+
+      if (!hasWallet) {
+        return {
+          redirect: {
+            destination: `/${slug}`,
+            permanent: false,
+          },
+        };
+      }
+    } catch (error) {
+      console.error('Auth verification error:', error);
+      return {
+        redirect: {
+          destination: `/${slug}`,
+          permanent: false,
+        },
       };
     }
 
@@ -63,6 +110,18 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [pageDetails, setPageDetails] = useState<PageData | null>(null);
   const [previewData, setPreviewData] = useState<PageData | null>(null);
+
+  // Check ownership and redirect if not owner
+  useEffect(() => {
+    if (pageData && authenticated) {
+      const solanaWallet = user?.linkedAccounts?.find(isSolanaWallet);
+      const isOwner = solanaWallet?.address?.toLowerCase() === pageData.walletAddress?.toLowerCase();
+      
+      if (!isOwner) {
+        router.replace(`/${slug}`);
+      }
+    }
+  }, [pageData, authenticated, user, slug, router]);
 
   // Initialize state after component mounts to prevent hydration mismatch
   useEffect(() => {
