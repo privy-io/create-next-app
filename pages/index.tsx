@@ -1,14 +1,15 @@
-import Portal from "../components/graphics/portal";
 import { useLogin, usePrivy, WalletWithMetadata } from "@privy-io/react-auth";
 import { PrivyClient } from "@privy-io/server-auth";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
+import Image from "next/image";
 import { useRouter } from "next/router";
 import { Toaster } from "@/components/ui/toaster";
 import AppMenu from "@/components/AppMenu";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import CreatePageModal from "@/components/CreatePageModal";
+import { PhoneFrame } from "@/components/PhoneFrame";
 import { useState, useEffect } from "react";
 
 export const getServerSideProps: GetServerSideProps = async ({ req }) => {
@@ -98,9 +99,10 @@ export default function HomePage() {
             <h1 className="text-xl  mb-4 flex items-center gap-2">
               <Logo className="w-8 h-8" />
               page.fun
+              <span className="text-xs opacity-75 text-green-600">beta</span>
             </h1>
             <h1 className="text-2xl font-semibold mb-4">
-              Linktree for tokens and memes.
+              The Linktree alternative tokens and memes.
             </h1>
             <p className=" text-lg opacity-75 mb-4">Tokenize yourself.</p>
             {authenticated ? (
@@ -114,32 +116,48 @@ export default function HomePage() {
                 {isLoading
                   ? "Loading..."
                   : hasPages
-                  ? "Dashboard"
+                  ? "My Pages"
                   : "Create Page"}
               </Button>
             ) : (
-              <Button onClick={login}>Login</Button>
+              <Button onClick={login}>
+                <span>Get your </span>
+                <span className="-ml-1">page.fun</span>
+                <span className="opacity-75 -mx-1 opacity-50">/</span>
+                <span className="text-green-300">name</span>
+              </Button>
             )}
           </div>
         </div>
         <div className="bg-primary relative min-h-[60vh] overflow-hidden">
-          <img
-            src="bg.webp"
+          <Image
+            src="/bg.webp"
             alt="Page.fun"
-            className="w-full h-full absolute top-0 left-0 object-cover opacity-100"
+            fill
+            className="object-cover opacity-100"
           />
 
-          {/* Add retro phone frame */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[280px] h-[500px] border-[12px] border-zinc-800 rounded-[40px] bg-zinc-700 shadow-2xl pixelated">
-            {/* Phone screen */}
-            <div className="w-full h-full bg-zinc-200 rounded-[24px] overflow-hidden relative">
-              {/* Screen content - pixelated effect */}
-              <div className="w-full h-full bg-[#c3c3c3] [image-rendering:pixelated]">
-                <img
-                  src="bg.webp"
-                  alt="Page.fun preview"
-                  className="w-full h-full object-cover opacity-50 [image-rendering:pixelated]"
-                />
+          {/* Marquee container */}
+          <div className="absolute top-5 sm:top-1/2 left-0 sm:-translate-y-1/2 w-full">
+            <div className="relative flex overflow-x-hidden">
+              <div
+                style={{ "--marquee-duration": "20s" } as React.CSSProperties}
+                className="animate-marquee whitespace-nowrap flex gap-4">
+                <PhoneFrame color="white" />
+                <PhoneFrame color="gold" />
+                <PhoneFrame color="silver" />
+                <PhoneFrame color="rose" />
+                <PhoneFrame color="blue" />
+              </div>
+
+              <div
+                style={{ "--marquee-duration": "20s" } as React.CSSProperties}
+                className="absolute pl-4 top-0 animate-marquee2 whitespace-nowrap flex gap-4">
+                <PhoneFrame color="white" />
+                <PhoneFrame color="gold" />
+                <PhoneFrame color="silver" />
+                <PhoneFrame color="rose" />
+                <PhoneFrame color="blue" />
               </div>
             </div>
           </div>
@@ -152,6 +170,7 @@ export default function HomePage() {
 
       {showCreateModal && solanaWallet && (
         <CreatePageModal
+          open={showCreateModal}
           walletAddress={solanaWallet.address}
           onClose={() => setShowCreateModal(false)}
         />

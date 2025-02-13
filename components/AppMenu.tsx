@@ -1,7 +1,7 @@
 import { useRouter } from "next/router";
 import { usePrivy, useLogin } from "@privy-io/react-auth";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Plus } from "lucide-react";
+import { ChevronDown, Plus, Home } from "lucide-react";
 import Link from "next/link";
 import {
   Popover,
@@ -121,7 +121,10 @@ export default function AppMenu({
         <PopoverContent className="w-[300px] p-0" align="center">
           <div className="p-4 pb-0">
             <div>
-              <div>Page.fun</div>
+              <Link href="/" className="flex items-center gap-1.5">
+                <Home size={16} />
+                <div>Page.fun</div>
+              </Link>
               <div className="text-sm text-gray-600">
                 Simple, fun tokenized websites
               </div>
