@@ -31,6 +31,7 @@ const PageItemSchema = z
       "terminal",
       "filesystem",
     ]),
+    title: z.string().optional(),
     url: z
       .union([
         z.string().regex(urlRegex, "Invalid URL format"),
@@ -43,7 +44,7 @@ const PageItemSchema = z
     order: z.number().int().min(0),
     isPlugin: z.boolean().optional(),
     tokenGated: z.boolean().optional(),
-    requiredAmount: z.number().optional(),
+    requiredTokens: z.array(z.string()).optional(),
   })
   .refine(
     (data) => {
@@ -119,8 +120,8 @@ type PageItem = {
   url?: string; // Optional since plugins don't have URLs
   order: number;
   isPlugin?: boolean; // To distinguish between socials and plugins
-  tokenGated?: boolean; // Add this
-  requiredAmount?: number; // Add this
+  tokenGated?: boolean;
+  requiredTokens?: string[];
 };
 
 type PageData = {
@@ -265,29 +266,11 @@ async function getPagesForWallet(walletAddress: string, req: NextApiRequest) {
         }),
     );
 
-    // Convert array of pages to mapping object
-    const pagesMapping: { [slug: string]: PageData } = {};
-    pages.filter(Boolean).forEach((page: any) => {
-      if (page && page.slug) {
-        pagesMapping[page.slug] = {
-          walletAddress: page.walletAddress,
-          connectedToken: page.connectedToken,
-          title: page.title,
-          description: page.description,
-          image: page.image,
-          items: page.items,
-          designStyle: page.designStyle,
-          fonts: page.fonts,
-          createdAt: page.createdAt,
-          updatedAt: page.updatedAt,
-        };
-      }
-    });
-
-    return { pages: pages.filter(Boolean), mappings: pagesMapping };
+    // These are the user's own pages, so they should have full access
+    return { pages: pages.filter(Boolean) };
   } catch (error) {
     console.error("Error getting pages for wallet:", error);
-    return { pages: [], mappings: {} };
+    return { pages: [] };
   }
 }
 
@@ -362,6 +345,32 @@ async function removePageFromUserMetadata(userId: string, slug: string) {
   }
 }
 
+// Helper function to sanitize page data for public access
+function sanitizePageData(pageData: PageData | null, isOwner: boolean = false): PageData | null {
+  if (!pageData) return pageData;
+
+  // If user is the owner, return full data
+  if (isOwner) return pageData;
+
+  // Clone the data to avoid mutating the original
+  const sanitized = { ...pageData };
+
+  // For non-owners, hide URLs of token-gated items but keep the items visible
+  if (sanitized.items) {
+    sanitized.items = sanitized.items.map(item => {
+      if (item.tokenGated) {
+        return {
+          ...item,
+          url: undefined // Remove URL for token-gated items
+        };
+      }
+      return item;
+    });
+  }
+
+  return sanitized;
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
@@ -374,7 +383,8 @@ export default async function handler(
       // If walletAddress is provided, return pages for that wallet
       if (walletAddress) {
         const result = await getPagesForWallet(walletAddress as string, req);
-        return res.status(200).json({ pages: result });
+        // These are the user's own pages, so don't sanitize them
+        return res.status(200).json({ pages: result.pages });
       }
 
       // If slug is provided, return specific page data
@@ -393,13 +403,13 @@ export default async function handler(
           }
         }
 
-        return res.status(200).json({ mapping: pageData, isOwner });
+        // Sanitize the page data before returning
+        const sanitizedData = sanitizePageData(pageData, isOwner);
+        return res.status(200).json({ mapping: sanitizedData, isOwner });
       }
 
       // Return error if neither slug nor walletAddress provided
-      return res
-        .status(400)
-        .json({ error: "Slug or wallet address is required" });
+      return res.status(400).json({ error: "Slug or wallet address is required" });
     } catch (error) {
       console.error("Error fetching page data:", error);
       return res.status(500).json({ error: "Failed to fetch page data" });

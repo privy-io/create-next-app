@@ -22,8 +22,9 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { SortableItem } from "@/components/SortableItem";
-import { ItemType, PageData, PageItem } from "@/types";
+import { PageData, PageItem } from "@/types";
 import React from "react";
+import { LINK_CONFIGS, LinkType, validateLinkUrl } from "@/lib/links";
 
 interface LinksTabProps {
   pageDetails: PageData | null;
@@ -47,7 +48,6 @@ export function LinksTab({
   validationErrors = {},
   setValidationErrors,
 }: LinksTabProps) {
-  // Add sensors for drag and drop
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -94,13 +94,52 @@ export function LinksTab({
       });
     }
 
-    setPageDetails((prev) => ({
-      ...prev!,
-      items: prev!.items!.map((i) =>
-        getItemId(i) === itemId ? { ...i, url } : i,
-      ),
-    }));
+    setPageDetails((prev) => {
+      if (!prev) return prev;
+
+      // Validate URL before updating
+      const item = prev.items?.find(i => getItemId(i) === itemId);
+      if (!item) return prev;
+
+      const linkConfig = LINK_CONFIGS[item.type];
+      if (!linkConfig?.options?.requiresUrl) return prev;
+
+      // Format URL: Add https:// if missing and not an email
+      let formattedUrl = url.trim();
+      if (formattedUrl && !formattedUrl.startsWith('mailto:') && !formattedUrl.includes('@') && !formattedUrl.match(/^https?:\/\//)) {
+        formattedUrl = `https://${formattedUrl}`;
+      }
+
+      // Only validate if URL is not empty
+      if (formattedUrl && !validateLinkUrl(item.type, formattedUrl)) {
+        setValidationErrors(prev => ({
+          ...prev,
+          [itemId]: `Invalid ${linkConfig.label} URL format`
+        }));
+      }
+
+      return {
+        ...prev,
+        items: prev.items?.map((i) =>
+          getItemId(i) === itemId ? { ...i, url: formattedUrl } : i
+        ),
+      };
+    });
   };
+
+  // Get available link types (excluding already added ones)
+  const getAvailableLinkTypes = () => {
+    const addedTypes = new Set(pageDetails?.items?.map(item => item.type) || []);
+    return Object.entries(LINK_CONFIGS)
+      .filter(([type]) => !addedTypes.has(type as LinkType))
+      .map(([type, config]) => ({
+        linkType: type as LinkType,
+        ...config,
+      }));
+  };
+
+  // Only show token gating if a token is connected
+  const canShowTokenGating = !!pageDetails?.connectedToken;
 
   return (
     <div className="space-y-6 px-6">
@@ -117,47 +156,20 @@ export function LinksTab({
               <DialogTitle>Add Link</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
-              {[
-                { type: "twitter", label: "Twitter" },
-                { type: "telegram", label: "Telegram" },
-                {
-                  type: "dexscreener",
-                  label: "DexScreener",
-                  showIfToken: true,
-                },
-                { type: "tiktok", label: "TikTok" },
-                { type: "instagram", label: "Instagram" },
-                { type: "email", label: "Email" },
-                { type: "discord", label: "Discord" },
-                { type: "private-chat", label: "Private Chat", isPlugin: true },
-                { type: "terminal", label: "Terminal", isPlugin: true },
-              ].map(({ type, label, showIfToken, isPlugin }) => {
-                if (showIfToken && !pageDetails?.connectedToken) return null;
-                const isAdded = pageDetails?.items?.some(
-                  (item) => item.type === type,
-                );
-                if (isAdded) return null;
-
+              {getAvailableLinkTypes().map((linkConfig) => {
+                const Icon = linkConfig.icon.classic;
                 return (
                   <Button
-                    key={type}
+                    key={linkConfig.linkType}
                     variant="outline"
                     className="justify-start gap-2"
                     onClick={() => {
-                      const newItem: PageItem = isPlugin
-                        ? {
-                            type: type as ItemType,
-                            order: pageDetails?.items?.length || 0,
-                            isPlugin: true,
-                            tokenGated: false,
-                            id: `${type}-${Math.random().toString(36).substr(2, 9)}`,
-                          }
-                        : {
-                            type: type as ItemType,
-                            url: "",
-                            id: `${type}-${Math.random().toString(36).substr(2, 9)}`,
-                            order: pageDetails?.items?.length || 0,
-                          };
+                      const newItem: PageItem = {
+                        type: linkConfig.linkType,
+                        url: "",
+                        id: `${linkConfig.linkType}-${Math.random().toString(36).substr(2, 9)}`,
+                        order: pageDetails?.items?.length || 0,
+                      };
 
                       setPageDetails((prev) => {
                         if (!prev) return prev;
@@ -168,8 +180,8 @@ export function LinksTab({
                       });
                     }}
                   >
-                    <span className="text-xl">{getSocialIcon(type)}</span>
-                    {label}
+                    <Icon className="h-4 w-4" />
+                    {linkConfig.label}
                   </Button>
                 );
               })}
@@ -188,6 +200,13 @@ export function LinksTab({
           strategy={verticalListSortingStrategy}
         >
           <div className="space-y-2">
+            {!canShowTokenGating && pageDetails?.items?.some(item => item.tokenGated) && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+                <p className="text-sm text-yellow-800">
+                  Connect a token in the Settings tab to enable token gating for your links.
+                </p>
+              </div>
+            )}
             {pageDetails?.items?.map((item) => {
               const itemId = getItemId(item);
               return (
@@ -196,11 +215,9 @@ export function LinksTab({
                   id={itemId}
                   item={item}
                   error={validationErrors[itemId]}
-                  onUrlChange={
-                    !item.isPlugin
-                      ? (url) => handleUrlChange(itemId, url)
-                      : undefined
-                  }
+                  onUrlChange={(url) => handleUrlChange(itemId, url)}
+                  setPageDetails={setPageDetails}
+                  tokenSymbol={pageDetails?.tokenSymbol}
                   onDelete={() => {
                     if (validationErrors[itemId]) {
                       setValidationErrors((prev: { [key: string]: string }) => {
@@ -225,32 +242,4 @@ export function LinksTab({
       </DndContext>
     </div>
   );
-}
-
-// Helper function to get icon for social link
-function getSocialIcon(type: string) {
-  switch (type) {
-    case "twitter":
-      return "𝕏";
-    case "telegram":
-      return "📱";
-    case "dexscreener":
-      return "📊";
-    case "tiktok":
-      return "🎵";
-    case "instagram":
-      return "📸";
-    case "email":
-      return "📧";
-    case "discord":
-      return "💬";
-    case "private-chat":
-      return "🔒";
-    case "telegram-group":
-      return "💬";
-    case "terminal":
-      return "💻";
-    default:
-      return "🔗";
-  }
 }

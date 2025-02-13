@@ -1,23 +1,14 @@
-export type ItemType = 
-  | 'twitter'
-  | 'telegram'
-  | 'dexscreener'
-  | 'tiktok'
-  | 'instagram'
-  | 'email'
-  | 'discord'
-  | 'private-chat'
-  | 'terminal'
-  | 'filesystem';
+import { LinkType } from '@/lib/links';
 
 export interface PageItem {
   id: string;
-  type: ItemType;
+  type: LinkType;
   url?: string;
+  title?: string;
   order: number;
   isPlugin?: boolean;
   tokenGated?: boolean;
-  requiredAmount?: number;
+  requiredTokens?: string[];
 }
 
 export interface PageData {

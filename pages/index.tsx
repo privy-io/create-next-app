@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import CreatePageModal from "@/components/CreatePageModal";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { useState, useEffect } from "react";
+import { useGlobalContext } from "@/lib/context";
 
 export const getServerSideProps: GetServerSideProps = async ({ req }) => {
   const cookieAuthToken = req.cookies["privy-token"];
@@ -51,33 +52,20 @@ export default function HomePage() {
   });
   const { ready, authenticated, user } = usePrivy();
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [hasPages, setHasPages] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const { userPages, isLoadingPages, tokenHoldings, isLoadingTokens } = useGlobalContext();
 
   // Get the first Solana wallet if one exists
   const solanaWallet = user?.linkedAccounts?.find(isSolanaWallet);
 
-  // Check if user has any pages
+  // Add debug logging
   useEffect(() => {
-    const checkUserPages = async () => {
-      if (!solanaWallet) return;
-
-      setIsLoading(true);
-      try {
-        const response = await fetch(
-          `/api/page-store?walletAddress=${solanaWallet.address}`
-        );
-        const data = await response.json();
-        setHasPages(data.pages?.pages?.length > 0);
-      } catch (error) {
-        console.error("Error checking user pages:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkUserPages();
-  }, [solanaWallet]);
+    console.log('Debug token holdings:', {
+      isLoadingTokens,
+      tokenCount: tokenHoldings.length,
+      tokens: tokenHoldings,
+      wallet: solanaWallet?.address
+    });
+  }, [tokenHoldings, isLoadingTokens, solanaWallet]);
 
   const handleDashboardClick = () => {
     window.dispatchEvent(new CustomEvent("openAppMenu"));
@@ -97,39 +85,40 @@ export default function HomePage() {
         <div className="flex flex-1 min-h-[40vh] py-5 items-center text-center sm:text-left max-w-[360px] sm:max-w-[400px] px-4 w-full mx-auto">
           <div>
             <h1 className="text-xl mb-4 flex items-center gap-2 justify-center sm:justify-start">
-              <Logo className="w-8 h-8" />
+              <Logo className="w-8 h-8 hidden sm:block" />
               page.fun
               <span className="text-xs opacity-75 text-green-600">beta</span>
             </h1>
-            <h1 className="text-2xl font-semibold mb-4">
-              The Linktree alternative tokens and memes.
+            <h1 className="text-4xl font-semibold mb-4">
+              Tokenize yourself, memes and AI bots
             </h1>
-            <p className=" text-lg opacity-75 mb-4">Tokenize yourself.</p>
+            <p className="text-lg opacity-75 mb-4">A linktree alternative for pump.fun tokens</p>
             {authenticated ? (
               <Button
-                onClick={
-                  hasPages
+                onClick={isLoadingPages ? undefined : (
+                  userPages.length > 0
                     ? handleDashboardClick
                     : () => setShowCreateModal(true)
-                }
-                disabled={isLoading}>
-                {isLoading
+                )}
+                disabled={isLoadingPages}
+              >
+                {isLoadingPages
                   ? "Loading..."
-                  : hasPages
+                  : userPages.length > 0
                   ? "My Pages"
                   : "Create Page"}
               </Button>
             ) : (
-              <Button onClick={login} variant="notched">
+              <Button onClick={login}>
                 <span>Get your </span>
                 <span className="-ml-1">page.fun</span>
                 <span className="opacity-75 -mx-1 opacity-50">/</span>
-                <span className="text-green-300">name</span>
+                <span className="text-green-300">token</span>
               </Button>
             )}
           </div>
         </div>
-        <div className="bg-primary relative min-h-[60vh] overflow-hidden">
+        <div className="bg-primary relative min-h-[60vh] overflow-hidden border-t sm:border-t-0 sm:border-l sm:border-zinc-700">
           <Image
             src="/bg.webp"
             alt="Page.fun"
@@ -138,7 +127,7 @@ export default function HomePage() {
           />
 
           {/* Marquee container */}
-          <div className="absolute top-5 sm:top-1/2 left-0 sm:-translate-y-1/2 w-full">
+          <div className="absolute top-5 sm:top-1/2 left-0 sm:-translate-y-1/2 w-full ">
             <div className="relative flex overflow-x-hidden">
               <div
                 style={{ "--marquee-duration": "20s" } as React.CSSProperties}

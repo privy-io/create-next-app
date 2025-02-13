@@ -8,12 +8,19 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { PageData } from "@/types";
 import { useEffect, useState } from "react";
 import { Logo } from "./logo";
 import { isSolanaWallet } from "@/utils/wallet";
 import { cn } from "@/lib/utils";
 import CreatePageModal from "./CreatePageModal";
+import { useGlobalContext } from "@/lib/context";
 
 type AppMenuProps = {
   className?: string;
@@ -39,12 +46,10 @@ export default function AppMenu({
     },
   });
   const router = useRouter();
-  const [mappedSlugs, setMappedSlugs] = useState<string[]>([]);
-  const [isLoadingMappings, setIsLoadingMappings] = useState(false);
-  const [mappings, setMappings] = useState<{ [key: string]: PageData }>({});
   const [open, setOpen] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
+  const { userPages, isLoadingPages } = useGlobalContext();
   const solanaWallet = user?.linkedAccounts?.find(isSolanaWallet);
   const numAccounts = user?.linkedAccounts?.length || 0;
   const canRemoveAccount = numAccounts > 1;
@@ -61,36 +66,6 @@ export default function AppMenu({
       router.events.off("routeChangeStart", handleRouteChange);
     };
   }, [router]);
-
-  // Fetch pages when wallet is connected
-  useEffect(() => {
-    if (solanaWallet) {
-      const fetchMappings = async () => {
-        setIsLoadingMappings(true);
-        try {
-          const response = await fetch(
-            `/api/page-store?walletAddress=${solanaWallet.address}`,
-          );
-          const data = await response.json();
-          const {
-            pages: { pages = [], mappings = {} },
-          } = data;
-          setMappedSlugs(pages.map((page: any) => page.slug));
-          setMappings(mappings);
-        } catch (error) {
-          console.error("Error fetching mappings:", error);
-          setMappedSlugs([]);
-          setMappings({});
-        } finally {
-          setIsLoadingMappings(false);
-        }
-      };
-      fetchMappings();
-    } else {
-      setMappedSlugs([]);
-      setMappings({});
-    }
-  }, [solanaWallet]);
 
   useEffect(() => {
     const handleOpenMenu = () => {
@@ -135,7 +110,30 @@ export default function AppMenu({
             {ready && authenticated ? (
               <div className="space-y-4">
                 <div>
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex flex-col gap-2 mb-4">
+                    {userPages.some(page => 
+                      router.asPath === `/${page.slug}` || 
+                      router.asPath === `/edit/${page.slug}`
+                    ) && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          const currentPage = userPages.find(page => 
+                            router.asPath === `/${page.slug}` || 
+                            router.asPath === `/edit/${page.slug}`
+                          );
+                          if (currentPage) {
+                            const isEditPage = router.asPath === `/edit/${currentPage.slug}`;
+                            router.push(isEditPage ? `/${currentPage.slug}` : `/edit/${currentPage.slug}`);
+                            setOpen(false);
+                          }
+                        }}
+                        className="w-full"
+                      >
+                        {router.asPath.startsWith('/edit/') ? 'Exit to page' : 'Edit Page'}
+                      </Button>
+                    )}
                     <Button
                       size="sm"
                       onClick={() => {
@@ -150,48 +148,42 @@ export default function AppMenu({
                   </div>
 
                   <div className="space-y-3 max-h-[300px] overflow-y-auto">
-                    {isLoadingMappings ? (
+                    {isLoadingPages ? (
                       <div className="text-sm text-gray-600">
                         Loading pages...
                       </div>
-                    ) : mappedSlugs.length === 0 ? (
+                    ) : userPages.length === 0 ? (
                       <div className="text-sm text-gray-600">
                         No pages created yet
                       </div>
                     ) : (
-                      // Sort pages so current page is first
-                      [...mappedSlugs]
+                      userPages
                         .sort((a, b) => {
-                          const isCurrentA =
-                            router.asPath === `/${a}` ||
-                            router.asPath === `/edit/${a}`;
-                          const isCurrentB =
-                            router.asPath === `/${b}` ||
-                            router.asPath === `/edit/${b}`;
+                          const isCurrentA = router.asPath === `/${a.slug}` || router.asPath === `/edit/${a.slug}`;
+                          const isCurrentB = router.asPath === `/${b.slug}` || router.asPath === `/edit/${b.slug}`;
                           if (isCurrentA) return -1;
                           if (isCurrentB) return 1;
-                          return 0;
+                          return a.title?.localeCompare(b.title || '') || 0;
                         })
-                        .map((slug) => {
-                          const pageData = mappings[slug];
+                        .map((page) => {
                           const isCurrentPage =
-                            router.asPath === `/${slug}` ||
-                            router.asPath === `/edit/${slug}`;
+                            router.asPath === `/${page.slug}` ||
+                            router.asPath === `/edit/${page.slug}`;
 
                           return (
                             <div
-                              key={slug}
+                              key={page.slug}
                               className={cn(
                                 "p-3 rounded-lg space-y-2",
                                 isCurrentPage
-                                  ? "bg-primary/5 ring-1 ring-primary/10"
-                                  : "bg-muted",
+                                  ? "bg-primary/10 ring-1 ring-primary/20"
+                                  : "bg-muted hover:bg-muted/80",
                               )}
                             >
                               <div className="flex items-start justify-between gap-2">
                                 <div className="space-y-1 min-w-0">
                                   <Link
-                                    href={`/${slug}`}
+                                    href={`/${page.slug}`}
                                     className={cn(
                                       "block text-sm font-medium truncate",
                                       isCurrentPage
@@ -199,16 +191,16 @@ export default function AppMenu({
                                         : "text-primary hover:text-primary/80",
                                     )}
                                   >
-                                    page.fun/{slug}
+                                    page.fun/{page.slug}
                                   </Link>
-                                  {pageData?.title && (
+                                  {page.title && (
                                     <p className="text-xs text-muted-foreground truncate">
-                                      {pageData.title}
+                                      {page.title}
                                     </p>
                                   )}
                                 </div>
                                 <Link
-                                  href={`/edit/${slug}`}
+                                  href={`/edit/${page.slug}`}
                                   passHref
                                 >
                                   <Button
@@ -232,12 +224,21 @@ export default function AppMenu({
                       {solanaWallet ? (
                         <div className="space-y-2">
                           <div className="flex gap-2 items-center">
-                            <input
-                              type="text"
-                              value={solanaWallet.address}
-                              disabled
-                              className="flex-1 text-sm text-muted-foreground bg-muted px-2 py-1 rounded-md border"
-                            />
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <input
+                                    type="text"
+                                    value={solanaWallet.address}
+                                    disabled
+                                    className="flex-1 text-sm text-muted-foreground bg-muted px-2 py-1 rounded-md border"
+                                  />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Your wallet address is hidden to visitors and kept private</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                             <Button
                               variant="outline"
                               size="sm"

@@ -359,7 +359,7 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
 
           <div className="flex">
             {/* Left Column - Settings (Hidden on mobile) */}
-            <div className="w-[440px] hidden lg:block space-y-8 border-r-2 border-gray-900 relative">
+            <div className="w-[440px] hidden lg:block space-y-8 border-r border-gray-500 relative">
               <div className="bg-background overflow-y-auto h-screen">
                 <SettingsTabs 
                   pageDetails={pageDetails} 

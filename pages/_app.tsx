@@ -1,10 +1,23 @@
 import "../styles/globals.css";
 import type { AppProps } from "next/app";
 import Head from "next/head";
-import { PrivyProvider } from "@privy-io/react-auth";
+import { PrivyProvider, usePrivy } from "@privy-io/react-auth";
 import { toSolanaWalletConnectors } from "@privy-io/react-auth/solana";
+import { GlobalProvider } from "@/lib/context";
+import { isSolanaWallet } from "@/utils/wallet";
 
-function MyApp({ Component, pageProps }: AppProps) {
+function AppContent({ Component, pageProps }: AppProps) {
+  const { user } = usePrivy();
+  const solanaWallet = user?.linkedAccounts?.find(isSolanaWallet);
+
+  return (
+    <GlobalProvider walletAddress={solanaWallet?.address}>
+      <Component {...pageProps} />
+    </GlobalProvider>
+  );
+}
+
+function MyApp(props: AppProps) {
   const solanaConnectors = toSolanaWalletConnectors();
 
   return (
@@ -37,7 +50,7 @@ function MyApp({ Component, pageProps }: AppProps) {
           },
         }}
       >
-        <Component {...pageProps} />
+        <AppContent {...props} />
       </PrivyProvider>
     </>
   );
