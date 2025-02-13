@@ -97,11 +97,11 @@ export default function AppMenu({
           <div className="p-4 pb-0">
             <div>
               <Link href="/" className="flex items-center gap-1.5">
-                <Home size={16} />
-                <div>Page.fun</div>
+                <div className="font-bold">page.fun</div>
+                <div className="text-xs text-green-500">beta</div>
               </Link>
               <div className="text-sm text-gray-600">
-                Simple, fun tokenized websites
+                Tokenize yourself, memes and AI bots.
               </div>
             </div>
           </div>
@@ -131,7 +131,16 @@ export default function AppMenu({
                         }}
                         className="w-full"
                       >
-                        {router.asPath.startsWith('/edit/') ? 'Exit to page' : 'Edit Page'}
+                        {(() => {
+                          const currentPage = userPages.find(page => 
+                            router.asPath === `/${page.slug}` || 
+                            router.asPath === `/edit/${page.slug}`
+                          );
+                          const isEditPage = router.asPath.startsWith('/edit/');
+                          return isEditPage 
+                            ? `Exit to ${currentPage?.title || 'page'}` 
+                            : `Edit ${currentPage?.title || 'page'}`;
+                        })()}
                       </Button>
                     )}
                     <Button
