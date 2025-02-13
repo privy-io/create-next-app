@@ -64,7 +64,7 @@ export default function HomePage() {
       setIsLoading(true);
       try {
         const response = await fetch(
-          `/api/page-store?walletAddress=${solanaWallet.address}`,
+          `/api/page-store?walletAddress=${solanaWallet.address}`
         );
         const data = await response.json();
         setHasPages(data.pages?.pages?.length > 0);
@@ -92,19 +92,17 @@ export default function HomePage() {
         <AppMenu />
       </div>
 
-      <main className="flex min-h-screen  bg-muted min-w-full grid sm:grid-cols-2">
-        <div className="flex flex-1 items-center max-w-[400px] px-4 w-full mx-auto">
+      <main className="flex min-h-screen bg-muted min-w-full grid sm:grid-cols-2">
+        <div className="flex flex-1 min-h-[40vh] items-center max-w-[400px] px-4 w-full mx-auto">
           <div>
             <h1 className="text-xl  mb-4 flex items-center gap-2">
               <Logo className="w-8 h-8" />
               page.fun
             </h1>
             <h1 className="text-2xl font-semibold mb-4">
-              A Linktree alternative for tokens and memes.
+              Linktree for tokens and memes.
             </h1>
-            <p className=" text-lg opacity-75 mb-4">
-              Give tokens utility with gated links, alpha access and more.
-            </p>
+            <p className=" text-lg opacity-75 mb-4">Tokenize yourself.</p>
             {authenticated ? (
               <Button
                 onClick={
@@ -112,20 +110,40 @@ export default function HomePage() {
                     ? handleDashboardClick
                     : () => setShowCreateModal(true)
                 }
-                disabled={isLoading}
-              >
+                disabled={isLoading}>
                 {isLoading
                   ? "Loading..."
                   : hasPages
-                    ? "Dashboard"
-                    : "Create Page"}
+                  ? "Dashboard"
+                  : "Create Page"}
               </Button>
             ) : (
               <Button onClick={login}>Login</Button>
             )}
           </div>
         </div>
-        <div className="bg-primary relative">
+        <div className="bg-primary relative min-h-[60vh] overflow-hidden">
+          <img
+            src="bg.webp"
+            alt="Page.fun"
+            className="w-full h-full absolute top-0 left-0 object-cover opacity-100"
+          />
+
+          {/* Add retro phone frame */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[280px] h-[500px] border-[12px] border-zinc-800 rounded-[40px] bg-zinc-700 shadow-2xl pixelated">
+            {/* Phone screen */}
+            <div className="w-full h-full bg-zinc-200 rounded-[24px] overflow-hidden relative">
+              {/* Screen content - pixelated effect */}
+              <div className="w-full h-full bg-[#c3c3c3] [image-rendering:pixelated]">
+                <img
+                  src="bg.webp"
+                  alt="Page.fun preview"
+                  className="w-full h-full object-cover opacity-50 [image-rendering:pixelated]"
+                />
+              </div>
+            </div>
+          </div>
+
           <div className="absolute text-white text-xs pb-2 bottom-0 left-[50%] -translate-x-1/2">
             © Page.fun - $page.
           </div>

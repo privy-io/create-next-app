@@ -120,7 +120,7 @@ export default function AppMenu({
         </PopoverTrigger>
         <PopoverContent className="w-[300px] p-0" align="center">
           <div className="p-4 pb-0">
-            <div className="mb-4">
+            <div>
               <div>Page.fun</div>
               <div className="text-sm text-gray-600">
                 Simple, fun tokenized websites
