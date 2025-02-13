@@ -35,7 +35,7 @@ export function SettingsTabs({
   return (
     <div className="flex flex-col h-full">
       <Tabs defaultValue="general" className="flex-1">
-        <div className="flex px-4 py-2 mb-5 gap-4 items-center sticky top-0 right-0 bg-background border-b z-50">
+        <div className="flex px-6 py-2 mb-5 gap-4 items-center sticky top-0 right-0 bg-background border-b z-50">
           <AppMenu />
           <TabsList>
             <TabsTrigger value="general">Settings</TabsTrigger>

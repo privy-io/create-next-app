@@ -94,9 +94,9 @@ export default function HomePage() {
       </div>
 
       <main className="flex min-h-screen bg-muted min-w-full grid sm:grid-cols-2">
-        <div className="flex flex-1 min-h-[40vh] items-center max-w-[400px] px-4 w-full mx-auto">
+        <div className="flex flex-1 min-h-[40vh] py-5 items-center text-center sm:text-left max-w-[360px] sm:max-w-[400px] px-4 w-full mx-auto">
           <div>
-            <h1 className="text-xl  mb-4 flex items-center gap-2">
+            <h1 className="text-xl mb-4 flex items-center gap-2 justify-center sm:justify-start">
               <Logo className="w-8 h-8" />
               page.fun
               <span className="text-xs opacity-75 text-green-600">beta</span>
@@ -120,7 +120,7 @@ export default function HomePage() {
                   : "Create Page"}
               </Button>
             ) : (
-              <Button onClick={login}>
+              <Button onClick={login} variant="notched">
                 <span>Get your </span>
                 <span className="-ml-1">page.fun</span>
                 <span className="opacity-75 -mx-1 opacity-50">/</span>
@@ -162,8 +162,8 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="absolute text-white text-xs pb-2 bottom-0 left-[50%] -translate-x-1/2">
-            © Page.fun - $page.
+          <div className="absolute text-white text-xs bottom-3 left-[50%] -translate-x-1/2">
+            <span className="bg-primary text-primary-foreground px-2 py-1 rounded-md">© Page.fun - $page.</span>
           </div>
         </div>
       </main>

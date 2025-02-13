@@ -1,6 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 import TokenSelector from "@/components/TokenSelector";
 import { PageData } from "@/types";
 import { useState } from "react";
@@ -77,11 +78,10 @@ export function GeneralSettingsTab({
               <div className="space-y-4">
                 <div>
                   <div className="flex items-center gap-2">
-                    <input
+                    <Input
                       type="text"
                       value={pageDetails.connectedToken}
                       readOnly
-                      className="flex-1 px-3 py-2 bg-gray-50 border rounded-md text-sm text-gray-600"
                     />
                     <Button
                       variant="outline"
@@ -256,7 +256,7 @@ export function GeneralSettingsTab({
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Description
         </label>
-        <textarea
+        <Textarea
           value={pageDetails?.description || ""}
           onChange={(e) =>
             setPageDetails((prev) =>
@@ -268,7 +268,6 @@ export function GeneralSettingsTab({
                 : null,
             )
           }
-          className="w-full p-2 border rounded-md"
           rows={3}
           maxLength={500}
         />

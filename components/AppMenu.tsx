@@ -108,9 +108,9 @@ export default function AppMenu({
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
-            variant="ghost"
+            variant="outline"
             className={cn(
-              "h-7 px-1 py-0 gap-1 bg-background border border-primary text-foreground hover:bg-foreground hover:text-background",
+              "h-7 px-1 py-0 gap-1 border-primary",
             )}
           >
             <Logo />

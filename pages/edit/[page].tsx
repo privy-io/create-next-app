@@ -14,7 +14,6 @@ import { isSolanaWallet } from '@/utils/wallet';
 import { SettingsTabs } from '@/components/SettingsTabs';
 import { GOOGLE_FONTS } from '@/lib/fonts';
 import { PageData } from '@/types';
-import { LinksTab } from '@/components/tabs/LinksTab';
 
 interface PageProps {
   slug: string;
@@ -299,7 +298,7 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-privy-light-blue p-6">
+      <div className="min-h-screen bg-background p-6">
         <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6">
           <h1 className="text-2xl font-semibold text-red-600">{error}</h1>
           <p className="mt-2 text-gray-600">The page &quot;{slug}&quot; could not be found.</p>
@@ -360,7 +359,7 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
 
           <div className="flex">
             {/* Left Column - Settings (Hidden on mobile) */}
-            <div className="w-[440px] hidden lg:block space-y-8 border-r border-gray-100 relative">
+            <div className="w-[440px] hidden lg:block space-y-8 border-r-2 border-gray-900 relative">
               <div className="bg-background overflow-y-auto h-screen">
                 <SettingsTabs 
                   pageDetails={pageDetails} 
