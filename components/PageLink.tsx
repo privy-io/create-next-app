@@ -79,7 +79,7 @@ export default function PageLink({
       return;
     }
 
-    if (item.tokenGated) {
+    if (item.tokenGated && openDrawer !== item.id) {
       onTokenGatedClick(item);
     }
   };
@@ -102,20 +102,19 @@ export default function PageLink({
             {item.title || linkConfig.label}
           </span>
         </div>
-        <div className="pf-link__token-container">
+        <div className="pf-link__icon-container">
           {item.tokenGated && (
-            <span className="pf-link__token-badge">
-              {item.requiredTokens?.[0] &&
-                pageData.tokenSymbol &&
-                formatTokenAmount(item.requiredTokens[0])}
-              {pageData.image && (
-                <img
-                  src={pageData.image}
-                  alt={pageData.tokenSymbol || "Token"}
-                  className="pf-token-image"
-                />
-              )}
-            </span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 16 16"
+              fill="currentColor"
+              className="pf-link__icon-lock">
+              <path
+                fillRule="evenodd"
+                d="M8 1a3.5 3.5 0 0 0-3.5 3.5V7A1.5 1.5 0 0 0 3 8.5v5A1.5 1.5 0 0 0 4.5 15h7a1.5 1.5 0 0 0 1.5-1.5v-5A1.5 1.5 0 0 0 11.5 7V4.5A3.5 3.5 0 0 0 8 1Zm2 6V4.5a2 2 0 1 0-4 0V7h4Z"
+                clipRule="evenodd"
+              />
+            </svg>
           )}
         </div>
       </div>
@@ -125,35 +124,22 @@ export default function PageLink({
   return (
     <Fragment>
       {item.tokenGated ? (
-        hasAccess && tokenGatedUrls.get(item.id) ? (
-          <a
-            href={tokenGatedUrls.get(item.id)}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={handleClick}>
-            {itemContent}
-          </a>
-        ) : (
-          <button
-            onClick={handleClick}
-            className="w-full text-left"
-            disabled={verifying === item.id}>
-            {itemContent}
-          </button>
-        )
+        <button
+          onClick={handleClick}
+          className="w-full text-left"
+          disabled={verifying === item.id}>
+          {itemContent}
+        </button>
       ) : item.url ? (
-        <a 
-          href={item.url} 
-          target="_blank" 
+        <a
+          href={item.url}
+          target="_blank"
           rel="noopener noreferrer"
           onClick={handleClick}>
           {itemContent}
         </a>
       ) : (
-        <a 
-          href="#" 
-          onClick={handleClick}
-          className="w-full">
+        <a href="#" onClick={handleClick} className="w-full">
           {itemContent}
         </a>
       )}
@@ -161,87 +147,54 @@ export default function PageLink({
       {item.tokenGated && (
         <Drawer
           open={openDrawer === item.id}
-          onOpenChange={(open) => !open && setOpenDrawer(null)}>
+          onOpenChange={(open) => {
+            // Only allow manual closing
+            if (open === false) {
+              setOpenDrawer(null);
+            }
+          }}>
           <DrawerContent>
-            <div className="mx-auto w-full max-w-sm">
               <DrawerHeader>
                 <DrawerDescription className="mt-4">
                   <div className="flex flex-col gap-2">
-                    {!authenticated ? (
-                      <div className="flex flex-col gap-4 items-center">
-                        {pageData.image && (
-                          <div className="relative w-16 h-16 [transform-style:preserve-3d] animate-rotate3d">
-                            <img
-                              src={pageData.image}
-                              alt={pageData.tokenSymbol || "Token"}
-                              className="w-full h-full object-contain rounded-full [backface-visibility:visible]"
-                            />
-                          </div>
-                        )}
-                        <div className="text-center">
-                          <div className="text-lg">
-                            You need to hold{" "}
-                            <span className="font-medium">
-                              {formatTokenAmount(
-                                item.requiredTokens?.[0] || "0"
-                              )}
-                            </span>{" "}
-                            ${pageData.tokenSymbol} tokens to access this
-                            content.
-                          </div>
-                          <div className="mt-2">
-                            Please connect your wallet to verify token access.
-                          </div>
+                    <div className="flex flex-col gap-4 items-center">
+                      {pageData.image && (
+                        <div className="relative w-16 h-16 [transform-style:preserve-3d] animate-rotate3d">
+                          <img
+                            src={pageData.image}
+                            alt={pageData.tokenSymbol || "Token"}
+                            className="w-full h-full object-contain rounded-full [backface-visibility:visible]"
+                          />
                         </div>
+                      )}
+                      <div className="text-center">
+                        <div className="text-base">
+                          You need to hold{" "}
+                          <span className="font-bolder">
+                            {formatTokenAmount(item.requiredTokens?.[0] || "0")}
+                          </span>{" "}
+                          ${pageData.tokenSymbol} tokens to access this content.
+                        </div>
+                      </div>
+                    </div>
+
+                    {!authenticated ? (
+                      <div className="text-center mt-4">
+                        Please connect your wallet to verify token access.
                       </div>
                     ) : hasAccess ? (
-                      <div className="text-green-500 py-2 text-center">
-                        Access verified! You can now access the content.
+                      <div className="flex flex-col gap-2 items-center mt-4">
+                        <div className="text-green-500">
+                          Access verified!
+                        </div>
                       </div>
                     ) : hasAccess === false ? (
-                      <div className="flex flex-col gap-4 items-center">
-                        {pageData.image && (
-                          <div className="relative w-16 h-16 [transform-style:preserve-3d] animate-rotate3d">
-                            <img
-                              src={pageData.image}
-                              alt={pageData.tokenSymbol || "Token"}
-                              className="w-full h-full object-contain rounded-full [backface-visibility:visible]"
-                            />
-                          </div>
-                        )}
-                        <div className="text-center">
-                          <div className="text-lg">
-                            You need to hold{" "}
-                            <span className="font-medium">
-                              {formatTokenAmount(
-                                item.requiredTokens?.[0] || "0"
-                              )}
-                            </span>{" "}
-                            ${pageData.tokenSymbol} tokens to access this
-                            content.
-                          </div>
-                          <div className="text-red-500 mt-2">
-                            Insufficient token balance.
-                          </div>
-                        </div>
+                      <div className="text-red-500 text-center mt-4">
+                        Insufficient token balance.
                       </div>
                     ) : (
-                      <div className="flex flex-col gap-4 items-center">
-                        {pageData.image && (
-                          <div className="relative w-16 h-16 [transform-style:preserve-3d] animate-rotate3d">
-                            <img
-                              src={pageData.image}
-                              alt={pageData.tokenSymbol || "Token"}
-                              className="w-full h-full object-contain rounded-full [backface-visibility:visible]"
-                            />
-                          </div>
-                        )}
-                        <div className="text-center">
-                          <div className="text-lg">
-                            Click the button below to check if you can access
-                            this content
-                          </div>
-                        </div>
+                      <div className="text-center mt-4">
+                        Click the button below to check if you can access this content
                       </div>
                     )}
                   </div>
@@ -252,6 +205,17 @@ export default function PageLink({
                   <Button onClick={handleLogin} className="w-full">
                     Connect Wallet
                   </Button>
+                ) : hasAccess ? (
+                  tokenGatedUrls.get(item.id) && (
+                    <Button asChild className="w-full">
+                      <a
+                        href={tokenGatedUrls.get(item.id)}
+                        target="_blank"
+                        rel="noopener noreferrer">
+                        Open Link
+                      </a>
+                    </Button>
+                  )
                 ) : hasAccess === false ? (
                   <>
                     <Button variant="outline" asChild className="w-full">
@@ -307,18 +271,7 @@ export default function PageLink({
                     </Button>
                   )
                 )}
-                {hasAccess && tokenGatedUrls.get(item.id) && (
-                  <Button asChild className="w-full">
-                    <a
-                      href={tokenGatedUrls.get(item.id)}
-                      target="_blank"
-                      rel="noopener noreferrer">
-                      Open Content
-                    </a>
-                  </Button>
-                )}
               </DrawerFooter>
-            </div>
           </DrawerContent>
         </Drawer>
       )}

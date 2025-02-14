@@ -30,8 +30,8 @@ export default function EditPageLink({
       <div className="pf-link__inner">
         <div className="pf-link__icon-container">
           <div className="pf-link__icon">
-            {Icon && (
-              <Icon
+            {linkConfig.icon.modern && (
+              <linkConfig.icon.modern
                 className="pf-link__icon"
                 aria-hidden="true"
               />
@@ -43,20 +43,19 @@ export default function EditPageLink({
             {item.title || linkConfig.label}
           </span>
         </div>
-        <div className="pf-link__token-container">
+        <div className="pf-link__icon-container">
           {item.tokenGated && (
-            <span className="pf-link__token-badge">
-              {item.requiredTokens?.[0] &&
-                pageData.tokenSymbol &&
-                formatTokenAmount(item.requiredTokens[0])}
-              {pageData.image && (
-                <img
-                  src={pageData.image}
-                  alt={pageData.tokenSymbol || "Token"}
-                  className="pf-token-image"
-                />
-              )}
-            </span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 16 16"
+              fill="currentColor"
+              className="pf-link__icon-lock">
+              <path
+              fillRule="evenodd"
+              d="M8 1a3.5 3.5 0 0 0-3.5 3.5V7A1.5 1.5 0 0 0 3 8.5v5A1.5 1.5 0 0 0 4.5 15h7a1.5 1.5 0 0 0 1.5-1.5v-5A1.5 1.5 0 0 0 11.5 7V4.5A3.5 3.5 0 0 0 8 1Zm2 6V4.5a2 2 0 1 0-4 0V7h4Z"
+              clipRule="evenodd"
+              />
+            </svg>
           )}
         </div>
       </div>
@@ -66,8 +65,7 @@ export default function EditPageLink({
   return (
     <button
       onClick={handleClick}
-      className="w-full text-left cursor-pointer hover:opacity-80"
-    >
+      className="w-full text-left cursor-pointer hover:opacity-80">
       {itemContent}
     </button>
   );
@@ -85,4 +83,4 @@ function formatTokenAmount(amount: string): string {
     return (num / 1000).toFixed(1) + "k";
   }
   return num.toString();
-} 
+}

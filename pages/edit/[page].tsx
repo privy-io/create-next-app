@@ -427,9 +427,9 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
 
           {/* Settings panel */}
           <div className={`
-            fixed right-0 h-screen overflow-scroll top-0 sm:w-[400px] h-full z-50 
+            fixed right-0 h-screen overflow-scroll top-0 sm:w-[500px] h-full z-50 
             bg-background border-l border-gray-500 transform transition-transform duration-300 ease-in-out
-            lg:static lg:transform-none lg:w-1/3 lg:z-0
+            lg:static lg:transform-none lg:w-1/2 lg:z-0
             ${isMobilePanelOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}
           `}>
             <Button 

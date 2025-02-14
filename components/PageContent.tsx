@@ -82,7 +82,6 @@ export default function PageContent({
 
       if (data.hasAccess) {
         await fetchTokenGatedContent(itemId);
-        setTimeout(() => setOpenDrawer(null), 1500);
       }
     } catch (error) {
       console.error("Error verifying access:", error);
