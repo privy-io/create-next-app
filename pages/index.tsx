@@ -92,7 +92,7 @@ export default function HomePage() {
             <h1 className="text-4xl font-semibold mb-4">
               Tokenize yourself, memes and AI bots
             </h1>
-            <p className="text-lg opacity-75 mb-4">A linktree alternative for pump.fun tokens</p>
+            <p className="text-lg opacity-75 mb-4">A Linktree alternative for Solana tokens.</p>
             {authenticated ? (
               <Button
                 onClick={isLoadingPages ? undefined : (
@@ -127,10 +127,10 @@ export default function HomePage() {
           />
 
           {/* Marquee container */}
-          <div className="absolute top-5 sm:top-1/2 left-0 sm:-translate-y-1/2 w-full ">
-            <div className="relative flex overflow-x-hidden">
+          <div className="absolute top-5 sm:top-1/2 left-0 sm:-translate-y-1/2 w-full z-50">
+            <div className="relative flex overflow-x-hidden py-5">
               <div
-                style={{ "--marquee-duration": "20s" } as React.CSSProperties}
+                style={{ "--marquee-duration": "30s" } as React.CSSProperties}
                 className="animate-marquee whitespace-nowrap flex gap-4">
                 <PhoneFrame color="white" />
                 <PhoneFrame color="gold" />
@@ -140,8 +140,8 @@ export default function HomePage() {
               </div>
 
               <div
-                style={{ "--marquee-duration": "20s" } as React.CSSProperties}
-                className="absolute pl-4 top-0 animate-marquee2 whitespace-nowrap flex gap-4">
+                style={{ "--marquee-duration": "30s" } as React.CSSProperties}
+                className="absolute pl-4 top-5 animate-marquee2 whitespace-nowrap flex gap-4">
                 <PhoneFrame color="white" />
                 <PhoneFrame color="gold" />
                 <PhoneFrame color="silver" />
@@ -150,6 +150,8 @@ export default function HomePage() {
               </div>
             </div>
           </div>
+
+       
 
           <div className="absolute text-white text-xs bottom-3 left-[50%] -translate-x-1/2">
             <span className="bg-primary text-primary-foreground px-2 py-1 rounded-md">© Page.fun - $page.</span>

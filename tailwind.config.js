@@ -32,6 +32,10 @@ module.exports = {
         marquee2: {
           '0%': { transform: 'translateX(100%)' },
           '100%': { transform: 'translateX(0%)' }
+        },
+		marquee3: {
+          '0%': { transform: 'translateX(10px)' },
+          '100%': { transform: 'translateX(-10px)' }
         }
       },
       animation: {
@@ -39,7 +43,7 @@ module.exports = {
         "accordion-up": "accordion-up 0.2s ease-out",
         "wiggle": "wiggle 0.3s ease-in-out",
         "marquee": "marquee var(--marquee-duration, 10s) linear infinite",
-        "marquee2": "marquee2 var(--marquee-duration, 10s) linear infinite"
+        "marquee2": "marquee2 var(--marquee-duration, 10s) linear infinite",
       },
   		colors: {
   			'privy-navy': '#160B45',
