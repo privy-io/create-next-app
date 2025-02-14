@@ -7,7 +7,7 @@ import { PrivyClient } from "@privy-io/server-auth";
 import PagePreview from '@/components/PagePreview';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu } from 'lucide-react';
+import { Menu, Pencil } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
 import { isSolanaWallet } from '@/utils/wallet';
@@ -110,6 +110,23 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
   const [pageDetails, setPageDetails] = useState<PageData | null>(null);
   const [previewData, setPreviewData] = useState<PageData | null>(null);
   const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({});
+  const [selectedTab, setSelectedTab] = useState('general');
+  const [openLinkId, setOpenLinkId] = useState<string | null>(null);
+  const [isMobilePanelOpen, setIsMobilePanelOpen] = useState(false);
+
+  // Handle ESC key to close mobile panel
+  useEffect(() => {
+    const handleEsc = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsMobilePanelOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+
+    return () => {
+      window.removeEventListener('keydown', handleEsc);
+    };
+  }, []);
 
   // Check ownership and redirect if not owner
   useEffect(() => {
@@ -296,6 +313,26 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
     }
   };
 
+  const handleLinkClick = (itemId: string) => {
+    setSelectedTab('links');
+    setOpenLinkId(itemId);
+    setIsMobilePanelOpen(true);
+  };
+
+  const handleTitleClick = () => {
+    setSelectedTab('general');
+    setIsMobilePanelOpen(true);
+    // Focus will be handled in GeneralSettingsTab
+    window.dispatchEvent(new CustomEvent('focusPageTitle'));
+  };
+
+  const handleDescriptionClick = () => {
+    setSelectedTab('general');
+    setIsMobilePanelOpen(true);
+    // Focus will be handled in GeneralSettingsTab
+    window.dispatchEvent(new CustomEvent('focusPageDescription'));
+  };
+
   if (error) {
     return (
       <div className="min-h-screen bg-background p-6">
@@ -330,53 +367,67 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
       </Head>
 
       <main className="min-h-screen">
-        <div>
-          {/* Mobile Menu Button - Only visible on mobile */}
-          <div className="lg:hidden fixed top-4 left-4 z-50">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="outline" size="icon">
-                  <Menu className="h-4 w-4" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-[440px] p-0 flex flex-col">
-                <div className="flex-1 overflow-y-auto">
-                  <div className="bg-white rounded-lg shadow-sm">
-                    <SettingsTabs 
-                      pageDetails={pageDetails} 
-                      setPageDetails={setPageDetails}
-                      isSaving={isSaving}
-                      isAuthenticated={authenticated}
-                      canEdit={canEdit}
-                      onSave={handleSavePageDetails}
-                      onConnect={linkWallet}
-                    />
-                  </div>
-                </div>
-              </SheetContent>
-            </Sheet>
+        <div className="flex h-screen">
+          <div className="w-full h-full overflow-auto lg:w-2/3">
+            {/* Mobile edit button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsMobilePanelOpen(true)}
+              className="fixed top-4 right-4 h-7 px-3 py-0 gap-1.5 border-primary z-30 lg:hidden"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+              <span className="font-medium">Settings</span>
+            </Button>
+
+            {previewData && (
+              <PagePreview 
+                pageData={previewData} 
+                onLinkClick={handleLinkClick}
+                onTitleClick={handleTitleClick}
+                onDescriptionClick={handleDescriptionClick}
+                isEditMode={true}
+              />
+            )}
           </div>
 
-          <div className="flex">
-            {/* Left Column - Settings (Hidden on mobile) */}
-            <div className="w-[440px] hidden lg:block space-y-8 border-r border-gray-500 relative">
-              <div className="bg-background overflow-y-auto h-screen">
-                <SettingsTabs 
-                  pageDetails={pageDetails} 
-                  setPageDetails={setPageDetails}
-                  isSaving={isSaving}
-                  isAuthenticated={authenticated}
-                  canEdit={canEdit}
-                  onSave={handleSavePageDetails}
-                  onConnect={linkWallet}
-                />
-              </div>
-            </div>
+          {/* Mobile overlay */}
+          {isMobilePanelOpen && (
+            <div 
+              className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+              onClick={() => setIsMobilePanelOpen(false)}
+            />
+          )}
 
-            {/* Right Column - Live Preview */}
-            <div className="pf-preview sticky top-0 right-0 flex-1 h-screen overflow-y-auto">
-              {previewData && <PagePreview pageData={previewData} />}
-            </div>
+          {/* Settings panel */}
+          <div className={`
+            fixed right-0 top-0 w-full sm:w-[400px] h-full z-50 
+            bg-background border-l transform transition-transform duration-300 ease-in-out
+            lg:static lg:transform-none lg:w-1/3 lg:z-0
+            ${isMobilePanelOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}
+          `}>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="absolute top-4 right-4 lg:hidden"
+              onClick={() => setIsMobilePanelOpen(false)}
+            >
+              <Menu className="h-4 w-4" />
+            </Button>
+
+            <SettingsTabs
+              pageDetails={pageDetails}
+              setPageDetails={setPageDetails}
+              isSaving={isSaving}
+              isAuthenticated={authenticated}
+              canEdit={true}
+              onSave={handleSavePageDetails}
+              onConnect={linkWallet}
+              selectedTab={selectedTab}
+              onTabChange={setSelectedTab}
+              openLinkId={openLinkId}
+              onLinkOpen={setOpenLinkId}
+            />
           </div>
         </div>
       </main>

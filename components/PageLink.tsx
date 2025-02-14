@@ -36,7 +36,13 @@ interface PageLinkProps {
   accessStates: Map<string, boolean>;
   tokenGatedUrls: Map<string, string>;
   onTokenGatedClick: (item: PageItem) => void;
-  onVerifyAccess: (itemId: string, tokenAddress: string, requiredAmount: string) => void;
+  onVerifyAccess: (
+    itemId: string,
+    tokenAddress: string,
+    requiredAmount: string
+  ) => void;
+  onLinkClick?: (itemId: string) => void;
+  isPreview?: boolean;
 }
 
 export default function PageLink({
@@ -49,6 +55,8 @@ export default function PageLink({
   tokenGatedUrls,
   onTokenGatedClick,
   onVerifyAccess,
+  onLinkClick,
+  isPreview = false,
 }: PageLinkProps) {
   const { login, authenticated } = usePrivy();
   const linkConfig = LINK_CONFIGS[item.type];
@@ -64,21 +72,52 @@ export default function PageLink({
     }
   };
 
+  const handleClick = (e: React.MouseEvent) => {
+    if (isPreview && onLinkClick) {
+      e.preventDefault();
+      onLinkClick(item.id);
+      return;
+    }
+
+    if (item.tokenGated) {
+      onTokenGatedClick(item);
+    }
+  };
+
   const itemContent = (
     <div className={`pf-link`}>
-      <div className="pf-link__header">
-        <div className="pf-link__info">
-          {linkConfig.icon.modern && <linkConfig.icon.modern className="pf-link__icon" aria-hidden="true" />}
-          <span className="pf-link__type">{item.title || linkConfig.label}</span>
-        </div>
-        {item.tokenGated && (
-          <span className="pf-link__token-badge">
-            {item.requiredTokens?.[0] && pageData.tokenSymbol && formatTokenAmount(item.requiredTokens[0])}
-            {pageData.image && (
-              <img src={pageData.image} alt={pageData.tokenSymbol || "Token"} className="pf-token-image" />
+      <div className="pf-link__inner">
+        <div className="pf-link__icon-container">
+          <div className="pf-link__icon">
+            {linkConfig.icon.modern && (
+              <linkConfig.icon.modern
+                className="pf-link__icon"
+                aria-hidden="true"
+              />
             )}
+          </div>
+        </div>
+        <div className="pf-link__title">
+          <span className="pf-link__title-text">
+            {item.title || linkConfig.label}
           </span>
-        )}
+        </div>
+        <div className="pf-link__token-container">
+          {item.tokenGated && (
+            <span className="pf-link__token-badge">
+              {item.requiredTokens?.[0] &&
+                pageData.tokenSymbol &&
+                formatTokenAmount(item.requiredTokens[0])}
+              {pageData.image && (
+                <img
+                  src={pageData.image}
+                  alt={pageData.tokenSymbol || "Token"}
+                  className="pf-token-image"
+                />
+              )}
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -87,24 +126,36 @@ export default function PageLink({
     <Fragment>
       {item.tokenGated ? (
         hasAccess && tokenGatedUrls.get(item.id) ? (
-          <a href={tokenGatedUrls.get(item.id)} target="_blank" rel="noopener noreferrer">
+          <a
+            href={tokenGatedUrls.get(item.id)}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={handleClick}>
             {itemContent}
           </a>
         ) : (
-          <button 
-            onClick={() => onTokenGatedClick(item)} 
-            className="w-full text-left" 
-            disabled={verifying === item.id}
-          >
+          <button
+            onClick={handleClick}
+            className="w-full text-left"
+            disabled={verifying === item.id}>
             {itemContent}
           </button>
         )
+      ) : item.url ? (
+        <a 
+          href={item.url} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          onClick={handleClick}>
+          {itemContent}
+        </a>
       ) : (
-        item.url ? (
-          <a href={item.url} target="_blank" rel="noopener noreferrer">
-            {itemContent}
-          </a>
-        ) : itemContent
+        <a 
+          href="#" 
+          onClick={handleClick}
+          className="w-full">
+          {itemContent}
+        </a>
       )}
 
       {item.tokenGated && (
@@ -135,8 +186,8 @@ export default function PageLink({
                                 item.requiredTokens?.[0] || "0"
                               )}
                             </span>{" "}
-                            ${pageData.tokenSymbol} tokens to
-                            access this content.
+                            ${pageData.tokenSymbol} tokens to access this
+                            content.
                           </div>
                           <div className="mt-2">
                             Please connect your wallet to verify token access.
@@ -145,8 +196,7 @@ export default function PageLink({
                       </div>
                     ) : hasAccess ? (
                       <div className="text-green-500 py-2 text-center">
-                        Access verified! You can now access the
-                        content.
+                        Access verified! You can now access the content.
                       </div>
                     ) : hasAccess === false ? (
                       <div className="flex flex-col gap-4 items-center">
@@ -167,8 +217,8 @@ export default function PageLink({
                                 item.requiredTokens?.[0] || "0"
                               )}
                             </span>{" "}
-                            ${pageData.tokenSymbol} tokens to
-                            access this content.
+                            ${pageData.tokenSymbol} tokens to access this
+                            content.
                           </div>
                           <div className="text-red-500 mt-2">
                             Insufficient token balance.
@@ -188,7 +238,8 @@ export default function PageLink({
                         )}
                         <div className="text-center">
                           <div className="text-lg">
-                            Click the button below to check if you can access this content
+                            Click the button below to check if you can access
+                            this content
                           </div>
                         </div>
                       </div>
@@ -203,10 +254,7 @@ export default function PageLink({
                   </Button>
                 ) : hasAccess === false ? (
                   <>
-                    <Button
-                      variant="outline"
-                      asChild
-                      className="w-full">
+                    <Button variant="outline" asChild className="w-full">
                       <a
                         href={`https://jup.ag/swap/SOL-${pageData.connectedToken}`}
                         target="_blank"
@@ -236,26 +284,28 @@ export default function PageLink({
                       )}
                     </Button>
                   </>
-                ) : !hasAccess && (
-                  <Button
-                    onClick={() =>
-                      onVerifyAccess(
-                        item.id,
-                        pageData.connectedToken!,
-                        item.requiredTokens?.[0] || "0"
-                      )
-                    }
-                    disabled={verifying === item.id}
-                    className="w-full">
-                    {verifying === item.id ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                        Verifying...
-                      </>
-                    ) : (
-                      "Check Balance"
-                    )}
-                  </Button>
+                ) : (
+                  !hasAccess && (
+                    <Button
+                      onClick={() =>
+                        onVerifyAccess(
+                          item.id,
+                          pageData.connectedToken!,
+                          item.requiredTokens?.[0] || "0"
+                        )
+                      }
+                      disabled={verifying === item.id}
+                      className="w-full">
+                      {verifying === item.id ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          Verifying...
+                        </>
+                      ) : (
+                        "Check Balance"
+                      )}
+                    </Button>
+                  )
                 )}
                 {hasAccess && tokenGatedUrls.get(item.id) && (
                   <Button asChild className="w-full">
@@ -274,4 +324,4 @@ export default function PageLink({
       )}
     </Fragment>
   );
-} 
+}

@@ -1,9 +1,24 @@
 import { useEffect } from 'react';
 import { PageData } from '../types';
 import PageContent from './PageContent';
+import EditPageContent from './EditPageContent';
 import { themes } from '@/lib/themes';
 
-export default function PagePreview({ pageData }: { pageData: PageData }) {
+interface PagePreviewProps {
+  pageData: PageData;
+  onLinkClick?: (itemId: string) => void;
+  onTitleClick?: () => void;
+  onDescriptionClick?: () => void;
+  isEditMode?: boolean;
+}
+
+export default function PagePreview({ 
+  pageData, 
+  onLinkClick,
+  onTitleClick,
+  onDescriptionClick,
+  isEditMode = false
+}: PagePreviewProps) {
   // Add theme and font styles to the document head
   useEffect(() => {
     // Update Google Fonts
@@ -43,13 +58,21 @@ export default function PagePreview({ pageData }: { pageData: PageData }) {
   const themeStyle = themes[currentTheme].colors;
 
   return (
-    <div className="w-full h-full">
-      <PageContent 
-        pageData={pageData} 
-        items={pageData.items}
-        themeStyle={themeStyle}
-        isPreview
-      />
+    <div className="relative">
+      {isEditMode ? (
+        <EditPageContent
+          pageData={pageData}
+          themeStyle={themeStyle}
+          onLinkClick={onLinkClick}
+          onTitleClick={onTitleClick}
+          onDescriptionClick={onDescriptionClick}
+        />
+      ) : (
+        <PageContent
+          pageData={pageData}
+          themeStyle={themeStyle}
+        />
+      )}
     </div>
   );
 } 

@@ -89,10 +89,6 @@ export default function Page({ pageData }: PageProps) {
         )}
       </Head>
 
-      <div className="fixed top-2 left-2 z-50">
-        <AppMenu />
-      </div>
-
       <PageContent 
         pageData={pageData} 
         items={pageData.items}

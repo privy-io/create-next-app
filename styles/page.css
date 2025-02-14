@@ -12,7 +12,7 @@
   /* Font size and weight variables */
   --pf-title-size: 2rem;
   --pf-title-weight: 600;
-  --pf-description-size: 1.1rem;
+  --pf-description-size: 1rem;
   --pf-description-weight: 400;
   --pf-link-title-size: 1rem;
   --pf-link-title-weight: 500;
@@ -21,9 +21,9 @@
   --pf-token-badge-size: 0.75rem;
   --pf-token-badge-weight: 500;
 
-  /* Layout variables */
   --pf-links-grid-cols: 1;
   --pf-link-padding: 1rem;
+  --pf-link-min-height: 3.5rem;
 
   /* Theme variables with defaults */
   --pf-background: #f9f9f9;
@@ -31,21 +31,33 @@
   --pf-heading-size: 2rem;
   --pf-heading-weight: 300;
   --pf-description-color: #374151;
+
+  /* Link specific variables */
   --pf-link-bg: #fff;
   --pf-link-border: 1px solid rgba(0, 0, 0, 0.1);
-  --pf-link-radius: 0.5rem;
+  --pf-link-radius: 99rem;
   --pf-link-color: #374151;
   --pf-link-hover: #111;
+
+  /* Token code specific variables */
+  --pf-token-code-bg: var(--pf-link-bg);
+  --pf-token-code-color: var(--pf-text);
+  --pf-token-code-border: none;
+  --pf-token-code-radius: var(--pf-link-radius);
+  --pf-token-code-padding: 0.25rem 0.5rem;
+  --pf-token-code-gap: 0.25em;
+  --pf-token-code-font-size: var(--pf-token-badge-size);
+  --pf-token-code-font-weight: var(--pf-token-badge-weight);
   
-  /* Token badge specific variables */
-  --pf-link-token-badge-bg: rgba(124, 58, 237, 0.1);
-  --pf-link-token-badge-color: rgb(109, 40, 217);
-  --pf-link-token-badge-border: none;
-  --pf-link-token-badge-radius: var(--pf-link-radius);
-  --pf-link-token-badge-padding: 0.25rem 0.5rem;
-  --pf-link-token-badge-gap: 0.5rem;
-  --pf-link-token-badge-font-size: var(--pf-token-badge-size);
-  --pf-link-token-badge-font-weight: var(--pf-token-badge-weight);
+  /* Token link badge specific variables */
+  --pf-token-badge-bg: rgba(124, 58, 237, 0.1);
+  --pf-token-badge-color: rgb(109, 40, 217);
+  --pf-token-badge-border: none;
+  --pf-token-badge-radius: var(--pf-link-radius);
+  --pf-token-badge-padding: 0.25rem 0.5rem;
+  --pf-token-badge-gap: 0.25em;
+  --pf-token-badge-font-size: var(--pf-token-badge-size);
+  --pf-token-badge-font-weight: var(--pf-token-badge-weight);
 
   --pf-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   --pf-shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -111,45 +123,37 @@ body {
   color: var(--pf-description-color);
 }
 
-.pf-page__token {
+.pf-page__token-code {
   margin-top: 1rem;
 }
 
-.pf-page__token code {
-  font-size: var(--pf-token-badge-size);
-  font-weight: var(--pf-token-badge-weight);
-  padding: 0.25rem 0.5rem;
-  background: var(--pf-token-badge-bg);
-  color: var(--pf-token-badge-color);
-  border-radius: var(--pf-link-radius);
-}
-
-.pf-links {
-  margin-top: 2rem;
-}
-
-.pf-links__title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  color: var(--pf-text);
+.pf-page__token-code code {
+  font-size: var(--pf-token-code-font-size);
+  font-weight: var(--pf-token-code-font-weight);
+  padding: var(--pf-token-code-padding);
+  background: var(--pf-token-code-bg);
+  color: var(--pf-token-code-color);
+  border: var(--pf-token-code-border);
+  border-radius: var(--pf-token-code-radius);
 }
 
 .pf-links__grid {
   display: grid;
   grid-template-columns: repeat(var(--pf-links-grid-cols), 1fr);
-  gap: 0.75rem;
+  gap: var(--pf-links-grid-gap, 1.25rem);
 }
 
 .pf-link {
-  padding: var(--pf-link-padding);
-  transition: all 0.2s ease;
+  padding-inline: var(--pf-link-padding);
+  min-height: var(--pf-link-min-height);
   border: var(--pf-link-border);
   border-radius: var(--pf-link-radius);
   background: var(--pf-link-bg);
   font-family: var(--pf-font-family-links);
   color: var(--pf-link-color);
   box-shadow: var(--pf-shadow);
+  display: flex;
+  align-items: center;
 }
 
 .pf-link:hover {
@@ -157,42 +161,49 @@ body {
   box-shadow: var(--pf-shadow-hover);
 }
 
-.pf-link__header {
+.pf-link__inner {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.5rem;
+  gap: 1em;
+  width: 100%;
 }
 
-.pf-link__info {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+.pf-link__token-container,
+.pf-link__icon-container {
+  width: 4em;
+  flex-shrink: 0;
 }
 
 .pf-link__icon {
   width: 1.5rem;
   height: 1.5rem;
-  flex-shrink: 0;
 }
 
-.pf-link__type {
+.pf-link__title {
   font-size: var(--pf-link-title-size);
   font-weight: var(--pf-link-title-weight);
+  flex: 1;
+  text-align: center;
   color: var(--pf-link-color);
 }
 
+.pf-link__title-text {
+
+}
+
+
 .pf-link__token-badge {
-  font-size: var(--pf-link-token-badge-font-size);
-  font-weight: var(--pf-link-token-badge-font-weight);
-  padding: var(--pf-link-token-badge-padding);
-  background: var(--pf-link-token-badge-bg);
-  color: var(--pf-link-token-badge-color);
-  border: var(--pf-link-token-badge-border);
-  border-radius: var(--pf-link-token-badge-radius);
+  font-size: var(--pf-token-badge-font-size);
+  font-weight: var(--pf-token-badge-font-weight);
+  padding: var(--pf-token-badge-padding);
+  background: var(--pf-token-badge-bg);
+  color: var(--pf-token-badge-color);
+  border: var(--pf-token-badge-border);
+  border-radius: var(--pf-token-badge-radius);
   display: flex;
   align-items: center;
-  gap: var(--pf-link-token-badge-gap);
+  gap: var(--pf-token-badge-gap);
 }
 
 .pf-link__url {

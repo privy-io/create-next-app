@@ -29,6 +29,8 @@ interface SortableItemProps {
   setPageDetails: (
     data: PageData | ((prev: PageData | null) => PageData | null)
   ) => void;
+  isOpen?: boolean;
+  onOpen?: (id: string | null) => void;
 }
 
 export function SortableItem({
@@ -39,6 +41,8 @@ export function SortableItem({
   error,
   tokenSymbol,
   setPageDetails,
+  isOpen,
+  onOpen,
 }: SortableItemProps) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: id });
@@ -112,10 +116,12 @@ export function SortableItem({
 
   return (
     <div ref={setNodeRef} style={style} className="bg-white">
-      <Accordion type="single" collapsible>
-        <AccordionItem
-          value="item"
-          className="border border-gray-400 rounded-lg">
+      <Accordion 
+        type="single" 
+        collapsible
+        value={isOpen ? id : ""}
+      >
+        <AccordionItem value={id} className="border border-gray-400 rounded-lg">
           <div className="flex items-center px-1">
             <button
               className="cursor-grab py-2 mr-2"
@@ -123,7 +129,13 @@ export function SortableItem({
               {...listeners}>
               <GripVertical className="h-5 w-5 text-gray-400 flex-shrink-0" />
             </button>
-            <AccordionTrigger className="hover:no-underline py-2 flex items-center flex-1">
+            <AccordionTrigger 
+              className="hover:no-underline py-2 flex items-center flex-1"
+              onClick={(e) => {
+                e.preventDefault();
+                onOpen?.(isOpen ? null : id);
+              }}
+            >
               <div className="flex items-center gap-2 flex-1 ">
                 <Icon className="h-5 w-5" />
                 <span className="font-medium">{item.title || linkConfig.label}</span>

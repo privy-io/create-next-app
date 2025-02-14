@@ -35,6 +35,8 @@ interface LinksTabProps {
   setValidationErrors: React.Dispatch<
     React.SetStateAction<{ [key: string]: string }>
   >;
+  openLinkId?: string | null;
+  onLinkOpen?: (id: string | null) => void;
 }
 
 // Helper function to get a consistent item ID
@@ -47,6 +49,8 @@ export function LinksTab({
   setPageDetails,
   validationErrors = {},
   setValidationErrors,
+  openLinkId,
+  onLinkOpen,
 }: LinksTabProps) {
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -141,6 +145,15 @@ export function LinksTab({
   // Only show token gating if a token is connected
   const canShowTokenGating = !!pageDetails?.connectedToken;
 
+  const handleAccordionToggle = (itemId: string) => {
+    // If the clicked item is already open, close it
+    if (openLinkId === itemId) {
+      onLinkOpen?.(null);
+    } else {
+      onLinkOpen?.(itemId);
+    }
+  };
+
   return (
     <div className="space-y-6 px-6">
       <div className="flex justify-between items-center">
@@ -218,6 +231,8 @@ export function LinksTab({
                   onUrlChange={(url) => handleUrlChange(itemId, url)}
                   setPageDetails={setPageDetails}
                   tokenSymbol={pageDetails?.tokenSymbol}
+                  isOpen={openLinkId === itemId}
+                  onOpen={() => handleAccordionToggle(itemId)}
                   onDelete={() => {
                     if (validationErrors[itemId]) {
                       setValidationErrors((prev: { [key: string]: string }) => {

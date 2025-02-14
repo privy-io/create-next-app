@@ -77,10 +77,6 @@ export default function HomePage() {
         <title>Page.fun - Linktree alternative for tokens and memes.</title>
       </Head>
 
-      <div className="fixed top-2 left-2 z-50">
-        <AppMenu />
-      </div>
-
       <main className="flex min-h-screen bg-muted min-w-full grid sm:grid-cols-2">
         <div className="flex flex-1 min-h-[40vh] py-5 items-center text-center sm:text-left max-w-[360px] sm:max-w-[400px] px-4 w-full mx-auto">
           <div>

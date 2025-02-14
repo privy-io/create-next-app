@@ -4,7 +4,6 @@ import { LinksTab } from "./tabs/LinksTab";
 import { DesignTab } from "./tabs/DesignTab";
 import { SaveBar } from "./SaveBar";
 import { PageData } from "@/types";
-import AppMenu from "./AppMenu";
 import { useState } from "react";
 
 interface SettingsTabsProps {
@@ -18,6 +17,10 @@ interface SettingsTabsProps {
   canEdit: boolean;
   onSave: () => void;
   onConnect: () => void;
+  selectedTab?: string;
+  onTabChange?: (tab: string) => void;
+  openLinkId?: string | null;
+  onLinkOpen?: (id: string | null) => void;
 }
 
 export function SettingsTabs({
@@ -29,14 +32,21 @@ export function SettingsTabs({
   canEdit,
   onSave,
   onConnect,
+  selectedTab = "general",
+  onTabChange,
+  openLinkId,
+  onLinkOpen,
 }: SettingsTabsProps) {
   const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({});
 
   return (
     <div className="flex flex-col h-full">
-      <Tabs defaultValue="general" className="flex-1">
+      <Tabs 
+        value={selectedTab} 
+        onValueChange={onTabChange}
+        className="flex-1"
+      >
         <div className="flex px-6 py-2 mb-5 gap-4 items-center sticky top-0 right-0 bg-background border-b z-50">
-          <AppMenu />
           <TabsList>
             <TabsTrigger value="general">Settings</TabsTrigger>
             <TabsTrigger value="links">Links & Features</TabsTrigger>
@@ -58,6 +68,8 @@ export function SettingsTabs({
             setPageDetails={setPageDetails}
             validationErrors={validationErrors}
             setValidationErrors={setValidationErrors}
+            openLinkId={openLinkId}
+            onLinkOpen={onLinkOpen}
           />
         </TabsContent>
 
