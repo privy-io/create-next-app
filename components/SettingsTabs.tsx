@@ -4,7 +4,8 @@ import { LinksTab } from "./tabs/LinksTab";
 import { DesignTab } from "./tabs/DesignTab";
 import { SaveBar } from "./SaveBar";
 import { PageData } from "@/types";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { LINK_CONFIGS, validateLinkUrl } from "@/lib/links";
 
 interface SettingsTabsProps {
   pageDetails: PageData | null;
@@ -40,6 +41,22 @@ export function SettingsTabs({
   const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({});
   const hasErrors = Object.keys(validationErrors).length > 0;
 
+  // Initial validation when component mounts or pageDetails changes
+  useEffect(() => {
+    const newErrors: { [key: string]: string } = {};
+    pageDetails?.items?.forEach((item) => {
+      const linkConfig = LINK_CONFIGS[item.type];
+      if (linkConfig?.options?.requiresUrl) {
+        if (!item.url) {
+          newErrors[item.id] = `${linkConfig.label} URL is required`;
+        } else if (!validateLinkUrl(item.type, item.url)) {
+          newErrors[item.id] = "Invalid URL format";
+        }
+      }
+    });
+    setValidationErrors(newErrors);
+  }, [pageDetails?.items]);
+
   return (
     <div className="flex flex-col h-full">
       <Tabs 
@@ -53,7 +70,7 @@ export function SettingsTabs({
             <TabsTrigger value="links" className="relative">
               Links & Features
               {hasErrors && (
-                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full" />
+                <span className="ml-2 w-2 h-2 bg-red-500 rounded-full" />
               )}
             </TabsTrigger>
             <TabsTrigger value="design">Design</TabsTrigger>
@@ -61,25 +78,27 @@ export function SettingsTabs({
           {extraHeaderContent}
         </div>
 
-        <TabsContent value="general" className="flex-1">
+        <TabsContent value="general" className="mt-0">
           <GeneralSettingsTab
             pageDetails={pageDetails}
             setPageDetails={setPageDetails}
           />
         </TabsContent>
 
-        <TabsContent value="links" className="flex-1">
-          <LinksTab 
-            pageDetails={pageDetails} 
+        <TabsContent value="links" className="mt-0">
+          <LinksTab
+            pageDetails={pageDetails}
             setPageDetails={setPageDetails}
-            validationErrors={validationErrors}
-            setValidationErrors={setValidationErrors}
-            openLinkId={openLinkId}
+            isAuthenticated={isAuthenticated}
+            canEdit={canEdit}
+            onConnect={onConnect}
+            openLinkId={openLinkId || undefined}
             onLinkOpen={onLinkOpen}
+            onValidationErrorsChange={setValidationErrors}
           />
         </TabsContent>
 
-        <TabsContent value="design">
+        <TabsContent value="design" className="mt-0">
           <DesignTab
             pageDetails={pageDetails}
             setPageDetails={setPageDetails}

@@ -129,14 +129,24 @@ export function SortableItem({
   const handleUrlChange = (value: string) => {
     if (!onUrlChange) return;
 
-    // For email type, automatically add mailto: if it's not a URL
-    if (item.type === 'email' && value && !value.startsWith('mailto:') && !value.match(/^https?:\/\//)) {
-      // Remove any existing mailto: prefix to avoid duplication
-      const cleanValue = value.replace(/^mailto:/, '');
-      onUrlChange(`mailto:${cleanValue}`);
+    // Format URL based on link type
+    let formattedUrl = value.trim();
+
+    if (item.type === 'email') {
+      // For email type, add mailto: if it's not already a URL
+      if (formattedUrl && !formattedUrl.startsWith('mailto:') && !formattedUrl.match(/^https?:\/\//)) {
+        // Remove any existing mailto: prefix to avoid duplication
+        const cleanValue = formattedUrl.replace(/^mailto:/, '');
+        formattedUrl = `mailto:${cleanValue}`;
+      }
     } else {
-      onUrlChange(value);
+      // For non-email links, add https:// if missing
+      if (formattedUrl && !formattedUrl.match(/^https?:\/\//)) {
+        formattedUrl = `https://${formattedUrl}`;
+      }
     }
+
+    onUrlChange(formattedUrl);
   };
 
   return (

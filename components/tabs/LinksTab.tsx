@@ -70,7 +70,7 @@ export function LinksTab({
         if (!item.url) {
           newErrors[item.id] = `${linkConfig.label} URL is required`;
         } else if (!validateLinkUrl(item.type, item.url)) {
-          newErrors[item.id] = "Invalid URL format";
+          newErrors[item.id] = `Invalid ${linkConfig.label} URL format`;
         }
       }
     });
@@ -107,18 +107,50 @@ export function LinksTab({
     }
   };
 
-  const handleUrlChange = (id: string, url: string) => {
+  const handleUrlChange = (itemId: string, url: string) => {
     setPageDetails((prev) => {
       if (!prev) return prev;
+
+      // Validate URL before updating
+      const item = prev.items?.find(i => i.id === itemId);
+      if (!item) return prev;
+
+      const linkConfig = LINK_CONFIGS[item.type];
+      if (!linkConfig?.options?.requiresUrl) return prev;
+
+      // Format URL based on link type
+      let formattedUrl = url.trim();
+
+      if (item.type === 'email') {
+        // For email type, add mailto: if it's not already a URL
+        if (formattedUrl && !formattedUrl.startsWith('mailto:') && !formattedUrl.match(/^https?:\/\//)) {
+          // Remove any existing mailto: prefix to avoid duplication
+          const cleanValue = formattedUrl.replace(/^mailto:/, '');
+          formattedUrl = `mailto:${cleanValue}`;
+        }
+      } else {
+        // For non-email links, add https:// if missing
+        if (formattedUrl && !formattedUrl.match(/^https?:\/\//)) {
+          formattedUrl = `https://${formattedUrl}`;
+        }
+      }
+
+      // Update validation errors
+      const newErrors = { ...errors };
+      if (!formattedUrl) {
+        newErrors[itemId] = `${linkConfig.label} URL is required`;
+      } else if (!validateLinkUrl(item.type, formattedUrl)) {
+        newErrors[itemId] = `Invalid ${linkConfig.label} URL format`;
+      } else {
+        delete newErrors[itemId];
+      }
+      setErrors(newErrors);
+      onValidationErrorsChange?.(newErrors);
+
       return {
         ...prev,
         items: prev.items?.map((i) =>
-          i.id === id
-            ? {
-                ...i,
-                url,
-              }
-            : i
+          i.id === itemId ? { ...i, url: formattedUrl } : i
         ),
       };
     });
