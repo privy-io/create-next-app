@@ -13,7 +13,8 @@ import { Toaster } from '@/components/ui/toaster';
 import { isSolanaWallet } from '@/utils/wallet';
 import { SettingsTabs } from '@/components/SettingsTabs';
 import { GOOGLE_FONTS } from '@/lib/fonts';
-import { PageData } from '@/types';
+import { PageData, PageItem } from '@/types';
+import { LINK_CONFIGS, validateLinkUrl } from '@/lib/links';
 
 interface PageProps {
   slug: string;
@@ -172,6 +173,23 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
     }
   }, [pageDetails]);
 
+  const validateLinks = (items: PageItem[] = []): { [key: string]: string } => {
+    const errors: { [key: string]: string } = {};
+    
+    items.forEach(item => {
+      const linkConfig = LINK_CONFIGS[item.type];
+      if (linkConfig?.options?.requiresUrl) {
+        if (!item.url) {
+          errors[item.id] = `${linkConfig.label} URL is required`;
+        } else if (!validateLinkUrl(item.type, item.url)) {
+          errors[item.id] = `Invalid ${linkConfig.label} URL format`;
+        }
+      }
+    });
+
+    return errors;
+  };
+
   const handleSavePageDetails = async () => {
     if (!pageDetails) return;
 
@@ -189,6 +207,18 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
       toast({
         title: "Unauthorized",
         description: "You don't have permission to edit this page.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate links before saving
+    const validationErrors = validateLinks(pageDetails.items);
+    if (Object.keys(validationErrors).length > 0) {
+      setValidationErrors(validationErrors);
+      toast({
+        title: "Validation Error",
+        description: "Please fix the highlighted errors in your links before saving.",
         variant: "destructive",
       });
       return;
@@ -219,8 +249,8 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
           // Ensure boolean fields are properly set
           isPlugin: !!item.isPlugin,
           tokenGated: !!item.tokenGated,
-          // Only include requiredAmount if tokenGated is true
-          ...(item.tokenGated ? { requiredAmount: item.requiredAmount || 0 } : {})
+          // Only include requiredTokens if tokenGated is true
+          ...(item.tokenGated ? { requiredTokens: item.requiredTokens || ["1"] } : {})
         };
       }) || [];
 
@@ -244,13 +274,9 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
         ...(pageDetails.connectedToken && pageDetails.connectedToken.length > 0 ? {
           connectedToken: pageDetails.connectedToken,
           tokenSymbol: pageDetails.tokenSymbol,
-          showToken: pageDetails.showToken,
-          showSymbol: pageDetails.showSymbol,
         } : {
           connectedToken: null,  // Explicitly set to null to remove it
           tokenSymbol: null,
-          showToken: false,
-          showSymbol: false
         }),
         isSetupWizard: false
       };
@@ -367,7 +393,7 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
       </Head>
 
       <main className="min-h-screen">
-        <div className="flex h-screen">
+        <div className="flex h-screen overflow-scroll">
           <div className="w-full h-full overflow-auto lg:w-2/3">
             {/* Mobile edit button */}
             <Button
@@ -401,8 +427,8 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
 
           {/* Settings panel */}
           <div className={`
-            fixed right-0 top-0 w-full sm:w-[400px] h-full z-50 
-            bg-background border-l transform transition-transform duration-300 ease-in-out
+            fixed right-0 h-screen overflow-scroll top-0 sm:w-[400px] h-full z-50 
+            bg-background border-l border-gray-500 transform transition-transform duration-300 ease-in-out
             lg:static lg:transform-none lg:w-1/3 lg:z-0
             ${isMobilePanelOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}
           `}>

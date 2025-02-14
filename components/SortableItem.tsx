@@ -1,6 +1,6 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Trash2, HelpCircle } from "lucide-react";
+import { GripVertical, Trash2, HelpCircle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -18,6 +18,17 @@ import {
 } from "@/components/ui/tooltip";
 import { PageData, PageItem } from "@/types";
 import { LINK_CONFIGS, validateLinkUrl } from "@/lib/links";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface SortableItemProps {
   id: string;
@@ -56,8 +67,9 @@ export function SortableItem({
   if (!linkConfig) return null;
 
   const Icon = linkConfig.icon.classic;
-  const displayError =
-    error || (item.url && !validateLinkUrl(item.type, item.url));
+  const displayError = error || (linkConfig.options?.requiresUrl && (
+    !item.url || (item.url && !validateLinkUrl(item.type, item.url))
+  ));
 
   const handleTitleChange = (value: string) => {
     setPageDetails((prev) => {
@@ -114,6 +126,19 @@ export function SortableItem({
     });
   };
 
+  const handleUrlChange = (value: string) => {
+    if (!onUrlChange) return;
+
+    // For email type, automatically add mailto: if it's not a URL
+    if (item.type === 'email' && value && !value.startsWith('mailto:') && !value.match(/^https?:\/\//)) {
+      // Remove any existing mailto: prefix to avoid duplication
+      const cleanValue = value.replace(/^mailto:/, '');
+      onUrlChange(`mailto:${cleanValue}`);
+    } else {
+      onUrlChange(value);
+    }
+  };
+
   return (
     <div ref={setNodeRef} style={style} className="bg-white">
       <Accordion 
@@ -121,7 +146,7 @@ export function SortableItem({
         collapsible
         value={isOpen ? id : ""}
       >
-        <AccordionItem value={id} className="border border-gray-400 rounded-lg">
+        <AccordionItem value={id} className={`border rounded-lg ${displayError ? 'border-red-500' : 'border-gray-400'}`}>
           <div className="flex items-center px-1">
             <button
               className="cursor-grab py-2 mr-2"
@@ -136,11 +161,13 @@ export function SortableItem({
                 onOpen?.(isOpen ? null : id);
               }}
             >
-              <div className="flex items-center gap-2 flex-1 ">
-                <Icon className="h-5 w-5" />
-                <span className="font-medium">{item.title || linkConfig.label}</span>
+              <div className="flex items-center gap-2 flex-1">
+                <div className="flex items-center gap-2">
+                  <Icon className="h-5 w-5" />
+                  <span className="font-medium">{item.title || linkConfig.label}</span>
+                </div>
                 {item.tokenGated && (
-                  <span className="ml-auto mr-2 text-xs bg-violet-100 text-violet-800 px-1 py-0.5 rounded">
+                  <span className="ml-auto text-xs bg-violet-100 text-violet-800 px-1 py-0.5 rounded">
                     Token gated
                   </span>
                 )}
@@ -164,13 +191,16 @@ export function SortableItem({
                   <label className="block text-sm text-gray-600">URL</label>
                   <Input
                     type="text"
-                    placeholder={`Enter ${linkConfig.label} URL`}
-                    value={item.url || ""}
-                    onChange={(e) => onUrlChange(e.target.value)}
+                    placeholder={item.type === 'email' ? "Enter email address" : `Enter ${linkConfig.label} URL`}
+                    value={item.url ? item.url.replace(/^mailto:/, '') : ''}
+                    onChange={(e) => handleUrlChange(e.target.value)}
                     className={displayError ? "border-red-500" : ""}
                   />
                   {displayError && (
-                    <p className="text-sm text-red-500">{displayError}</p>
+                    <p className="text-sm text-red-500 flex items-center gap-1">
+                      <AlertCircle className="h-4 w-4" />
+                      {error || (!item.url ? `${linkConfig.label} URL is required` : "Invalid URL format")}
+                    </p>
                   )}
                 </div>
               )}
@@ -222,16 +252,35 @@ export function SortableItem({
               </div>
             )}
             <div className="flex justify-end">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-red-500 hover:bg-red-100"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete();
-                }}>
-                Remove
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-red-500 hover:bg-red-100">
+                    Remove
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will permanently delete this link from your page.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDelete();
+                      }}
+                      className="bg-red-500 hover:bg-red-600">
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </AccordionContent>
         </AccordionItem>

@@ -15,21 +15,19 @@ export interface PageItem {
 export interface PageData {
   walletAddress: string;
   createdAt: string;
+  slug: string;
   title?: string;
   description?: string;
-  items?: PageItem[];
-  updatedAt?: string;
   image?: string;
-  slug: string;
-  connectedToken?: string;
-  tokenSymbol?: string;
-  showToken?: boolean;
-  showSymbol?: boolean;
-  designStyle?: ThemeStyle;
+  items?: PageItem[];
+  designStyle?: string;
   fonts?: {
     global?: string;
     heading?: string;
     paragraph?: string;
     links?: string;
   };
+  connectedToken?: string;
+  tokenSymbol?: string;
+  isSetupWizard?: boolean;
 } 

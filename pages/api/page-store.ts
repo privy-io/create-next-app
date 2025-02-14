@@ -70,8 +70,6 @@ const PageDataSchema = z.object({
   walletAddress: z.string().min(1),
   connectedToken: z.string().nullable().optional(),
   tokenSymbol: z.string().nullable().optional(),
-  showToken: z.boolean().optional().default(false),
-  showSymbol: z.boolean().optional().default(false),
   title: z.string().max(100).optional(),
   description: z.string().max(500).optional(),
   image: z.string().regex(urlRegex).nullable().optional(),
@@ -95,8 +93,6 @@ const CreatePageSchema = z.object({
   items: z.array(PageItemSchema).optional(),
   connectedToken: z.string().nullable().optional(),
   tokenSymbol: z.string().nullable().optional(),
-  showToken: z.boolean().optional().default(false),
-  showSymbol: z.boolean().optional().default(false),
   image: z.string().regex(urlRegex).nullable().optional(),
   designStyle: z.enum(["default", "minimal", "modern"]).optional(),
   fonts: FontsSchema,
@@ -127,12 +123,11 @@ type PageItem = {
 type PageData = {
   walletAddress: string;
   connectedToken?: string;
-  showToken?: boolean; // Add this field
   title?: string;
   description?: string;
   image?: string;
-  items?: PageItem[]; // Combined socials and plugins
-  designStyle?: "default" | "minimal" | "modern"; // Add design style option
+  items?: PageItem[];
+  designStyle?: "default" | "minimal" | "modern";
   fonts?: {
     global?: string;
     heading?: string;
@@ -438,8 +433,6 @@ export default async function handler(
         items,
         connectedToken,
         tokenSymbol,
-        showToken,
-        showSymbol,
         image,
         designStyle,
         fonts,
@@ -488,8 +481,6 @@ export default async function handler(
         ...(items && { items }),
         ...(connectedToken && { connectedToken }),
         ...(tokenSymbol && { tokenSymbol }),
-        ...(typeof showToken === "boolean" && { showToken }),
-        ...(typeof showSymbol === "boolean" && { showSymbol }),
         ...(image && { image }),
         ...(designStyle && { designStyle }),
         ...(fonts && { fonts }),

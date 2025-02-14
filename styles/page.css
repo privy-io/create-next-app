@@ -1,4 +1,4 @@
-:root {
+.pf-page {
   /* Layout */
   --pf-container-width: 550px;
 
@@ -40,7 +40,7 @@
   --pf-link-hover: #111;
 
   /* Token code specific variables */
-  --pf-token-code-bg: var(--pf-link-bg);
+  --pf-token-code-bg: var(--pf-background);
   --pf-token-code-color: var(--pf-text);
   --pf-token-code-border: none;
   --pf-token-code-radius: var(--pf-link-radius);
@@ -63,19 +63,13 @@
   --pf-shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-html,
-body {
-  min-height: 100vh;
+.pf-page {
+  background-color: var(--pf-background);
   font-family: var(--pf-font-family-global);
+  color: var(--pf-text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  background-color: var(--pf-background);
-  color: var(--pf-text);
-}
-
-.pf-page {
-  background-color: var(--pf-background);
   min-height: 100vh;
   box-shadow: var(--pf-shadow);
   transition: box-shadow 0.2s ease;
@@ -183,15 +177,13 @@ body {
 .pf-link__title {
   font-size: var(--pf-link-title-size);
   font-weight: var(--pf-link-title-weight);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex: 1;
   text-align: center;
   color: var(--pf-link-color);
 }
-
-.pf-link__title-text {
-
-}
-
 
 .pf-link__token-badge {
   font-size: var(--pf-token-badge-font-size);

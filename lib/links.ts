@@ -47,26 +47,14 @@ export const LINK_CONFIGS: Partial<Record<LinkType, LinkConfig>> = {
     icon: Icons.Email,
     options: {
       requiresUrl: true,
-      urlPattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+      urlPattern: /^(mailto:[^\s@]+@[^\s@]+\.[^\s@]+|https?:\/\/.+)$/,
       urlPrefix: 'mailto:',
       canBeTokenGated: true,
       canRequireTokens: true,
       canRequireSubscription: true,
     },
   },
-  sms: {
-    type: 'sms',
-    label: 'SMS',
-    icon: Icons.SMS,
-    options: {
-      requiresUrl: true,
-      urlPattern: /^\+?[1-9]\d{1,14}$/,
-      urlPrefix: 'sms:',
-      canBeTokenGated: true,
-      canRequireTokens: true,
-      canRequireSubscription: true,
-    },
-  },
+  /*
   google: {
     type: 'google',
     label: 'Google',
@@ -77,7 +65,7 @@ export const LINK_CONFIGS: Partial<Record<LinkType, LinkConfig>> = {
       canBeTokenGated: true,
       canRequireTokens: true,
     },
-  },
+  }, */
   apple: {
     type: 'apple',
     label: 'Apple',

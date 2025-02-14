@@ -17,8 +17,12 @@ export default function PageContent({
 }: PageContentProps) {
   const [openDrawer, setOpenDrawer] = useState<string | null>(null);
   const [verifying, setVerifying] = useState<string | null>(null);
-  const [accessStates, setAccessStates] = useState<Map<string, boolean>>(new Map());
-  const [tokenGatedUrls, setTokenGatedUrls] = useState<Map<string, string>>(new Map());
+  const [accessStates, setAccessStates] = useState<Map<string, boolean>>(
+    new Map()
+  );
+  const [tokenGatedUrls, setTokenGatedUrls] = useState<Map<string, string>>(
+    new Map()
+  );
 
   const fetchTokenGatedContent = async (itemId: string) => {
     try {
@@ -137,23 +141,8 @@ export default function PageContent({
               {pageData?.title || "Untitled Page"}
             </h1>
             {pageData?.description && (
-              <p className="pf-page__description">
-                {pageData.description}
-              </p>
+              <p className="pf-page__description">{pageData.description}</p>
             )}
-            {(pageData?.showToken || pageData?.showSymbol) &&
-              pageData?.connectedToken && (
-                <div className="pf-page__token-code">
-                  {pageData.showToken && (
-                    <code>
-                      {pageData.connectedToken}
-                      {pageData.showSymbol && pageData.tokenSymbol && (
-                        <span>({pageData.tokenSymbol})</span>
-                      )}
-                    </code>
-                  )}
-                </div>
-              )}
           </div>
         </div>
 
@@ -162,7 +151,7 @@ export default function PageContent({
           <div className="pf-links">
             <div className="pf-links__grid">
               {items
-                .filter(item => item && item.id && item.type)
+                .filter((item) => item && item.id && item.type)
                 .sort((a, b) => a.order - b.order)
                 .map((item) => (
                   <PageLink

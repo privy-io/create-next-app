@@ -38,6 +38,7 @@ export function SettingsTabs({
   onLinkOpen,
 }: SettingsTabsProps) {
   const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({});
+  const hasErrors = Object.keys(validationErrors).length > 0;
 
   return (
     <div className="flex flex-col h-full">
@@ -49,7 +50,12 @@ export function SettingsTabs({
         <div className="flex px-6 py-2 mb-5 gap-4 items-center sticky top-0 right-0 bg-background border-b z-50">
           <TabsList>
             <TabsTrigger value="general">Settings</TabsTrigger>
-            <TabsTrigger value="links">Links & Features</TabsTrigger>
+            <TabsTrigger value="links" className="relative">
+              Links & Features
+              {hasErrors && (
+                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full" />
+              )}
+            </TabsTrigger>
             <TabsTrigger value="design">Design</TabsTrigger>
           </TabsList>
           {extraHeaderContent}

@@ -23,20 +23,18 @@ import {
 } from "@dnd-kit/sortable";
 import { SortableItem } from "@/components/SortableItem";
 import { PageData, PageItem } from "@/types";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { LINK_CONFIGS, LinkType, validateLinkUrl } from "@/lib/links";
 
 interface LinksTabProps {
   pageDetails: PageData | null;
-  setPageDetails: (
-    data: PageData | ((prev: PageData | null) => PageData | null),
-  ) => void;
-  validationErrors: { [key: string]: string };
-  setValidationErrors: React.Dispatch<
-    React.SetStateAction<{ [key: string]: string }>
-  >;
-  openLinkId?: string | null;
+  setPageDetails: (data: PageData | ((prev: PageData | null) => PageData | null)) => void;
+  isAuthenticated?: boolean;
+  canEdit?: boolean;
+  onConnect?: () => void;
+  openLinkId?: string;
   onLinkOpen?: (id: string | null) => void;
+  onValidationErrorsChange?: (errors: { [key: string]: string }) => void;
 }
 
 // Helper function to get a consistent item ID
@@ -47,17 +45,38 @@ function getItemId(item: PageItem): string {
 export function LinksTab({
   pageDetails,
   setPageDetails,
-  validationErrors = {},
-  setValidationErrors,
+  isAuthenticated,
+  canEdit,
+  onConnect,
   openLinkId,
   onLinkOpen,
+  onValidationErrorsChange,
 }: LinksTabProps) {
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
+
+  // Validate URLs when items change
+  useEffect(() => {
+    const newErrors: { [key: string]: string } = {};
+    pageDetails?.items?.forEach((item) => {
+      const linkConfig = LINK_CONFIGS[item.type];
+      if (linkConfig?.options?.requiresUrl) {
+        if (!item.url) {
+          newErrors[item.id] = `${linkConfig.label} URL is required`;
+        } else if (!validateLinkUrl(item.type, item.url)) {
+          newErrors[item.id] = "Invalid URL format";
+        }
+      }
+    });
+    setErrors(newErrors);
+    onValidationErrorsChange?.(newErrors);
+  }, [pageDetails?.items, onValidationErrorsChange]);
 
   const handleDragEnd = (event: any) => {
     const { active, over } = event;
@@ -88,44 +107,18 @@ export function LinksTab({
     }
   };
 
-  const handleUrlChange = (itemId: string, url: string) => {
-    // Clear any existing validation error for this item when URL changes
-    if (validationErrors[itemId]) {
-      setValidationErrors((prev: { [key: string]: string }) => {
-        const newErrors = { ...prev };
-        delete newErrors[itemId];
-        return newErrors;
-      });
-    }
-
+  const handleUrlChange = (id: string, url: string) => {
     setPageDetails((prev) => {
       if (!prev) return prev;
-
-      // Validate URL before updating
-      const item = prev.items?.find(i => getItemId(i) === itemId);
-      if (!item) return prev;
-
-      const linkConfig = LINK_CONFIGS[item.type];
-      if (!linkConfig?.options?.requiresUrl) return prev;
-
-      // Format URL: Add https:// if missing and not an email
-      let formattedUrl = url.trim();
-      if (formattedUrl && !formattedUrl.startsWith('mailto:') && !formattedUrl.includes('@') && !formattedUrl.match(/^https?:\/\//)) {
-        formattedUrl = `https://${formattedUrl}`;
-      }
-
-      // Only validate if URL is not empty
-      if (formattedUrl && !validateLinkUrl(item.type, formattedUrl)) {
-        setValidationErrors(prev => ({
-          ...prev,
-          [itemId]: `Invalid ${linkConfig.label} URL format`
-        }));
-      }
-
       return {
         ...prev,
         items: prev.items?.map((i) =>
-          getItemId(i) === itemId ? { ...i, url: formattedUrl } : i
+          i.id === id
+            ? {
+                ...i,
+                url,
+              }
+            : i
         ),
       };
     });
@@ -227,15 +220,15 @@ export function LinksTab({
                   key={itemId}
                   id={itemId}
                   item={item}
-                  error={validationErrors[itemId]}
+                  error={errors[itemId]}
                   onUrlChange={(url) => handleUrlChange(itemId, url)}
                   setPageDetails={setPageDetails}
                   tokenSymbol={pageDetails?.tokenSymbol}
                   isOpen={openLinkId === itemId}
                   onOpen={() => handleAccordionToggle(itemId)}
                   onDelete={() => {
-                    if (validationErrors[itemId]) {
-                      setValidationErrors((prev: { [key: string]: string }) => {
+                    if (errors[itemId]) {
+                      setErrors((prev: { [key: string]: string }) => {
                         const newErrors = { ...prev };
                         delete newErrors[itemId];
                         return newErrors;

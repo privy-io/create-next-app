@@ -21,8 +21,12 @@ export default function EditPageContent({
 }: EditPageContentProps) {
   const [openDrawer, setOpenDrawer] = useState<string | null>(null);
   const [verifying, setVerifying] = useState<string | null>(null);
-  const [accessStates, setAccessStates] = useState<Map<string, boolean>>(new Map());
-  const [tokenGatedUrls, setTokenGatedUrls] = useState<Map<string, string>>(new Map());
+  const [accessStates, setAccessStates] = useState<Map<string, boolean>>(
+    new Map()
+  );
+  const [tokenGatedUrls, setTokenGatedUrls] = useState<Map<string, string>>(
+    new Map()
+  );
 
   return (
     <div
@@ -58,33 +62,18 @@ export default function EditPageContent({
                 }}
               />
             )}
-            <h1 
+            <h1
               className="pf-page__title cursor-pointer hover:opacity-80"
-              onClick={onTitleClick}
-            >
+              onClick={onTitleClick}>
               {pageData?.title || "Untitled Page"}
             </h1>
             {pageData?.description && (
-              <p 
+              <p
                 className="pf-page__description cursor-pointer hover:opacity-80"
-                onClick={onDescriptionClick}
-              >
+                onClick={onDescriptionClick}>
                 {pageData.description}
               </p>
             )}
-            {(pageData?.showToken || pageData?.showSymbol) &&
-              pageData?.connectedToken && (
-                <div className="pf-page__token">
-                  {pageData.showToken && (
-                    <code>
-                      {pageData.connectedToken}
-                      {pageData.showSymbol && pageData.tokenSymbol && (
-                        <span>({pageData.tokenSymbol})</span>
-                      )}
-                    </code>
-                  )}
-                </div>
-              )}
           </div>
         </div>
 
@@ -93,7 +82,7 @@ export default function EditPageContent({
           <div className="pf-links">
             <div className="pf-links__grid">
               {items
-                .filter(item => item && item.id && item.type)
+                .filter((item) => item && item.id && item.type)
                 .sort((a, b) => a.order - b.order)
                 .map((item) => (
                   <EditPageLink
@@ -115,4 +104,4 @@ export default function EditPageContent({
       </div>
     </div>
   );
-} 
+}

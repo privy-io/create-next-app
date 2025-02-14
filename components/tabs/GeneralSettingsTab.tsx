@@ -19,7 +19,7 @@ import { AlertCircle } from "lucide-react";
 interface GeneralSettingsTabProps {
   pageDetails: PageData | null;
   setPageDetails: (
-    data: PageData | ((prev: PageData | null) => PageData | null),
+    data: PageData | ((prev: PageData | null) => PageData | null)
   ) => void;
 }
 
@@ -59,7 +59,7 @@ export function GeneralSettingsTab({
     } catch (error) {
       console.error("Error deleting page:", error);
       setDeleteError(
-        error instanceof Error ? error.message : "Failed to delete page",
+        error instanceof Error ? error.message : "Failed to delete page"
       );
     } finally {
       setIsDeleting(false);
@@ -95,10 +95,9 @@ export function GeneralSettingsTab({
                                 showToken: false,
                                 showSymbol: false,
                               }
-                            : null,
+                            : null
                         );
-                      }}
-                    >
+                      }}>
                       Unlink
                     </Button>
                   </div>
@@ -107,56 +106,6 @@ export function GeneralSettingsTab({
                       ${pageDetails.tokenSymbol}
                     </p>
                   )}
-                </div>
-
-                <div className="space-y-2 border-t pt-4">
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">
-                    Token Display Options
-                  </h3>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="show-token"
-                      checked={pageDetails.showToken}
-                      onCheckedChange={(checked) => {
-                        setPageDetails((prev) =>
-                          prev
-                            ? {
-                                ...prev,
-                                showToken: checked as boolean,
-                              }
-                            : null,
-                        );
-                      }}
-                    />
-                    <label
-                      htmlFor="show-token"
-                      className="text-sm text-gray-700 cursor-pointer"
-                    >
-                      Show token address on page
-                    </label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="show-symbol"
-                      checked={pageDetails.showSymbol}
-                      onCheckedChange={(checked) => {
-                        setPageDetails((prev) =>
-                          prev
-                            ? {
-                                ...prev,
-                                showSymbol: checked as boolean,
-                              }
-                            : null,
-                        );
-                      }}
-                    />
-                    <label
-                      htmlFor="show-symbol"
-                      className="text-sm text-gray-700 cursor-pointer"
-                    >
-                      Show token symbol on page
-                    </label>
-                  </div>
                 </div>
               </div>
             ) : (
@@ -172,7 +121,7 @@ export function GeneralSettingsTab({
                           connectedToken: tokenAddress,
                           tokenSymbol: undefined, // Clear the symbol when token changes
                         }
-                      : null,
+                      : null
                   );
                 }}
                 onMetadataLoad={(metadata) => {
@@ -186,7 +135,7 @@ export function GeneralSettingsTab({
                           image: metadata.image || "",
                           tokenSymbol: metadata.symbol,
                         }
-                      : null,
+                      : null
                   );
                 }}
               />
@@ -195,40 +144,41 @@ export function GeneralSettingsTab({
         )}
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Image
-        </label>
-        <div className="space-y-4">
-          {pageDetails?.image && (
-            <div className="relative w-32 h-32 rounded-lg overflow-hidden">
-              <img
-                src={pageDetails.image}
-                alt={pageDetails.title}
-                className="object-cover w-full h-full"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = "none";
-                }}
-              />
-            </div>
-          )}
-          <Input
-            type="text"
-            value={pageDetails?.image || ""}
-            onChange={(e) =>
-              setPageDetails((prev) =>
-                prev
-                  ? {
-                      ...prev,
-                      image: e.target.value,
-                    }
-                  : null,
-              )
-            }
-            placeholder="Enter image URL"
-            className="max-w-md"
-          />
+      <div className="flex gap-2">
+        <div className="flex-1">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Image
+          </label>
+          <div className="flex gap-2">
+            <Input
+              type="text"
+              value={pageDetails?.image || ""}
+              onChange={(e) =>
+                setPageDetails((prev) =>
+                  prev
+                    ? {
+                        ...prev,
+                        image: e.target.value,
+                      }
+                    : null
+                )
+              }
+              placeholder="Enter image URL"
+            />
+          </div>
         </div>
+        {pageDetails?.image && (
+          <div className="relative w-16 h-16">
+            <img
+              src={pageDetails.image}
+              alt={pageDetails.title}
+              className=""
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = "none";
+              }}
+            />
+          </div>
+        )}
       </div>
 
       <div>
@@ -245,7 +195,7 @@ export function GeneralSettingsTab({
                     ...prev,
                     title: e.target.value,
                   }
-                : null,
+                : null
             )
           }
           maxLength={100}
@@ -265,7 +215,7 @@ export function GeneralSettingsTab({
                     ...prev,
                     description: e.target.value,
                   }
-                : null,
+                : null
             )
           }
           rows={3}
@@ -276,8 +226,7 @@ export function GeneralSettingsTab({
             variant="link"
             size="sm"
             className="text-red-600 hover:text-red-700 hover:bg-red-50"
-            onClick={() => setShowDeleteDialog(true)}
-          >
+            onClick={() => setShowDeleteDialog(true)}>
             Delete Page
           </Button>
         </div>
@@ -322,8 +271,7 @@ export function GeneralSettingsTab({
                 setShowDeleteDialog(false);
                 setDeleteConfirmation("");
                 setDeleteError(null);
-              }}
-            >
+              }}>
               Cancel
             </Button>
             <Button
@@ -333,8 +281,7 @@ export function GeneralSettingsTab({
                 !pageDetails ||
                 deleteConfirmation !== pageDetails.slug ||
                 isDeleting
-              }
-            >
+              }>
               {isDeleting ? "Deleting..." : "Delete Page"}
             </Button>
           </DialogFooter>

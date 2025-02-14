@@ -157,8 +157,6 @@ export default function CreatePageModal({
           designStyle: "modern",
           connectedToken: selectedToken,
           tokenSymbol: tokenMetadata?.symbol,
-          showToken: !!selectedToken,
-          showSymbol: !!selectedToken && !!tokenMetadata?.symbol,
           fonts: {
             global: "Inter",
             heading: "inherit",
@@ -166,7 +164,6 @@ export default function CreatePageModal({
             links: "inherit",
           },
         }),
-        credentials: "same-origin",
       });
 
       if (!response.ok) {
