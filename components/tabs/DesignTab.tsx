@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/select";
 import { FontSelect } from "@/components/FontSelector";
 import { PageData } from "@/types";
+import { ThemeStyle, themes } from "@/lib/themes";
 
 interface DesignTabProps {
   pageDetails: PageData | null;
@@ -16,6 +17,20 @@ interface DesignTabProps {
 }
 
 export function DesignTab({ pageDetails, setPageDetails }: DesignTabProps) {
+  const handleThemeChange = (value: ThemeStyle) => {
+    const themePreset = themes[value];
+    setPageDetails((prev) => ({
+      ...prev!,
+      designStyle: value,
+      fonts: {
+        global: themePreset.fonts.global || 'system',
+        heading: themePreset.fonts.heading || 'inherit',
+        paragraph: themePreset.fonts.paragraph || 'inherit',
+        links: themePreset.fonts.links || 'inherit'
+      }
+    }));
+  };
+
   return (
     <div className="space-y-6 px-6">
       <div>
@@ -24,12 +39,7 @@ export function DesignTab({ pageDetails, setPageDetails }: DesignTabProps) {
         </label>
         <Select
           value={pageDetails?.designStyle || "default"}
-          onValueChange={(value: "default" | "minimal" | "modern") => {
-            setPageDetails((prev) => ({
-              ...prev!,
-              designStyle: value,
-            }));
-          }}
+          onValueChange={handleThemeChange}
         >
           <SelectTrigger>
             <SelectValue placeholder="Select style" />

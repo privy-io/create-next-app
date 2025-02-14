@@ -374,7 +374,7 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
             </div>
 
             {/* Right Column - Live Preview */}
-            <div className="pf-preview sticky top-0 right-0 flex-1" style={{ height: 'calc(100vh)' }}>
+            <div className="pf-preview sticky top-0 right-0 flex-1 h-screen overflow-y-auto">
               {previewData && <PagePreview pageData={previewData} />}
             </div>
           </div>

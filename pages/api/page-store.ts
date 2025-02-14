@@ -355,7 +355,7 @@ function sanitizePageData(pageData: PageData | null, isOwner: boolean = false): 
   // Clone the data to avoid mutating the original
   const sanitized = { ...pageData };
 
-  // For non-owners, hide URLs of token-gated items but keep the items visible
+  // For non-owners, remove URLs of token-gated items
   if (sanitized.items) {
     sanitized.items = sanitized.items.map(item => {
       if (item.tokenGated) {

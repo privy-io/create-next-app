@@ -35,7 +35,7 @@ export function PhoneFrame({ color = 'white' }: PhoneFrameProps) {
 
       </div>
 
-      <div className={`w-[280px] h-[500px] -z-10 absolute -bottom-1.5 -right-1.5 p-5 border-[1.5px] ${colorStyle.border} rounded-[20px] ${colorStyle.screen} shadow-2xl pixelated shrink-0`}>
+      <div className={`w-[280px] h-[500px] -z-10 absolute -bottom-[8px] -right-[4px] p-5 border-[1.5px] ${colorStyle.border} rounded-[20px] ${colorStyle.screen} shadow-2xl pixelated shrink-0`}>
 
       </div>
     </div>

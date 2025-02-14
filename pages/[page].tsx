@@ -1,36 +1,10 @@
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 import PageContent from "../components/PageContent";
-import { ItemType } from "../types";
+import { PageData, PageItem } from "@/types";
+import { LinkType } from "@/lib/links";
 import AppMenu from "@/components/AppMenu";
-
-interface PageData {
-  walletAddress: string;
-  createdAt: string;
-  title?: string;
-  description?: string;
-  items?: PageItem[];
-  updatedAt?: string;
-  image?: string;
-  slug: string;
-  connectedToken?: string;
-  designStyle?: "default" | "minimal" | "modern";
-  fonts?: {
-    global?: string;
-    heading?: string;
-    paragraph?: string;
-    links?: string;
-  };
-}
-
-interface PageItem {
-  id: string;
-  type: ItemType;
-  url?: string;
-  order: number;
-  isPlugin?: boolean;
-  tokenGated?: boolean;
-}
+import { themes } from "@/lib/themes";
 
 interface PageProps {
   pageData: PageData;
@@ -77,6 +51,9 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async ({
 };
 
 export default function Page({ pageData }: PageProps) {
+  const currentTheme = pageData.designStyle || 'default';
+  const themeStyle = themes[currentTheme].colors;
+
   return (
     <>
       <Head>
@@ -84,15 +61,7 @@ export default function Page({ pageData }: PageProps) {
         {pageData?.description && (
           <meta name="description" content={pageData.description} />
         )}
-        <link rel="stylesheet" href="/base.css" />
-        <link
-          rel="stylesheet"
-          href={`/${
-            pageData.designStyle
-              ? `page-${pageData.designStyle}.css`
-              : "page.css"
-          }`}
-        />
+     
         {(pageData.fonts?.global ||
           pageData.fonts?.heading ||
           pageData.fonts?.paragraph ||
@@ -116,28 +85,6 @@ export default function Page({ pageData }: PageProps) {
                 .join("&family=")}&display=swap`}
               rel="stylesheet"
             />
-            <style>{`
-              ${
-                pageData.fonts?.global
-                  ? `.pf-page { font-family: '${pageData.fonts.global}', sans-serif; }`
-                  : ""
-              }
-              ${
-                pageData.fonts?.heading
-                  ? `.pf-page__title { font-family: '${pageData.fonts.heading}', sans-serif; }`
-                  : ""
-              }
-              ${
-                pageData.fonts?.paragraph
-                  ? `.pf-page__description { font-family: '${pageData.fonts.paragraph}', sans-serif; }`
-                  : ""
-              }
-              ${
-                pageData.fonts?.links
-                  ? `.pf-link-item { font-family: '${pageData.fonts.links}', sans-serif; }`
-                  : ""
-              }
-            `}</style>
           </>
         )}
       </Head>
@@ -146,7 +93,12 @@ export default function Page({ pageData }: PageProps) {
         <AppMenu />
       </div>
 
-      <PageContent pageData={pageData} />
+      <PageContent 
+        pageData={pageData} 
+        items={pageData.items}
+        themeStyle={themeStyle}
+        isPreview={true}
+      />
     </>
   );
 }

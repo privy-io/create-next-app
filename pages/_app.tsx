@@ -1,10 +1,11 @@
-import "../styles/globals.css";
 import type { AppProps } from "next/app";
 import Head from "next/head";
 import { PrivyProvider, usePrivy } from "@privy-io/react-auth";
 import { toSolanaWalletConnectors } from "@privy-io/react-auth/solana";
 import { GlobalProvider } from "@/lib/context";
 import { isSolanaWallet } from "@/utils/wallet";
+import "../styles/globals.css";
+import "../styles/page.css";
 
 function AppContent({ Component, pageProps }: AppProps) {
   const { user } = usePrivy();

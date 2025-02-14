@@ -1,4 +1,5 @@
 import { LinkType } from '@/lib/links';
+import { ThemeStyle } from '@/lib/themes';
 
 export interface PageItem {
   id: string;
@@ -24,7 +25,7 @@ export interface PageData {
   tokenSymbol?: string;
   showToken?: boolean;
   showSymbol?: boolean;
-  designStyle?: 'default' | 'minimal' | 'modern';
+  designStyle?: ThemeStyle;
   fonts?: {
     global?: string;
     heading?: string;

@@ -1,0 +1,241 @@
+:root {
+  /* Layout */
+  --pf-container-width: 550px;
+
+  /* Font variables */
+  --pf-font-family-default: 'Inter', sans-serif;
+  --pf-font-family-global: var(--pf-font-family-default);
+  --pf-font-family-heading: var(--pf-font-family-global);
+  --pf-font-family-paragraph: var(--pf-font-family-global);
+  --pf-font-family-links: var(--pf-font-family-global);
+
+  /* Font size and weight variables */
+  --pf-title-size: 2rem;
+  --pf-title-weight: 600;
+  --pf-description-size: 1.1rem;
+  --pf-description-weight: 400;
+  --pf-link-title-size: 1rem;
+  --pf-link-title-weight: 500;
+  --pf-link-url-size: 0.875rem;
+  --pf-link-url-weight: 400;
+  --pf-token-badge-size: 0.75rem;
+  --pf-token-badge-weight: 500;
+
+  /* Layout variables */
+  --pf-links-grid-cols: 1;
+  --pf-link-padding: 1rem;
+
+  /* Theme variables with defaults */
+  --pf-background: #f9f9f9;
+  --pf-text: #111;
+  --pf-heading-size: 2rem;
+  --pf-heading-weight: 300;
+  --pf-description-color: #374151;
+  --pf-link-bg: #fff;
+  --pf-link-border: 1px solid rgba(0, 0, 0, 0.1);
+  --pf-link-radius: 0.5rem;
+  --pf-link-color: #374151;
+  --pf-link-hover: #111;
+  
+  /* Token badge specific variables */
+  --pf-link-token-badge-bg: rgba(124, 58, 237, 0.1);
+  --pf-link-token-badge-color: rgb(109, 40, 217);
+  --pf-link-token-badge-border: none;
+  --pf-link-token-badge-radius: var(--pf-link-radius);
+  --pf-link-token-badge-padding: 0.25rem 0.5rem;
+  --pf-link-token-badge-gap: 0.5rem;
+  --pf-link-token-badge-font-size: var(--pf-token-badge-size);
+  --pf-link-token-badge-font-weight: var(--pf-token-badge-weight);
+
+  --pf-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --pf-shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+html,
+body {
+  min-height: 100vh;
+  font-family: var(--pf-font-family-global);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  background-color: var(--pf-background);
+  color: var(--pf-text);
+}
+
+.pf-page {
+  background-color: var(--pf-background);
+  min-height: 100vh;
+  box-shadow: var(--pf-shadow);
+  transition: box-shadow 0.2s ease;
+  padding: 3.333%;
+}
+
+.pf-page:hover {
+  box-shadow: var(--pf-shadow-hover);
+}
+
+.pf-page__container {
+  width: 100%;
+  margin: 0 auto;
+  max-width: var(--pf-container-width);
+}
+
+.pf-page__image {
+  max-width: 100px;
+  height: auto;
+  margin: 0 auto 1.5rem;
+  border-radius: var(--pf-link-radius);
+}
+
+.pf-page__header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.pf-page__title {
+  font-size: var(--pf-title-size);
+  font-weight: var(--pf-title-weight);
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  font-family: var(--pf-font-family-heading);
+  color: var(--pf-text);
+}
+
+.pf-page__description {
+  font-size: var(--pf-description-size);
+  font-weight: var(--pf-description-weight);
+  line-height: 1.6;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  font-family: var(--pf-font-family-paragraph);
+  color: var(--pf-description-color);
+}
+
+.pf-page__token {
+  margin-top: 1rem;
+}
+
+.pf-page__token code {
+  font-size: var(--pf-token-badge-size);
+  font-weight: var(--pf-token-badge-weight);
+  padding: 0.25rem 0.5rem;
+  background: var(--pf-token-badge-bg);
+  color: var(--pf-token-badge-color);
+  border-radius: var(--pf-link-radius);
+}
+
+.pf-links {
+  margin-top: 2rem;
+}
+
+.pf-links__title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--pf-text);
+}
+
+.pf-links__grid {
+  display: grid;
+  grid-template-columns: repeat(var(--pf-links-grid-cols), 1fr);
+  gap: 0.75rem;
+}
+
+.pf-link {
+  padding: var(--pf-link-padding);
+  transition: all 0.2s ease;
+  border: var(--pf-link-border);
+  border-radius: var(--pf-link-radius);
+  background: var(--pf-link-bg);
+  font-family: var(--pf-font-family-links);
+  color: var(--pf-link-color);
+  box-shadow: var(--pf-shadow);
+}
+
+.pf-link:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--pf-shadow-hover);
+}
+
+.pf-link__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.pf-link__info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pf-link__icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+}
+
+.pf-link__type {
+  font-size: var(--pf-link-title-size);
+  font-weight: var(--pf-link-title-weight);
+  color: var(--pf-link-color);
+}
+
+.pf-link__token-badge {
+  font-size: var(--pf-link-token-badge-font-size);
+  font-weight: var(--pf-link-token-badge-font-weight);
+  padding: var(--pf-link-token-badge-padding);
+  background: var(--pf-link-token-badge-bg);
+  color: var(--pf-link-token-badge-color);
+  border: var(--pf-link-token-badge-border);
+  border-radius: var(--pf-link-token-badge-radius);
+  display: flex;
+  align-items: center;
+  gap: var(--pf-link-token-badge-gap);
+}
+
+.pf-link__url {
+  display: block;
+  font-size: var(--pf-link-url-size);
+  font-weight: var(--pf-link-url-weight);
+  color: var(--pf-link-color);
+  text-decoration: none;
+  overflow-wrap: break-word;
+  transition: color 0.2s ease;
+}
+
+.pf-link__url:hover {
+  color: var(--pf-link-hover);
+}
+
+.pf-token-image {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  perspective: 1000px;
+  animation: coinRotate 4s linear infinite;
+}
+
+.pf-token-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  backface-visibility: hidden;
+}
+
+@keyframes coinRotate {
+  0% {
+    transform: rotateY(0deg);
+  }
+  100% {
+    transform: rotateY(360deg);
+  }
+}
+
+.pf-token-lock {
+  width: 12px;
+  height: 12px;
+  color: var(--pf-token-badge-color);
+}

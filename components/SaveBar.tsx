@@ -49,10 +49,10 @@ export function SaveBar({
         <Button
           variant="outline"
           size="sm"
-          onClick={() => router.push('/')}
+          onClick={() => router.push(`/${page}`)}
           disabled={isSaving}
         >
-          Cancel
+          Exit to Page
         </Button>
         
         {!isAuthenticated ? (

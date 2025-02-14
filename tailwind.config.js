@@ -36,6 +36,10 @@ module.exports = {
 		marquee3: {
           '0%': { transform: 'translateX(10px)' },
           '100%': { transform: 'translateX(-10px)' }
+        },
+        rotate3d: {
+          '0%': { transform: 'rotateY(0deg)' },
+          '100%': { transform: 'rotateY(360deg)' }
         }
       },
       animation: {
@@ -44,6 +48,7 @@ module.exports = {
         "wiggle": "wiggle 0.3s ease-in-out",
         "marquee": "marquee var(--marquee-duration, 10s) linear infinite",
         "marquee2": "marquee2 var(--marquee-duration, 10s) linear infinite",
+        "rotate3d": "rotate3d 3s linear infinite",
       },
   		colors: {
   			'privy-navy': '#160B45',
