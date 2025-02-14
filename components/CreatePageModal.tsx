@@ -19,37 +19,13 @@ import {
 } from "lucide-react";
 import TokenSelector from "./TokenSelector";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { LINK_CONFIGS, LinkType } from '@/lib/links';
 
 interface CreatePageModalProps {
   walletAddress: string;
   onClose: () => void;
   open: boolean;
 }
-
-const SOCIAL_OPTIONS = [
-  { type: "twitter", icon: Twitter, label: "Twitter" },
-  { type: "telegram", icon: MessageCircle, label: "Telegram" },
-  { type: "dexscreener", icon: BarChart3, label: "DexScreener" },
-  { type: "tiktok", icon: Video, label: "TikTok" },
-  { type: "instagram", icon: Instagram, label: "Instagram" },
-  { type: "email", icon: Mail, label: "Email" },
-  { type: "discord", icon: MessageSquare, label: "Discord" },
-] as const;
-
-const PLUGINS = [
-  {
-    id: "terminal",
-    name: "Terminal",
-    description: "A place to post alpha, updates, and more.",
-    icon: Terminal,
-  },
-  {
-    id: "private-chat",
-    name: "Private Chat",
-    description: "Private, encrypted chat for users to reach you.",
-    icon: MessageSquareMore,
-  },
-] as const;
 
 export default function CreatePageModal({
   walletAddress,
@@ -63,12 +39,7 @@ export default function CreatePageModal({
   const [slugError, setSlugError] = useState("");
   const [title, setTitle] = useState("My Page");
   const [description, setDescription] = useState("A page for my community");
-  const [selectedSocials, setSelectedSocials] = useState<string[]>([]);
-  const [selectedPlugins, setSelectedPlugins] = useState<string[]>([
-    "terminal",
-    "private-chat",
-  ]);
-  const [tokenGatedPlugins, setTokenGatedPlugins] = useState<string[]>([]);
+  const [selectedLinks, setSelectedLinks] = useState<LinkType[]>([]);
   const [selectedToken, setSelectedToken] = useState<string | null>(null);
   const [tokenMetadata, setTokenMetadata] = useState<any>(null);
   const [image, setImage] = useState<string | null>(null);
@@ -122,23 +93,14 @@ export default function CreatePageModal({
   const handleSubmit = async () => {
     setIsCheckingSlug(true);
     try {
-      // Create items array combining plugins and socials
-      const items = [
-        ...selectedPlugins.map((pluginId, index) => ({
-          id: `${pluginId}-1`,
-          type: pluginId,
-          order: index,
-          isPlugin: true,
-          tokenGated: tokenGatedPlugins.includes(pluginId),
-        })),
-        ...selectedSocials.map((socialType, index) => ({
-          id: `${socialType}-1`,
-          type: socialType,
-          url: "",
-          order: selectedPlugins.length + index,
-          isPlugin: false,
-        })),
-      ];
+      // Create items array for links
+      const items = selectedLinks.map((linkType, index) => ({
+        id: `${linkType}-1`,
+        type: linkType,
+        url: "",
+        order: index,
+        isPlugin: false,
+      }));
 
       const response = await fetch("/api/page-store", {
         method: "POST",
@@ -300,111 +262,33 @@ export default function CreatePageModal({
       case 3:
         return (
           <div className="space-y-4">
-            <Tabs defaultValue="socials" className="w-full">
-              <TabsList className="w-full">
-                <TabsTrigger value="socials" className="flex-1">
-                  Social Links
-                </TabsTrigger>
-                <TabsTrigger value="plugins" className="flex-1">
-                  Plugins
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="socials" className="mt-4">
-                <div className="grid grid-cols-1 gap-2">
-                  {SOCIAL_OPTIONS.map(({ type, icon: Icon, label }) => (
-                    <Card
-                      key={type}
-                      className={`p-3 cursor-pointer transition-colors ${
-                        selectedSocials.includes(type)
-                          ? "bg-violet-50 border-violet-500"
-                          : "hover:border-violet-300"
-                      }`}
-                    >
-                      <div className="flex items-center space-x-4">
-                        <Checkbox
-                          checked={selectedSocials.includes(type)}
-                          onCheckedChange={(checked) => {
-                            setSelectedSocials((prev) =>
-                              checked
-                                ? [...prev, type]
-                                : prev.filter((t) => t !== type),
-                            );
-                          }}
-                        />
-                        <Icon className="h-4 w-4" />
-                        <span className="text-sm">{label}</span>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              </TabsContent>
-              <TabsContent value="plugins" className="mt-4">
-                <div className="grid grid-cols-1 gap-2">
-                  {PLUGINS.map((plugin) => (
-                    <Card
-                      key={plugin.id}
-                      className={`p-3 cursor-pointer transition-colors ${
-                        selectedPlugins.includes(plugin.id)
-                          ? "bg-violet-50 border-violet-500"
-                          : "hover:border-violet-300"
-                      }`}
-                    >
-                      <div className="flex items-start space-x-4">
-                        <div className="pt-1">
-                          <Checkbox
-                            checked={selectedPlugins.includes(plugin.id)}
-                            onCheckedChange={(checked) => {
-                              setSelectedPlugins((prev) =>
-                                checked
-                                  ? [...prev, plugin.id]
-                                  : prev.filter((id) => id !== plugin.id),
-                              );
-                              if (!checked) {
-                                setTokenGatedPlugins((prev) =>
-                                  prev.filter((id) => id !== plugin.id),
-                                );
-                              }
-                            }}
-                          />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-2">
-                            <plugin.icon className="h-4 w-4" />
-                            <h3 className="font-medium text-sm">
-                              {plugin.name}
-                            </h3>
-                          </div>
-                          <p className="text-xs text-gray-600 mt-1">
-                            {plugin.description}
-                          </p>
-                          {selectedPlugins.includes(plugin.id) && (
-                            <div className="mt-2 pl-4 border-l-2 border-violet-200">
-                              <label className="flex items-center space-x-2">
-                                <Checkbox
-                                  checked={tokenGatedPlugins.includes(
-                                    plugin.id,
-                                  )}
-                                  onCheckedChange={(checked) => {
-                                    setTokenGatedPlugins((prev) =>
-                                      checked
-                                        ? [...prev, plugin.id]
-                                        : prev.filter((id) => id !== plugin.id),
-                                    );
-                                  }}
-                                />
-                                <span className="text-xs text-gray-600">
-                                  Token gate this plugin
-                                </span>
-                              </label>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              </TabsContent>
-            </Tabs>
+            <div className="grid grid-cols-1 gap-2">
+              {Object.entries(LINK_CONFIGS).map(([type, config]) => (
+                <Card
+                  key={type}
+                  className={`p-3 cursor-pointer transition-colors ${
+                    selectedLinks.includes(type as LinkType)
+                      ? "bg-violet-50 border-violet-500"
+                      : "hover:border-violet-300"
+                  }`}
+                >
+                  <div className="flex items-center space-x-4">
+                    <Checkbox
+                      checked={selectedLinks.includes(type as LinkType)}
+                      onCheckedChange={(checked) => {
+                        setSelectedLinks((prev) =>
+                          checked
+                            ? [...prev, type as LinkType]
+                            : prev.filter((t) => t !== type)
+                        );
+                      }}
+                    />
+                    {config.icon.modern({ className: "h-4 w-4" })}
+                    <span className="text-sm">{config.label}</span>
+                  </div>
+                </Card>
+              ))}
+            </div>
           </div>
         );
     }
