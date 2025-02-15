@@ -50,22 +50,31 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async ({
   }
 };
 
-export default function Page({ pageData }: PageProps) {
+export default function Page({ pageData, slug }: PageProps) {
   const currentTheme = pageData.designStyle || 'default';
   const themeStyle = themes[currentTheme].colors;
+
+  // Replace placeholders in URLs
+  const processedPageData: PageData = {
+    ...pageData,
+    items: pageData.items?.map(item => ({
+      ...item,
+      url: item.url?.replace('[token]', pageData.connectedToken || '')
+    }))
+  };
 
   return (
     <>
       <Head>
-        <title>{pageData?.title || pageData.slug} - Page.fun</title>
-        {pageData?.description && (
-          <meta name="description" content={pageData.description} />
+        <title>{processedPageData?.title || slug} - Page.fun</title>
+        {processedPageData?.description && (
+          <meta name="description" content={processedPageData.description} />
         )}
      
-        {(pageData.fonts?.global ||
-          pageData.fonts?.heading ||
-          pageData.fonts?.paragraph ||
-          pageData.fonts?.links) && (
+        {(processedPageData.fonts?.global ||
+          processedPageData.fonts?.heading ||
+          processedPageData.fonts?.paragraph ||
+          processedPageData.fonts?.links) && (
           <>
             <link rel="preconnect" href="https://fonts.googleapis.com" />
             <link
@@ -75,10 +84,10 @@ export default function Page({ pageData }: PageProps) {
             />
             <link
               href={`https://fonts.googleapis.com/css2?family=${[
-                pageData.fonts.global,
-                pageData.fonts.heading,
-                pageData.fonts.paragraph,
-                pageData.fonts.links,
+                processedPageData.fonts.global,
+                processedPageData.fonts.heading,
+                processedPageData.fonts.paragraph,
+                processedPageData.fonts.links,
               ]
                 .filter(Boolean)
                 .map((font) => font?.replace(" ", "+"))
@@ -90,10 +99,9 @@ export default function Page({ pageData }: PageProps) {
       </Head>
 
       <PageContent 
-        pageData={pageData} 
-        items={pageData.items}
+        pageData={processedPageData} 
+        items={processedPageData.items}
         themeStyle={themeStyle}
-        isPreview={true}
       />
     </>
   );

@@ -4,8 +4,7 @@ import { LinksTab } from "./tabs/LinksTab";
 import { DesignTab } from "./tabs/DesignTab";
 import { SaveBar } from "./SaveBar";
 import { PageData } from "@/types";
-import { useState, useEffect } from "react";
-import { LINK_CONFIGS, validateLinkUrl } from "@/lib/links";
+import { useState } from "react";
 
 interface SettingsTabsProps {
   pageDetails: PageData | null;
@@ -40,22 +39,6 @@ export function SettingsTabs({
 }: SettingsTabsProps) {
   const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({});
   const hasErrors = Object.keys(validationErrors).length > 0;
-
-  // Initial validation when component mounts or pageDetails changes
-  useEffect(() => {
-    const newErrors: { [key: string]: string } = {};
-    pageDetails?.items?.forEach((item) => {
-      const linkConfig = LINK_CONFIGS[item.type];
-      if (linkConfig?.options?.requiresUrl) {
-        if (!item.url) {
-          newErrors[item.id] = `${linkConfig.label} URL is required`;
-        } else if (!validateLinkUrl(item.type, item.url)) {
-          newErrors[item.id] = "Invalid URL format";
-        }
-      }
-    });
-    setValidationErrors(newErrors);
-  }, [pageDetails?.items]);
 
   return (
     <div className="flex flex-col h-full">

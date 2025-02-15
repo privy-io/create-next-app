@@ -57,7 +57,7 @@ export default async function handler(
       return res.status(404).json({ 
         error: "Item not found",
         itemId,
-        availableItems: pageData.items?.map(i => ({ id: i.id, type: i.type }))
+        availableItems: pageData.items?.map(i => ({ id: i.id, presetId: i.presetId }))
       });
     }
 
@@ -67,7 +67,7 @@ export default async function handler(
         error: "Item is not token gated or has no URL",
         isTokenGated: item.tokenGated,
         hasUrl: !!item.url,
-        itemType: item.type
+        presetId: item.presetId
       });
     }
 
@@ -78,7 +78,9 @@ export default async function handler(
     }
 
     // Return only the URL
-    return res.status(200).json({ url: item.url });
+    return res.status(200).json({ 
+      url: item.url.replace('[token]', pageData.connectedToken || '')
+    });
 
   } catch (error) {
     console.error("Error fetching token gated content:", error);

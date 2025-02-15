@@ -150,7 +150,7 @@ export default function PageContent({
           <div className="pf-links">
             <div className="pf-links__grid">
               {items
-                .filter((item) => item && item.id && item.type)
+                .filter((item) => item && item.id && item.presetId)
                 .sort((a, b) => a.order - b.order)
                 .map((item) => (
                   <PageLink

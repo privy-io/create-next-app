@@ -1,17 +1,18 @@
 import { Fragment } from "react";
-import { PageItem, PageData } from "@/types";
-import { LINK_CONFIGS } from "@/lib/links";
 import { usePrivy } from "@privy-io/react-auth";
-import { Button } from "./ui/button";
-import { JupiterLogo } from "./icons/JupiterLogo";
 import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Drawer,
   DrawerContent,
   DrawerDescription,
   DrawerFooter,
   DrawerHeader,
-} from "./ui/drawer";
+  DrawerTitle,
+} from "@/components/ui/drawer";
+import { JupiterLogo } from "./icons/JupiterLogo";
+import { PageItem, PageData } from "@/types";
+import { LINK_PRESETS } from "@/lib/linkPresets";
 
 // Helper to format token amounts
 function formatTokenAmount(amount: string): string {
@@ -59,8 +60,8 @@ export default function PageLink({
   isPreview = false,
 }: PageLinkProps) {
   const { login, authenticated } = usePrivy();
-  const linkConfig = LINK_CONFIGS[item.type];
-  if (!linkConfig) return null;
+  const preset = LINK_PRESETS[item.presetId];
+  if (!preset) return null;
 
   const hasAccess = accessStates.get(item.id) === true;
 
@@ -89,17 +90,12 @@ export default function PageLink({
       <div className="pf-link__inner">
         <div className="pf-link__icon-container">
           <div className="pf-link__icon">
-            {linkConfig.icon.modern && (
-              <linkConfig.icon.modern
-                className="pf-link__icon"
-                aria-hidden="true"
-              />
-            )}
+            <preset.icon.classic className="pf-link__icon" aria-hidden="true" />
           </div>
         </div>
         <div className="pf-link__title">
           <span className="pf-link__title-text">
-            {item.title || linkConfig.label}
+            {item.title || preset.title}
           </span>
         </div>
         <div className="pf-link__icon-container">
@@ -154,124 +150,84 @@ export default function PageLink({
             }
           }}>
           <DrawerContent>
-              <DrawerHeader>
-                <DrawerDescription className="mt-4">
-                  <div className="flex flex-col gap-2">
-                    <div className="flex flex-col gap-4 items-center">
-                      {pageData.image && (
-                        <div className="relative w-16 h-16 [transform-style:preserve-3d] animate-rotate3d">
-                          <img
-                            src={pageData.image}
-                            alt={pageData.tokenSymbol || "Token"}
-                            className="w-full h-full object-contain rounded-full [backface-visibility:visible]"
-                          />
-                        </div>
-                      )}
-                      <div className="text-center">
-                        <div className="text-base">
-                          You need to hold{" "}
-                          <span className="font-bolder">
-                            {formatTokenAmount(item.requiredTokens?.[0] || "0")}
-                          </span>{" "}
-                          ${pageData.tokenSymbol} tokens to access this content.
-                        </div>
-                      </div>
-                    </div>
+            <DrawerHeader>
+              <DrawerTitle>Token Required</DrawerTitle>
+              <DrawerDescription>
+                You need {item.requiredTokens?.[0] || "0"} ${pageData.tokenSymbol}{" "}
+                tokens to access this link.
+              </DrawerDescription>
+            </DrawerHeader>
 
-                    {!authenticated ? (
-                      <div className="text-center mt-4">
-                        Please connect your wallet to verify token access.
-                      </div>
-                    ) : hasAccess ? (
-                      <div className="flex flex-col gap-2 items-center mt-4">
-                        <div className="text-green-500">
-                          Access verified!
-                        </div>
-                      </div>
-                    ) : hasAccess === false ? (
-                      <div className="text-red-500 text-center mt-4">
-                        Insufficient token balance.
-                      </div>
-                    ) : (
-                      <div className="text-center mt-4">
-                        Click the button below to check if you can access this content
-                      </div>
-                    )}
-                  </div>
-                </DrawerDescription>
-              </DrawerHeader>
-              <DrawerFooter className="gap-3">
-                {!authenticated ? (
-                  <Button onClick={handleLogin} className="w-full">
-                    Connect Wallet
+            <DrawerFooter className="gap-3">
+              {!authenticated ? (
+                <Button onClick={handleLogin} className="w-full">
+                  Connect Wallet
+                </Button>
+              ) : hasAccess ? (
+                tokenGatedUrls.get(item.id) && (
+                  <Button asChild className="w-full">
+                    <a
+                      href={tokenGatedUrls.get(item.id)}
+                      target="_blank"
+                      rel="noopener noreferrer">
+                      Open Link
+                    </a>
                   </Button>
-                ) : hasAccess ? (
-                  tokenGatedUrls.get(item.id) && (
-                    <Button asChild className="w-full">
-                      <a
-                        href={tokenGatedUrls.get(item.id)}
-                        target="_blank"
-                        rel="noopener noreferrer">
-                        Open Link
-                      </a>
-                    </Button>
-                  )
-                ) : hasAccess === false ? (
-                  <>
-                    <Button variant="outline" asChild className="w-full">
-                      <a
-                        href={`https://jup.ag/swap/SOL-${pageData.connectedToken}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-2">
-                        <JupiterLogo className="w-4 h-4" />
-                        Get ${pageData.tokenSymbol} on Jupiter
-                      </a>
-                    </Button>
-                    <Button
-                      onClick={() =>
-                        onVerifyAccess(
-                          item.id,
-                          pageData.connectedToken!,
-                          item.requiredTokens?.[0] || "0"
-                        )
-                      }
-                      disabled={verifying === item.id}
-                      className="w-full">
-                      {verifying === item.id ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                          Verifying...
-                        </>
-                      ) : (
-                        "Check Balance"
-                      )}
-                    </Button>
-                  </>
-                ) : (
-                  !hasAccess && (
-                    <Button
-                      onClick={() =>
-                        onVerifyAccess(
-                          item.id,
-                          pageData.connectedToken!,
-                          item.requiredTokens?.[0] || "0"
-                        )
-                      }
-                      disabled={verifying === item.id}
-                      className="w-full">
-                      {verifying === item.id ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                          Verifying...
-                        </>
-                      ) : (
-                        "Check Balance"
-                      )}
-                    </Button>
-                  )
-                )}
-              </DrawerFooter>
+                )
+              ) : hasAccess === false ? (
+                <>
+                  <Button variant="outline" asChild className="w-full">
+                    <a
+                      href={`https://jup.ag/swap/SOL-${pageData.connectedToken}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2">
+                      <JupiterLogo className="w-4 h-4" />
+                      Get ${pageData.tokenSymbol} on Jupiter
+                    </a>
+                  </Button>
+                  <Button
+                    onClick={() =>
+                      onVerifyAccess(
+                        item.id,
+                        pageData.connectedToken!,
+                        item.requiredTokens?.[0] || "0"
+                      )
+                    }
+                    disabled={verifying === item.id}
+                    className="w-full">
+                    {verifying === item.id ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        Verifying...
+                      </>
+                    ) : (
+                      "Check Balance"
+                    )}
+                  </Button>
+                </>
+              ) : !hasAccess && (
+                <Button
+                  onClick={() =>
+                    onVerifyAccess(
+                      item.id,
+                      pageData.connectedToken!,
+                      item.requiredTokens?.[0] || "0"
+                    )
+                  }
+                  disabled={verifying === item.id}
+                  className="w-full">
+                  {verifying === item.id ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Verifying...
+                    </>
+                  ) : (
+                    "Check Balance"
+                  )}
+                </Button>
+              )}
+            </DrawerFooter>
           </DrawerContent>
         </Drawer>
       )}

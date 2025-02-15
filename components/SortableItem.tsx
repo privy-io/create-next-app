@@ -17,7 +17,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { PageData, PageItem } from "@/types";
-import { LINK_CONFIGS, validateLinkUrl } from "@/lib/links";
+import { validateLinkUrl } from "@/lib/links";
+import { LinkPreset } from "@/lib/linkPresets";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,6 +34,7 @@ import {
 interface SortableItemProps {
   id: string;
   item: PageItem;
+  preset: LinkPreset;
   onUrlChange?: (url: string) => void;
   onDelete: () => void;
   error?: string;
@@ -47,6 +49,7 @@ interface SortableItemProps {
 export function SortableItem({
   id,
   item,
+  preset,
   onUrlChange,
   onDelete,
   error,
@@ -63,13 +66,17 @@ export function SortableItem({
     transition,
   };
 
-  const linkConfig = LINK_CONFIGS[item.type];
-  if (!linkConfig) return null;
+  if (!preset) return null;
 
-  const Icon = linkConfig.icon.classic;
-  const displayError = error || (linkConfig.options?.requiresUrl && (
-    !item.url || (item.url && !validateLinkUrl(item.type, item.url))
-  ));
+  console.log('SortableItem render:', {
+    id,
+    error,
+    url: item.url,
+    presetId: item.presetId
+  });
+
+  const Icon = preset.icon.classic;
+  const displayError = Boolean(error);
 
   const handleTitleChange = (value: string) => {
     setPageDetails((prev) => {
@@ -128,25 +135,7 @@ export function SortableItem({
 
   const handleUrlChange = (value: string) => {
     if (!onUrlChange) return;
-
-    // Format URL based on link type
-    let formattedUrl = value.trim();
-
-    if (item.type === 'email') {
-      // For email type, add mailto: if it's not already a URL
-      if (formattedUrl && !formattedUrl.startsWith('mailto:') && !formattedUrl.match(/^https?:\/\//)) {
-        // Remove any existing mailto: prefix to avoid duplication
-        const cleanValue = formattedUrl.replace(/^mailto:/, '');
-        formattedUrl = `mailto:${cleanValue}`;
-      }
-    } else {
-      // For non-email links, add https:// if missing
-      if (formattedUrl && !formattedUrl.match(/^https?:\/\//)) {
-        formattedUrl = `https://${formattedUrl}`;
-      }
-    }
-
-    onUrlChange(formattedUrl);
+    onUrlChange(value);
   };
 
   return (
@@ -174,7 +163,7 @@ export function SortableItem({
               <div className="flex items-center gap-2 flex-1">
                 <div className="flex items-center gap-2">
                   <Icon className="h-5 w-5" />
-                  <span className="font-medium">{item.title || linkConfig.label}</span>
+                  <span className="font-medium">{item.title || preset.title}</span>
                 </div>
                 {item.tokenGated && (
                   <span className="ml-auto text-xs bg-violet-100 text-violet-800 px-1 py-0.5 rounded">
@@ -190,32 +179,32 @@ export function SortableItem({
                 <label className="block text-sm text-gray-600">Title</label>
                 <Input
                   type="text"
-                  placeholder={linkConfig.label}
+                  placeholder={preset.title}
                   value={item.title || ""}
                   onChange={(e) => handleTitleChange(e.target.value)}
                 />
               </div>
 
-              {linkConfig.options?.requiresUrl && onUrlChange && (
+              {preset.options?.requiresUrl && onUrlChange && (
                 <div className="space-y-2">
                   <label className="block text-sm text-gray-600">URL</label>
                   <Input
                     type="text"
-                    placeholder={item.type === 'email' ? "Enter email address" : `Enter ${linkConfig.label} URL`}
-                    value={item.url ? item.url.replace(/^mailto:/, '') : ''}
+                    placeholder={item.presetId === 'email' ? "Enter email address" : `Enter ${preset.title} URL`}
+                    value={item.url || ''}
                     onChange={(e) => handleUrlChange(e.target.value)}
-                    className={displayError ? "border-red-500" : ""}
+                    className={error ? "border-red-500 focus:ring-red-500" : ""}
                   />
-                  {displayError && (
-                    <p className="text-sm text-red-500 flex items-center gap-1">
-                      <AlertCircle className="h-4 w-4" />
-                      {error || (!item.url ? `${linkConfig.label} URL is required` : "Invalid URL format")}
+                  {error && (
+                    <p className="text-sm text-red-500 flex items-center gap-1 mt-1">
+                      <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                      <span>{error}</span>
                     </p>
                   )}
                 </div>
               )}
             </div>
-            {linkConfig.options?.canBeTokenGated && (
+            {preset.options?.canBeTokenGated && (
               <div className="mt-3 space-y-3">
                 <div className="flex items-center gap-2">
                   <label className="flex items-center space-x-2">

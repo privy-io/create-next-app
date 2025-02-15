@@ -1,33 +1,32 @@
 import { LinkType } from '@/lib/links';
 import { ThemeStyle } from '@/lib/themes';
 
-export interface PageItem {
+export type PageItem = {
   id: string;
-  type: LinkType;
-  url?: string;
+  presetId: string;
   title?: string;
+  url?: string;
   order: number;
   isPlugin?: boolean;
   tokenGated?: boolean;
   requiredTokens?: string[];
-}
+};
 
-export interface PageData {
+export type PageData = {
   walletAddress: string;
-  createdAt: string;
-  slug: string;
+  connectedToken?: string | null;
+  tokenSymbol?: string | null;
   title?: string;
   description?: string;
-  image?: string;
+  image?: string | null;
   items?: PageItem[];
-  designStyle?: string;
+  designStyle?: "default" | "minimal" | "modern";
   fonts?: {
     global?: string;
     heading?: string;
     paragraph?: string;
     links?: string;
   };
-  connectedToken?: string;
-  tokenSymbol?: string;
-  isSetupWizard?: boolean;
-} 
+  createdAt?: string;
+  updatedAt?: string;
+}; 

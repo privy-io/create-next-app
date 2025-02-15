@@ -24,7 +24,8 @@ import {
 import { SortableItem } from "@/components/SortableItem";
 import { PageData, PageItem } from "@/types";
 import React, { useState, useEffect } from "react";
-import { LINK_CONFIGS, LinkType, validateLinkUrl } from "@/lib/links";
+import { LINK_PRESETS, LinkPreset } from "@/lib/linkPresets";
+import { validateLinkUrl } from "@/lib/links";
 
 interface LinksTabProps {
   pageDetails: PageData | null;
@@ -39,7 +40,7 @@ interface LinksTabProps {
 
 // Helper function to get a consistent item ID
 function getItemId(item: PageItem): string {
-  return item.id || `${item.type}-${item.order}`;
+  return item.id;
 }
 
 export function LinksTab({
@@ -63,20 +64,37 @@ export function LinksTab({
 
   // Validate URLs when items change
   useEffect(() => {
+    validateItems(pageDetails?.items || []);
+  }, [pageDetails?.items]);
+
+  const validateItems = (items: PageItem[]) => {
     const newErrors: { [key: string]: string } = {};
-    pageDetails?.items?.forEach((item) => {
-      const linkConfig = LINK_CONFIGS[item.type];
-      if (linkConfig?.options?.requiresUrl) {
+    items.forEach((item) => {
+      console.log('Validating item:', {
+        id: item.id,
+        presetId: item.presetId,
+        url: item.url
+      });
+      
+      const preset = LINK_PRESETS[item.presetId];
+      if (preset?.options?.requiresUrl) {
         if (!item.url) {
-          newErrors[item.id] = `${linkConfig.label} URL is required`;
-        } else if (!validateLinkUrl(item.type, item.url)) {
-          newErrors[item.id] = `Invalid ${linkConfig.label} URL format`;
+          newErrors[item.id] = `${preset.title} URL is required`;
+        } else if (!validateLinkUrl(item.url, item.presetId)) {
+          console.log('URL validation failed:', {
+            id: item.id,
+            url: item.url,
+            presetId: item.presetId
+          });
+          newErrors[item.id] = `Invalid ${preset.title} URL format`;
         }
       }
     });
+    console.log('Setting validation errors:', newErrors);
     setErrors(newErrors);
     onValidationErrorsChange?.(newErrors);
-  }, [pageDetails?.items, onValidationErrorsChange]);
+    return newErrors;
+  };
 
   const handleDragEnd = (event: any) => {
     const { active, over } = event;
@@ -109,62 +127,25 @@ export function LinksTab({
 
   const handleUrlChange = (itemId: string, url: string) => {
     setPageDetails((prev) => {
-      if (!prev) return prev;
+      if (!prev?.items) return prev;
 
-      // Validate URL before updating
-      const item = prev.items?.find(i => i.id === itemId);
-      if (!item) return prev;
+      const updatedItems = prev.items.map((i) =>
+        i.id === itemId ? { ...i, url } : i
+      );
 
-      const linkConfig = LINK_CONFIGS[item.type];
-      if (!linkConfig?.options?.requiresUrl) return prev;
-
-      // Format URL based on link type
-      let formattedUrl = url.trim();
-
-      if (item.type === 'email') {
-        // For email type, add mailto: if it's not already a URL
-        if (formattedUrl && !formattedUrl.startsWith('mailto:') && !formattedUrl.match(/^https?:\/\//)) {
-          // Remove any existing mailto: prefix to avoid duplication
-          const cleanValue = formattedUrl.replace(/^mailto:/, '');
-          formattedUrl = `mailto:${cleanValue}`;
-        }
-      } else {
-        // For non-email links, add https:// if missing
-        if (formattedUrl && !formattedUrl.match(/^https?:\/\//)) {
-          formattedUrl = `https://${formattedUrl}`;
-        }
-      }
-
-      // Update validation errors
-      const newErrors = { ...errors };
-      if (!formattedUrl) {
-        newErrors[itemId] = `${linkConfig.label} URL is required`;
-      } else if (!validateLinkUrl(item.type, formattedUrl)) {
-        newErrors[itemId] = `Invalid ${linkConfig.label} URL format`;
-      } else {
-        delete newErrors[itemId];
-      }
-      setErrors(newErrors);
-      onValidationErrorsChange?.(newErrors);
+      // Validate all items with the updated URL
+      validateItems(updatedItems);
 
       return {
         ...prev,
-        items: prev.items?.map((i) =>
-          i.id === itemId ? { ...i, url: formattedUrl } : i
-        ),
+        items: updatedItems,
       };
     });
   };
 
-  // Get available link types (excluding already added ones)
-  const getAvailableLinkTypes = () => {
-    const addedTypes = new Set(pageDetails?.items?.map(item => item.type) || []);
-    return Object.entries(LINK_CONFIGS)
-      .filter(([type]) => !addedTypes.has(type as LinkType))
-      .map(([type, config]) => ({
-        linkType: type as LinkType,
-        ...config,
-      }));
+  // Get available link presets
+  const getAvailablePresets = () => {
+    return Object.values(LINK_PRESETS);
   };
 
   // Only show token gating if a token is connected
@@ -194,18 +175,19 @@ export function LinksTab({
               <DialogTitle>Add Link</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
-              {getAvailableLinkTypes().map((linkConfig) => {
-                const Icon = linkConfig.icon.classic;
+              {getAvailablePresets().map((preset) => {
+                const Icon = preset.icon.classic;
                 return (
                   <Button
-                    key={linkConfig.linkType}
+                    key={preset.id}
                     variant="outline"
                     className="justify-start gap-2"
                     onClick={() => {
                       const newItem: PageItem = {
-                        type: linkConfig.linkType,
-                        url: "",
-                        id: `${linkConfig.linkType}-${Math.random().toString(36).substr(2, 9)}`,
+                        presetId: preset.id,
+                        title: preset.title,
+                        url: preset.defaultUrl?.replace('[connectedToken]', pageDetails?.connectedToken || '') || "",
+                        id: `${preset.id}-${Math.random().toString(36).substr(2, 9)}`,
                         order: pageDetails?.items?.length || 0,
                       };
 
@@ -219,7 +201,7 @@ export function LinksTab({
                     }}
                   >
                     <Icon className="h-4 w-4" />
-                    {linkConfig.label}
+                    {preset.title}
                   </Button>
                 );
               })}
@@ -247,31 +229,32 @@ export function LinksTab({
             )}
             {pageDetails?.items?.map((item) => {
               const itemId = getItemId(item);
+              const preset = LINK_PRESETS[item.presetId];
+              if (!preset) return null;
+              
+              console.log(`Rendering item ${itemId}, error:`, errors[itemId]);
+              
               return (
                 <SortableItem
                   key={itemId}
                   id={itemId}
                   item={item}
+                  preset={preset}
                   error={errors[itemId]}
                   onUrlChange={(url) => handleUrlChange(itemId, url)}
                   setPageDetails={setPageDetails}
-                  tokenSymbol={pageDetails?.tokenSymbol}
+                  tokenSymbol={pageDetails?.tokenSymbol || undefined}
                   isOpen={openLinkId === itemId}
                   onOpen={() => handleAccordionToggle(itemId)}
                   onDelete={() => {
-                    if (errors[itemId]) {
-                      setErrors((prev: { [key: string]: string }) => {
-                        const newErrors = { ...prev };
-                        delete newErrors[itemId];
-                        return newErrors;
-                      });
-                    }
+                    const newErrors = { ...errors };
+                    delete newErrors[itemId];
+                    setErrors(newErrors);
+                    onValidationErrorsChange?.(newErrors);
 
                     setPageDetails((prev) => ({
                       ...prev!,
-                      items: prev!.items!.filter((i) =>
-                        item.id ? i.id !== item.id : i.type !== item.type,
-                      ),
+                      items: prev!.items!.filter((i) => i.id !== item.id),
                     }));
                   }}
                 />

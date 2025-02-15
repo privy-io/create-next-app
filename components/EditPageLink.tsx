@@ -1,6 +1,6 @@
 import { Fragment } from "react";
 import { PageItem, PageData } from "@/types";
-import { LINK_CONFIGS } from "@/lib/links";
+import { LINK_PRESETS } from "@/lib/linkPresets";
 
 interface EditPageLinkProps {
   item: PageItem;
@@ -13,10 +13,10 @@ export default function EditPageLink({
   pageData,
   onLinkClick,
 }: EditPageLinkProps) {
-  const linkConfig = LINK_CONFIGS[item.type];
-  if (!linkConfig) return null;
+  const preset = LINK_PRESETS[item.presetId];
+  if (!preset) return null;
 
-  const Icon = linkConfig.icon.modern;
+  const Icon = preset.icon.classic;
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -30,17 +30,12 @@ export default function EditPageLink({
       <div className="pf-link__inner">
         <div className="pf-link__icon-container">
           <div className="pf-link__icon">
-            {linkConfig.icon.modern && (
-              <linkConfig.icon.modern
-                className="pf-link__icon"
-                aria-hidden="true"
-              />
-            )}
+            <Icon className="pf-link__icon" aria-hidden="true" />
           </div>
         </div>
         <div className="pf-link__title">
           <span className="pf-link__title-text">
-            {item.title || linkConfig.label}
+            {item.title || preset.title}
           </span>
         </div>
         <div className="pf-link__icon-container">

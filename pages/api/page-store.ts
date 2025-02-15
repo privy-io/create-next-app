@@ -19,18 +19,7 @@ const FontsSchema = z
 const PageItemSchema = z
   .object({
     id: z.string().min(1),
-    type: z.enum([
-      "twitter",
-      "telegram",
-      "dexscreener",
-      "tiktok",
-      "instagram",
-      "email",
-      "discord",
-      "private-chat",
-      "terminal",
-      "filesystem",
-    ]),
+    presetId: z.string().min(1),
     title: z.string().optional(),
     url: z
       .union([
@@ -50,7 +39,7 @@ const PageItemSchema = z
     (data) => {
       // Only validate URL if one is provided and it's not empty
       if (data.url && data.url.length > 0) {
-        if (data.type === "email") {
+        if (data.presetId === "email") {
           // For email type, check if it's a valid email or starts with mailto:
           return data.url.includes("@") || data.url.startsWith("mailto:");
         } else if (!data.isPlugin) {
@@ -98,24 +87,13 @@ const CreatePageSchema = z.object({
   fonts: FontsSchema,
 });
 
-type ItemType =
-  | "twitter"
-  | "telegram"
-  | "dexscreener"
-  | "tiktok"
-  | "instagram"
-  | "email"
-  | "discord"
-  | "private-chat"
-  | "terminal"
-  | "filesystem";
-
 type PageItem = {
   id: string;
-  type: ItemType;
-  url?: string; // Optional since plugins don't have URLs
+  presetId: string;
+  title?: string;
+  url?: string;
   order: number;
-  isPlugin?: boolean; // To distinguish between socials and plugins
+  isPlugin?: boolean;
   tokenGated?: boolean;
   requiredTokens?: string[];
 };

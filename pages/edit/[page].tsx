@@ -14,7 +14,8 @@ import { isSolanaWallet } from '@/utils/wallet';
 import { SettingsTabs } from '@/components/SettingsTabs';
 import { GOOGLE_FONTS } from '@/lib/fonts';
 import { PageData, PageItem } from '@/types';
-import { LINK_CONFIGS, validateLinkUrl } from '@/lib/links';
+import { validateLinkUrl } from '@/lib/links';
+import { LINK_PRESETS } from '@/lib/linkPresets';
 
 interface PageProps {
   slug: string;
@@ -175,18 +176,56 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
 
   const validateLinks = (items: PageItem[] = []): { [key: string]: string } => {
     const errors: { [key: string]: string } = {};
-    
-    items.forEach(item => {
-      const linkConfig = LINK_CONFIGS[item.type];
-      if (linkConfig?.options?.requiresUrl) {
-        if (!item.url) {
-          errors[item.id] = `${linkConfig.label} URL is required`;
-        } else if (!validateLinkUrl(item.type, item.url)) {
-          errors[item.id] = `Invalid ${linkConfig.label} URL format`;
+    console.log('Starting link validation for items:', items);
+
+    items.forEach((item) => {
+      console.log(`\nValidating item:`, {
+        id: item.id,
+        presetId: item.presetId,
+        url: item.url,
+        isPlugin: item.isPlugin
+      });
+
+      if (!item.presetId) {
+        console.log('Skipping - no presetId');
+        return;
+      }
+      
+      const preset = LINK_PRESETS[item.presetId];
+      if (!preset) {
+        console.log('Skipping - preset not found:', item.presetId);
+        return;
+      }
+
+      // Skip validation for plugins
+      if (item.isPlugin) {
+        console.log('Skipping - is plugin');
+        return;
+      }
+
+      // If URL is required but not provided
+      if (preset.options?.requiresUrl && !item.url) {
+        console.log('Error - URL required but not provided');
+        errors[item.id] = "URL is required";
+        return;
+      }
+
+      // If URL is provided, validate it
+      if (item.url) {
+        const isValid = validateLinkUrl(item.url, item.presetId);
+        console.log('URL validation result:', {
+          url: item.url,
+          presetId: item.presetId,
+          isValid
+        });
+        
+        if (!isValid) {
+          errors[item.id] = `Invalid ${preset.title} URL format`;
         }
       }
     });
 
+    console.log('\nValidation complete. Errors found:', errors);
     return errors;
   };
 
@@ -215,6 +254,17 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
     // Validate links before saving
     const validationErrors = validateLinks(pageDetails.items);
     if (Object.keys(validationErrors).length > 0) {
+      console.log('Validation errors found:', {
+        errors: validationErrors,
+        items: pageDetails.items?.map(item => ({
+          id: item.id,
+          presetId: item.presetId,
+          title: item.title,
+          url: item.url,
+          isPlugin: item.isPlugin
+        }))
+      });
+      
       setValidationErrors(validationErrors);
       toast({
         title: "Validation Error",
@@ -226,101 +276,29 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
     
     setIsSaving(true);
     try {
-      const items = pageDetails.items?.map((item, index) => {
-        // Ensure each item has an id
-        const id = item.id || `item-${index}`;
-        
-        // Format URL based on item type
-        let url = item.url;
-        if (item.type === 'email' && url && !url.startsWith('mailto:')) {
-          url = `mailto:${url}`;
-        }
-        
-        // For plugins, make sure url is undefined/null
-        if (item.isPlugin) {
-          url = undefined;
-        }
-        
-        return {
-          ...item,
-          id,
-          url,
-          order: index,
-          // Ensure boolean fields are properly set
-          isPlugin: !!item.isPlugin,
-          tokenGated: !!item.tokenGated,
-          // Only include requiredTokens if tokenGated is true
-          ...(item.tokenGated ? { requiredTokens: item.requiredTokens || ["1"] } : {})
-        };
-      }) || [];
+      const items = pageDetails.items?.map((item, index) => ({
+        ...item,
+        id: item.id || `item-${index}`,
+        order: index,
+        isPlugin: !!item.isPlugin,
+      }));
 
-      const fonts = {
-        global: pageDetails.fonts?.global === 'system' ? undefined : pageDetails.fonts?.global,
-        heading: pageDetails.fonts?.heading === 'inherit' ? undefined : pageDetails.fonts?.heading,
-        paragraph: pageDetails.fonts?.paragraph === 'inherit' ? undefined : pageDetails.fonts?.paragraph,
-        links: pageDetails.fonts?.links === 'inherit' ? undefined : pageDetails.fonts?.links
-      };
-
-      const requestBody = {
-        slug,
-        walletAddress: pageDetails.walletAddress,
-        title: pageDetails.title,
-        description: pageDetails.description,
-        image: pageDetails.image,
-        items,
-        designStyle: pageDetails.designStyle,
-        fonts,
-        // Only include token-related fields if there's a non-empty connected token
-        ...(pageDetails.connectedToken && pageDetails.connectedToken.length > 0 ? {
-          connectedToken: pageDetails.connectedToken,
-          tokenSymbol: pageDetails.tokenSymbol,
-        } : {
-          connectedToken: null,  // Explicitly set to null to remove it
-          tokenSymbol: null,
-        }),
-        isSetupWizard: false
-      };
-
-      const response = await fetch('/api/page-store', {
-        method: 'POST',
+      const response = await fetch("/api/page-store", {
+        method: "PATCH",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(requestBody),
-        credentials: 'same-origin'
+        body: JSON.stringify({
+          slug,
+          ...pageDetails,
+          items,
+        }),
+        credentials: "same-origin",
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        if (errorData.details) {
-          // Handle validation errors
-          const validationErrors: { [key: string]: string } = {};
-          
-          errorData.details.forEach((issue: any) => {
-            const [itemsStr, index, field] = issue.path;
-            if (itemsStr === 'items' && typeof index === 'number') {
-              const item = items[index];
-              if (item) {
-                validationErrors[item.id] = issue.message;
-              }
-            }
-          });
-
-          if (Object.keys(validationErrors).length > 0) {
-            // Update validation errors in LinksTab
-            setValidationErrors((prev: { [key: string]: string }) => ({
-              ...prev,
-              ...validationErrors
-            }));
-            toast({
-              title: "Validation Error",
-              description: "Please fix the highlighted errors in your links.",
-              variant: "destructive",
-            });
-            return;
-          }
-        }
-        throw new Error(errorData.error || 'Failed to save page details');
+        const error = await response.json();
+        throw new Error(error.error || "Failed to save changes");
       }
 
       toast({
@@ -328,10 +306,10 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
         description: "Your page has been updated successfully.",
       });
     } catch (error) {
-      console.error('Error saving page details:', error);
+      console.error("Error saving page:", error);
       toast({
-        title: "Error saving changes",
-        description: error instanceof Error ? error.message : "Please try again.",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to save changes",
         variant: "destructive",
       });
     } finally {
