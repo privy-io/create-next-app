@@ -1,71 +1,24 @@
-import { useLogin, usePrivy, WalletWithMetadata } from "@privy-io/react-auth";
-import { PrivyClient } from "@privy-io/server-auth";
-import { GetServerSideProps } from "next";
+import { useLogin } from "@privy-io/react-auth";
 import Head from "next/head";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { Toaster } from "@/components/ui/toaster";
-import AppMenu from "@/components/AppMenu";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import CreatePageModal from "@/components/CreatePageModal";
 import { PhoneFrame } from "@/components/PhoneFrame";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useGlobalContext } from "@/lib/context";
-
-export const getServerSideProps: GetServerSideProps = async ({ req }) => {
-  const cookieAuthToken = req.cookies["privy-token"];
-
-  // If no cookie is found, skip any further checks
-  if (!cookieAuthToken) return { props: {} };
-
-  const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
-  const PRIVY_APP_SECRET = process.env.PRIVY_APP_SECRET;
-  const client = new PrivyClient(PRIVY_APP_ID!, PRIVY_APP_SECRET!);
-
-  try {
-    const claims = await client.verifyAuthToken(cookieAuthToken);
-    // Since we're not redirecting to dashboard anymore, just return the claims
-    return { props: {} };
-  } catch (error) {
-    return { props: {} };
-  }
-};
-
-interface SolanaWallet extends WalletWithMetadata {
-  type: "wallet";
-  chainType: "solana";
-  address: string;
-}
-
-const isSolanaWallet = (account: any): account is SolanaWallet => {
-  return account.type === "wallet" && account.chainType === "solana";
-};
 
 export default function HomePage() {
   const router = useRouter();
   const { login } = useLogin({
     onComplete: () => {
-      // Instead of redirecting, we'll let the page re-render with authenticated state
       router.replace(router.asPath);
     },
   });
-  const { ready, authenticated, user } = usePrivy();
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const { userPages, isLoadingPages, tokenHoldings, isLoadingTokens } = useGlobalContext();
-
-  // Get the first Solana wallet if one exists
-  const solanaWallet = user?.linkedAccounts?.find(isSolanaWallet);
-
-  // Add debug logging
-  useEffect(() => {
-    console.log('Debug token holdings:', {
-      isLoadingTokens,
-      tokenCount: tokenHoldings.length,
-      tokens: tokenHoldings,
-      wallet: solanaWallet?.address
-    });
-  }, [tokenHoldings, isLoadingTokens, solanaWallet]);
+  const { userPages, isLoadingPages, walletAddress, isAuthenticated } = useGlobalContext();
 
   const handleDashboardClick = () => {
     window.dispatchEvent(new CustomEvent("openAppMenu"));
@@ -89,7 +42,7 @@ export default function HomePage() {
               Tokenize yourself, memes and AI bots
             </h1>
             <p className="text-lg opacity-75 mb-4">A Linktree alternative for Solana tokens.</p>
-            {authenticated ? (
+            {isAuthenticated ? (
               <Button
                 onClick={isLoadingPages ? undefined : (
                   userPages.length > 0
@@ -147,18 +100,16 @@ export default function HomePage() {
             </div>
           </div>
 
-       
-
           <div className="absolute text-white text-xs bottom-3 left-[50%] -translate-x-1/2">
             <span className="bg-primary text-primary-foreground px-2 py-1 rounded-md">© Page.fun - $page.</span>
           </div>
         </div>
       </main>
 
-      {showCreateModal && solanaWallet && (
+      {showCreateModal && walletAddress && (
         <CreatePageModal
           open={showCreateModal}
-          walletAddress={solanaWallet.address}
+          walletAddress={walletAddress}
           onClose={() => setShowCreateModal(false)}
         />
       )}

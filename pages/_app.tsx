@@ -1,19 +1,15 @@
 import type { AppProps } from "next/app";
 import Head from "next/head";
-import { PrivyProvider, usePrivy } from "@privy-io/react-auth";
+import { PrivyProvider } from "@privy-io/react-auth";
 import { toSolanaWalletConnectors } from "@privy-io/react-auth/solana";
 import { GlobalProvider } from "@/lib/context";
-import { isSolanaWallet } from "@/utils/wallet";
 import AppMenu from "@/components/AppMenu";
 import "../styles/globals.css";
 import "../styles/page.css";
 
 function AppContent({ Component, pageProps }: AppProps) {
-  const { user } = usePrivy();
-  const solanaWallet = user?.linkedAccounts?.find(isSolanaWallet);
-
   return (
-    <GlobalProvider walletAddress={solanaWallet?.address}>
+    <GlobalProvider>
       <div className="fixed top-2 left-2 z-50">
         <AppMenu />
       </div>

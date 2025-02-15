@@ -81,12 +81,12 @@ export function LinksTab({
   const handleDragEnd = (event: any) => {
     const { active, over } = event;
 
-    if (active.id !== over.id && pageDetails?.items) {
+    if (active.id !== over?.id && pageDetails?.items) {
       const oldIndex = pageDetails.items.findIndex(
         (item) => getItemId(item) === active.id,
       );
       const newIndex = pageDetails.items.findIndex(
-        (item) => getItemId(item) === over.id,
+        (item) => getItemId(item) === over?.id,
       );
 
       setPageDetails((prevDetails) => {
