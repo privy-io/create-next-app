@@ -47,68 +47,18 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async ({
   const slug = params?.page as string;
 
   try {
-    // Get page data from Redis
-    const pageData = await redis.get<PageData>(getRedisKey(slug));
+    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/verify-page-edit`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Cookie': req.headers.cookie || '',
+      },
+      body: JSON.stringify({ slug }),
+    });
 
-    if (!pageData) {
-      return {
-        redirect: {
-          destination: `/${slug}`,
-          permanent: false,
-        },
-      };
-    }
+    const data = await response.json();
 
-    // Check authentication and ownership
-    const idToken = req.cookies["privy-id-token"];
-    if (!idToken) {
-      return {
-        redirect: {
-          destination: `/${slug}`,
-          permanent: false,
-        },
-      };
-    }
-
-    try {
-      const user = await privyClient.getUser({ idToken });
-
-      // Check if the wallet is in user's linked accounts
-      let userWallet = null;
-      for (const account of user.linkedAccounts) {
-        if (account.type === "wallet" && account.chainType === "solana") {
-          const walletAccount = account as { address?: string };
-          if (walletAccount.address?.toLowerCase() === pageData.walletAddress.toLowerCase()) {
-            userWallet = walletAccount;
-            break;
-          }
-        }
-      }
-
-      if (!userWallet) {
-        return {
-          redirect: {
-            destination: `/${slug}`,
-            permanent: false,
-          },
-        };
-      }
-
-      // Check if the page exists in the user's wallet:id set
-      const pagesKey = getWalletPagesKey(userWallet.address!);
-      const hasPage = await redis.zscore(pagesKey, slug);
-      
-      if (hasPage === null) {
-        return {
-          redirect: {
-            destination: `/${slug}`,
-            permanent: false,
-          },
-        };
-      }
-
-    } catch (error) {
-      console.error("Auth verification error:", error);
+    if (!response.ok) {
       return {
         redirect: {
           destination: `/${slug}`,
@@ -120,7 +70,7 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async ({
     return {
       props: {
         slug,
-        pageData,
+        pageData: data.pageData,
       },
     };
   } catch (error) {
