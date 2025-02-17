@@ -253,6 +253,32 @@ async function verifyWalletOwnership(
 // Helper function to get the Redis key for a slug
 const getRedisKey = (slug: string) => `page:${slug}`;
 
+// Helper function to get the Redis key for a wallet's pages
+const getWalletPagesKey = (walletAddress: string) => `wallet:${walletAddress.toLowerCase()}:pages`;
+
+// Helper function to add page to wallet's pages
+async function addPageToWallet(walletAddress: string, slug: string) {
+  try {
+    const pagesKey = getWalletPagesKey(walletAddress);
+    // Add to sorted set with timestamp as score for ordering
+    await redis.zadd(pagesKey, { score: Date.now(), member: slug });
+  } catch (error) {
+    console.error("Error adding page to wallet:", error);
+    throw new Error("Failed to add page to wallet");
+  }
+}
+
+// Helper function to remove page from wallet's pages
+async function removePageFromWallet(walletAddress: string, slug: string) {
+  try {
+    const pagesKey = getWalletPagesKey(walletAddress);
+    await redis.zrem(pagesKey, slug);
+  } catch (error) {
+    console.error("Error removing page from wallet:", error);
+    throw new Error("Failed to remove page from wallet");
+  }
+}
+
 // Helper function to get all pages for a wallet
 async function getPagesForWallet(walletAddress: string, req: NextApiRequest) {
   try {
@@ -262,42 +288,27 @@ async function getPagesForWallet(walletAddress: string, req: NextApiRequest) {
       throw new Error("Missing identity token");
     }
 
-    const user = await client.getUser({ idToken });
+    // Verify wallet ownership
+    await verifyWalletOwnership(req, walletAddress);
 
-    // Get user's pages from metadata
-    const pagesStr = (user.customMetadata || {})?.pages;
-    let userPages = [];
+    // Get all slugs for this wallet from Redis
+    const pagesKey = getWalletPagesKey(walletAddress);
+    const slugs = await redis.zrange<string[]>(pagesKey, 0, -1);
 
-    if (pagesStr) {
-      try {
-        userPages = JSON.parse(pagesStr as string);
-      } catch (e) {
-        console.error("Error parsing pages:", e);
-        userPages = [];
-      }
-    }
-
-    if (!Array.isArray(userPages)) {
-      userPages = [];
-    }
-
-    // Get the full page data from Redis for each slug
+    // Get the full page data for each slug
     const pages = await Promise.all(
-      userPages
-        .filter((page: any) => page.walletAddress === walletAddress)
-        .map(async (page: any) => {
-          const pageData = await redis.get<PageData>(getRedisKey(page.slug));
-          if (pageData) {
-            return {
-              slug: page.slug,
-              ...pageData, // Return full page data
-            };
-          }
-          return null;
-        }),
+      slugs.map(async (slug) => {
+        const pageData = await redis.get<PageData>(getRedisKey(slug));
+        if (pageData) {
+          return {
+            slug,
+            ...pageData,
+          };
+        }
+        return null;
+      })
     );
 
-    // These are the user's own pages, so they should have full access
     return { pages: pages.filter(Boolean) };
   } catch (error) {
     console.error("Error getting pages for wallet:", error);
@@ -389,6 +400,52 @@ function sanitizePageData(pageData: PageData | null, isOwner: boolean = false): 
   // For non-owners, we don't need to sanitize URLs here anymore
   // This will be handled in [page].tsx
   return sanitized;
+}
+
+// Helper function to check rate limit
+async function checkRateLimit(userId: string): Promise<{ allowed: boolean; timeLeft?: number }> {
+  const rateKey = `rate:page-create:${userId}`;
+  const maxPages = 10; // Maximum pages per window
+  const windowSeconds = 24 * 60 * 60; // 24 hours in seconds
+
+  try {
+    // Get current count and timestamp
+    const currentData = await redis.get<{ count: number; timestamp: number }>(rateKey);
+
+    const now = Math.floor(Date.now() / 1000);
+
+    if (!currentData) {
+      // First request, set initial count
+      await redis.set(rateKey, { count: 1, timestamp: now }, { ex: windowSeconds });
+      return { allowed: true };
+    }
+
+    // Check if window has expired
+    if (now - currentData.timestamp >= windowSeconds) {
+      // Reset counter for new window
+      await redis.set(rateKey, { count: 1, timestamp: now }, { ex: windowSeconds });
+      return { allowed: true };
+    }
+
+    // Check if under limit
+    if (currentData.count < maxPages) {
+      // Increment counter
+      await redis.set(
+        rateKey,
+        { count: currentData.count + 1, timestamp: currentData.timestamp },
+        { ex: windowSeconds }
+      );
+      return { allowed: true };
+    }
+
+    // Rate limit exceeded
+    const timeLeft = windowSeconds - (now - currentData.timestamp);
+    return { allowed: false, timeLeft };
+  } catch (error) {
+    console.error("Rate limit check error:", error);
+    // In case of error, allow the request but log the error
+    return { allowed: true };
+  }
 }
 
 export default async function handler(
@@ -496,6 +553,18 @@ export default async function handler(
           });
       }
 
+      // Only apply rate limiting for new page creation, not updates
+      if (!existingPage) {
+        const rateLimit = await checkRateLimit(user.id);
+        if (!rateLimit.allowed) {
+          return res.status(429).json({
+            error: "Rate limit exceeded",
+            timeLeft: rateLimit.timeLeft,
+            message: `You can create more pages in ${Math.ceil(rateLimit.timeLeft! / 3600)} hours`,
+          });
+        }
+      }
+
       // For initial setup wizard step, only store minimal data
       if (isSetupWizard === true) {
         const initialData = PageDataSchema.parse({
@@ -503,8 +572,8 @@ export default async function handler(
           createdAt: new Date().toISOString(),
         });
         await redis.set(getRedisKey(slug), initialData);
-        // Add page to user's metadata
-        await addPageToUserMetadata(user.id, walletAddress, slug);
+        // Add page to wallet's pages in Redis
+        await addPageToWallet(walletAddress, slug);
         return res.status(200).json({ success: true });
       }
 
@@ -525,9 +594,9 @@ export default async function handler(
 
       // Save to Redis with unique key
       await redis.set(getRedisKey(slug), pageData);
-      // Add page to user's metadata if it's a new page
+      // Add page to wallet's pages in Redis if it's a new page
       if (!existingPage) {
-        await addPageToUserMetadata(user.id, walletAddress, slug);
+        await addPageToWallet(walletAddress, slug);
       }
       return res.status(200).json({ success: true });
     } catch (error) {
@@ -557,10 +626,9 @@ export default async function handler(
         return res.status(404).json({ error: "Page not found" });
       }
 
-      // Verify wallet ownership and get user
-      let user;
+      // Verify wallet ownership
       try {
-        user = await verifyWalletOwnership(req, currentPage.walletAddress);
+        await verifyWalletOwnership(req, currentPage.walletAddress);
       } catch (error) {
         return res
           .status(401)
@@ -572,8 +640,8 @@ export default async function handler(
 
       // Remove the page from Redis
       await redis.del(getRedisKey(slug));
-      // Remove page from user's metadata
-      await removePageFromUserMetadata(user.id, slug);
+      // Remove page from wallet's pages
+      await removePageFromWallet(currentPage.walletAddress, slug);
       return res.status(200).json({ success: true });
     } catch (error) {
       console.error("Error deleting page:", error);
@@ -586,51 +654,52 @@ export default async function handler(
     try {
       const { slug, connectedToken, title, description, image, items, designStyle, fonts } = req.body;
 
-      console.log('PATCH Request Body:', {
-        slug,
-        hasItems: !!items,
-        itemsLength: items?.length,
-        designStyle,
-        fonts,
-        itemsStructure: items?.map((item: PageItem) => ({
-          id: item.id,
-          presetId: item.presetId,
-          hasUrl: !!item.url,
-        }))
-      });
-
       if (!slug) {
         return res.status(400).json({ error: "Slug is required" });
       }
 
       // Get current page data to verify ownership
       const currentPage = await redis.get<PageData>(getRedisKey(slug));
-      console.log('Current Redis Data:', {
-        hasCurrentPage: !!currentPage,
-        currentItemsLength: currentPage?.items?.length,
-        currentDesignStyle: currentPage?.designStyle,
-        currentFonts: currentPage?.fonts,
-        currentItemsStructure: currentPage?.items?.map((item: PageItem) => ({
-          id: item.id,
-          presetId: item.presetId,
-          hasUrl: !!item.url,
-        }))
-      });
-
       if (!currentPage) {
         return res.status(404).json({ error: "Page not found" });
       }
 
-      // Verify wallet ownership
+      // Verify wallet ownership and page access
       try {
-        await verifyWalletOwnership(req, currentPage.walletAddress);
+        const idToken = req.cookies["privy-id-token"];
+        if (!idToken) {
+          return res.status(401).json({ error: "Authentication required" });
+        }
+
+        const user = await client.getUser({ idToken });
+        
+        // Check if the wallet is in user's linked accounts
+        let userWallet = null;
+        for (const account of user.linkedAccounts) {
+          if (account.type === "wallet" && account.chainType === "solana") {
+            const walletAccount = account as { address?: string };
+            if (walletAccount.address?.toLowerCase() === currentPage.walletAddress.toLowerCase()) {
+              userWallet = walletAccount;
+              break;
+            }
+          }
+        }
+
+        if (!userWallet) {
+          return res.status(403).json({ error: "You don't have permission to edit this page" });
+        }
+
+        // Check if the page exists in the user's wallet:id set
+        const pagesKey = getWalletPagesKey(userWallet.address!);
+        const hasPage = await redis.zscore(pagesKey, slug);
+        
+        if (hasPage === null) {
+          return res.status(403).json({ error: "Page not found in your collection" });
+        }
+
       } catch (error) {
-        return res
-          .status(401)
-          .json({
-            error:
-              error instanceof Error ? error.message : "Authentication failed",
-          });
+        console.error("Auth verification error:", error);
+        return res.status(401).json({ error: "Authentication failed" });
       }
 
       // Validate the update data
@@ -646,32 +715,8 @@ export default async function handler(
         updatedAt: new Date().toISOString(),
       };
 
-      console.log('Pre-validation Data:', {
-        hasItems: !!updateData.items,
-        itemsLength: updateData.items?.length,
-        designStyle: updateData.designStyle,
-        fonts: updateData.fonts,
-        itemsStructure: updateData.items?.map((item: PageItem) => ({
-          id: item.id,
-          presetId: item.presetId,
-          hasUrl: !!item.url,
-        }))
-      });
-
       // Validate the complete page data
       const validatedData = PageDataSchema.parse(updateData);
-      
-      console.log('Validation Success:', {
-        hasItems: !!validatedData.items,
-        itemsLength: validatedData.items?.length,
-        designStyle: validatedData.designStyle,
-        fonts: validatedData.fonts,
-        itemsStructure: validatedData.items?.map((item: PageItem) => ({
-          id: item.id,
-          presetId: item.presetId,
-          hasUrl: !!item.url,
-        }))
-      });
 
       // Save to Redis
       await redis.set(getRedisKey(slug), validatedData);

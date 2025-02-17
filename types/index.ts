@@ -5,7 +5,7 @@ export type PageItem = {
   id: string;
   presetId: string;
   title?: string;
-  url?: string | null;
+  url?: string | null | undefined;
   order: number;
   isPlugin?: boolean;
   tokenGated?: boolean;

@@ -7,12 +7,28 @@ import { useRouter } from 'next/router';
 import { useGlobalContext } from '@/lib/context';
 import { Button } from '@/components/ui/button';
 import { Pencil } from 'lucide-react';
+import { PrivyClient } from "@privy-io/server-auth";
+import { Redis } from "@upstash/redis";
 
 interface PageProps {
   pageData: PageData;
   slug: string;
   error?: string;
+  isOwner: boolean;
 }
+
+const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
+const PRIVY_APP_SECRET = process.env.PRIVY_APP_SECRET;
+const privyClient = new PrivyClient(PRIVY_APP_ID!, PRIVY_APP_SECRET!);
+
+// Initialize Redis client
+const redis = new Redis({
+  url: process.env.KV_REST_API_URL!,
+  token: process.env.KV_REST_API_TOKEN!,
+});
+
+const getRedisKey = (slug: string) => `page:${slug}`;
+const getWalletPagesKey = (walletAddress: string) => `wallet:${walletAddress.toLowerCase()}:pages`;
 
 export const getServerSideProps: GetServerSideProps<PageProps> = async ({
   params,
@@ -21,24 +37,67 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async ({
   const slug = params?.page as string;
 
   try {
-    const response = await fetch(
-      `${
-        process.env.NODE_ENV === "development" ? "http://localhost:3000" : ""
-      }/api/page-store?slug=${slug}`,
-    );
-    const { mapping, isOwner } = await response.json();
+    // Get page data from Redis
+    const pageData = await redis.get<PageData>(getRedisKey(slug));
 
-    if (!mapping) {
-      throw new Error("Page not found");
+    if (!pageData) {
+      return {
+        props: {
+          slug,
+          pageData: {
+            walletAddress: "",
+            createdAt: new Date().toISOString(),
+            slug,
+          },
+          isOwner: false,
+          error: "Page not found",
+        },
+      };
     }
 
-    // If we're not the owner, remove URLs from token-gated items
-    if (!isOwner && mapping.items) {
-      mapping.items = mapping.items.map((item: PageItem) => {
+    // Check ownership if we have an identity token
+    let isOwner = false;
+    const idToken = req.cookies["privy-id-token"];
+    
+    if (idToken) {
+      try {
+        const user = await privyClient.getUser({ idToken });
+        
+        // Check if the wallet is in user's linked accounts
+        let userWallet = null;
+        for (const account of user.linkedAccounts) {
+          if (account.type === "wallet" && account.chainType === "solana") {
+            const walletAccount = account as { address?: string };
+            if (walletAccount.address?.toLowerCase() === pageData.walletAddress.toLowerCase()) {
+              userWallet = walletAccount;
+              break;
+            }
+          }
+        }
+
+        if (userWallet) {
+          // Check if the page exists in the user's wallet:id set
+          const pagesKey = getWalletPagesKey(userWallet.address!);
+          const hasPage = await redis.zscore(pagesKey, slug);
+          
+          if (hasPage !== null) {
+            isOwner = true;
+          }
+        }
+      } catch (error) {
+        // Ignore verification errors - just means user doesn't own the page
+        console.log("User does not own page:", error);
+      }
+    }
+
+    // If not owner, remove URLs from token-gated items
+    const processedData = { ...pageData };
+    if (!isOwner && processedData.items) {
+      processedData.items = processedData.items.map((item: PageItem) => {
         if (item.tokenGated) {
           return {
             ...item,
-            url: null // Use null instead of undefined for serialization
+            url: null // Use null for token-gated content
           };
         }
         return item;
@@ -48,10 +107,12 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async ({
     return {
       props: {
         slug,
-        pageData: mapping,
+        pageData: processedData,
+        isOwner,
       },
     };
   } catch (error) {
+    console.error("Error fetching page data:", error);
     return {
       props: {
         slug,
@@ -60,17 +121,15 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async ({
           createdAt: new Date().toISOString(),
           slug,
         },
-        error: "Page not found",
+        isOwner: false,
+        error: "Failed to fetch page data",
       },
     };
   }
 };
 
-export default function Page({ pageData, slug, error }: PageProps) {
+export default function Page({ pageData, slug, error, isOwner }: PageProps) {
   const router = useRouter();
-  const { walletAddress, isAuthenticated } = useGlobalContext();
-  const isOwner = isAuthenticated && walletAddress?.toLowerCase() === pageData?.walletAddress?.toLowerCase();
-
   const currentTheme = pageData.designStyle || 'default';
   const themeStyle = themes[currentTheme].colors;
 
@@ -85,7 +144,17 @@ export default function Page({ pageData, slug, error }: PageProps) {
 
   if (error) {
     return (
-      <div>Error: {error}</div>
+      <div className="min-h-screen bg-background p-6">
+        <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6">
+          <h1 className="text-2xl font-semibold text-red-600">{error}</h1>
+          <p className="mt-2 text-gray-600">
+            The page &quot;{slug}&quot; could not be found.
+          </p>
+          <Button className="mt-4" onClick={() => router.push("/dashboard")}>
+            Back to Dashboard
+          </Button>
+        </div>
+      </div>
     );
   }
 

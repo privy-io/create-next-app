@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { PrivyClient } from "@privy-io/server-auth";
+import { Redis } from "@upstash/redis";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import { useToast } from "@/hooks/use-toast";
@@ -30,6 +31,15 @@ const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
 const PRIVY_APP_SECRET = process.env.PRIVY_APP_SECRET;
 const privyClient = new PrivyClient(PRIVY_APP_ID!, PRIVY_APP_SECRET!);
 
+// Initialize Redis client
+const redis = new Redis({
+  url: process.env.KV_REST_API_URL!,
+  token: process.env.KV_REST_API_TOKEN!,
+});
+
+const getRedisKey = (slug: string) => `page:${slug}`;
+const getWalletPagesKey = (walletAddress: string) => `wallet:${walletAddress.toLowerCase()}:pages`;
+
 export const getServerSideProps: GetServerSideProps<PageProps> = async ({
   params,
   req,
@@ -37,20 +47,14 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async ({
   const slug = params?.page as string;
 
   try {
-    // First get the page data
-    const pageResponse = await fetch(
-      `${
-        process.env.NODE_ENV === "development" ? "http://localhost:3000" : ""
-      }/api/page-store?slug=${slug}`
-    );
-    const { mapping } = await pageResponse.json();
+    // Get page data from Redis
+    const pageData = await redis.get<PageData>(getRedisKey(slug));
 
-    if (!mapping) {
+    if (!pageData) {
       return {
-        props: {
-          slug,
-          pageData: null,
-          error: "Page not found",
+        redirect: {
+          destination: `/${slug}`,
+          permanent: false,
         },
       };
     }
@@ -70,18 +74,18 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async ({
       const user = await privyClient.getUser({ idToken });
 
       // Check if the wallet is in user's linked accounts
-      const hasWallet = user.linkedAccounts.some((account) => {
+      let userWallet = null;
+      for (const account of user.linkedAccounts) {
         if (account.type === "wallet" && account.chainType === "solana") {
           const walletAccount = account as { address?: string };
-          return (
-            walletAccount.address?.toLowerCase() ===
-            mapping.walletAddress.toLowerCase()
-          );
+          if (walletAccount.address?.toLowerCase() === pageData.walletAddress.toLowerCase()) {
+            userWallet = walletAccount;
+            break;
+          }
         }
-        return false;
-      });
+      }
 
-      if (!hasWallet) {
+      if (!userWallet) {
         return {
           redirect: {
             destination: `/${slug}`,
@@ -89,6 +93,20 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async ({
           },
         };
       }
+
+      // Check if the page exists in the user's wallet:id set
+      const pagesKey = getWalletPagesKey(userWallet.address!);
+      const hasPage = await redis.zscore(pagesKey, slug);
+      
+      if (hasPage === null) {
+        return {
+          redirect: {
+            destination: `/${slug}`,
+            permanent: false,
+          },
+        };
+      }
+
     } catch (error) {
       console.error("Auth verification error:", error);
       return {
@@ -102,16 +120,15 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async ({
     return {
       props: {
         slug,
-        pageData: mapping,
+        pageData,
       },
     };
   } catch (error) {
     console.error("Error fetching page data:", error);
     return {
-      props: {
-        slug,
-        pageData: null,
-        error: "Failed to fetch page data",
+      redirect: {
+        destination: `/${slug}`,
+        permanent: false,
       },
     };
   }

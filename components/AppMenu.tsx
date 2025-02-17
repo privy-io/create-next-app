@@ -136,9 +136,6 @@ export default function AppMenu({
                           </div>
                         ) : (
                           userPages
-                            .filter(page => 
-                              !(router.asPath === `/${page.slug}` || router.asPath === `/edit/${page.slug}`)
-                            )
                             .sort((a, b) => a.title?.localeCompare(b.title || '') || 0)
                             .map((page) => (
                               <div
