@@ -157,13 +157,25 @@ export function LinkSettingsDrawer({
           {preset.options?.requiresUrl && (
             <div className="space-y-2">
               <label className="block text-sm text-gray-600">URL</label>
-              <Input
-                type="text"
-                placeholder={item.presetId === 'email' ? "Enter email address" : `Enter ${preset.title} URL`}
-                value={item.url || ''}
-                onChange={(e) => handleUrlChange(e.target.value)}
-                className={error ? "border-red-500 focus:ring-red-500" : ""}
-              />
+              <div className="flex gap-2">
+                <Input
+                  type="text"
+                  placeholder={item.presetId === 'email' ? "Enter email address" : `Enter ${preset.title} URL`}
+                  value={item.url || ''}
+                  onChange={(e) => handleUrlChange(e.target.value)}
+                  className={`${error ? "border-red-500 focus:ring-red-500" : ""} flex-1`}
+                />
+                {item.url && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.open(item.url, '_blank')}
+                    className="whitespace-nowrap"
+                  >
+                    Test Link
+                  </Button>
+                )}
+              </div>
               {error && (
                 <p className="text-sm text-red-500 flex items-center gap-1 mt-1">
                   <AlertCircle className="h-4 w-4 flex-shrink-0" />
