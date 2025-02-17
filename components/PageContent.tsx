@@ -12,7 +12,7 @@ interface PageContentProps {
 
 export default function PageContent({
   pageData,
-  items = pageData.items || [],
+  items = pageData?.items || [],
   themeStyle,
 }: PageContentProps) {
   const [openDrawer, setOpenDrawer] = useState<string | null>(null);

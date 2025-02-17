@@ -176,36 +176,24 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
 
   const validateLinks = (items: PageItem[] = []): { [key: string]: string } => {
     const errors: { [key: string]: string } = {};
-    console.log('Starting link validation for items:', items);
 
     items.forEach((item) => {
-      console.log(`\nValidating item:`, {
-        id: item.id,
-        presetId: item.presetId,
-        url: item.url,
-        isPlugin: item.isPlugin
-      });
-
       if (!item.presetId) {
-        console.log('Skipping - no presetId');
         return;
       }
       
       const preset = LINK_PRESETS[item.presetId];
       if (!preset) {
-        console.log('Skipping - preset not found:', item.presetId);
         return;
       }
 
       // Skip validation for plugins
       if (item.isPlugin) {
-        console.log('Skipping - is plugin');
         return;
       }
 
       // If URL is required but not provided
       if (preset.options?.requiresUrl && !item.url) {
-        console.log('Error - URL required but not provided');
         errors[item.id] = "URL is required";
         return;
       }
@@ -213,19 +201,12 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
       // If URL is provided, validate it
       if (item.url) {
         const isValid = validateLinkUrl(item.url, item.presetId);
-        console.log('URL validation result:', {
-          url: item.url,
-          presetId: item.presetId,
-          isValid
-        });
-        
         if (!isValid) {
           errors[item.id] = `Invalid ${preset.title} URL format`;
         }
       }
     });
 
-    console.log('\nValidation complete. Errors found:', errors);
     return errors;
   };
 

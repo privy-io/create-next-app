@@ -178,83 +178,50 @@ export function getLinkIcon(type: LinkType, style: IconStyle = 'classic', props 
 const urlRegex = /^https?:\/\/[^\s/$.?#].[^\s]*$/i;
 
 export function validateLinkUrl(url: string, presetId: string): boolean {
-  console.log('Validating URL:', { url, presetId });
-  
   if (!url) return false;
 
   // For email links
   if (presetId === "email") {
-    console.log('Validating email link:', { url, presetId });
-    
     // Allow both email addresses and mailto: URLs
     if (url.startsWith("mailto:")) {
       const email = url.replace("mailto:", "");
-      const isValid = email.includes("@") || email === ""; // Allow empty email after mailto:
-      console.log('Email validation (mailto):', { 
-        url, 
-        email, 
-        hasAt: email.includes("@"),
-        isEmpty: email === "",
-        isValid 
-      });
-      return isValid;
+      return email.includes("@") || email === ""; // Allow empty email after mailto:
     }
-    
-    const isValid = url.includes("@");
-    console.log('Email validation (direct):', { 
-      url, 
-      hasAt: url.includes("@"),
-      isValid 
-    });
-    return isValid;
+    return url.includes("@");
   }
 
   // For telegram links
   if (presetId === "telegram" || presetId === "private-chat") {
-    const isValid = url.startsWith("https://t.me/");
-    console.log('Telegram validation:', { url, isValid });
-    return isValid;
+    return url.startsWith("https://t.me/");
   }
 
   // For discord links
   if (presetId === "discord") {
-    const isValid = url.startsWith("https://discord.gg/") || url.startsWith("https://discord.com/");
-    console.log('Discord validation:', { url, isValid });
-    return isValid;
+    return url.startsWith("https://discord.gg/") || url.startsWith("https://discord.com/");
   }
 
   // For twitter links
   if (presetId === "twitter") {
-    const isValid = url.startsWith("https://twitter.com/") || url.startsWith("https://x.com/");
-    console.log('Twitter validation:', { url, isValid });
-    return isValid;
+    return url.startsWith("https://twitter.com/") || url.startsWith("https://x.com/");
   }
 
   // For tiktok links
   if (presetId === "tiktok") {
-    const isValid = url.startsWith("https://tiktok.com/@") || url.startsWith("https://www.tiktok.com/@");
-    console.log('TikTok validation:', { url, isValid });
-    return isValid;
+    return url.startsWith("https://tiktok.com/@") || url.startsWith("https://www.tiktok.com/@");
   }
 
   // For instagram links
   if (presetId === "instagram") {
-    const isValid = url.startsWith("https://instagram.com/") || url.startsWith("https://www.instagram.com/");
-    console.log('Instagram validation:', { url, isValid });
-    return isValid;
+    return url.startsWith("https://instagram.com/") || url.startsWith("https://www.instagram.com/");
   }
 
   // For dexscreener links
   if (presetId === "dexscreener") {
-    const isValid = url.startsWith("https://dexscreener.com/");
-    console.log('DexScreener validation:', { url, isValid });
-    return isValid;
+    return url.startsWith("https://dexscreener.com/");
   }
 
   // For general links (terminal, filesystem, etc)
-  const isValid = urlRegex.test(url);
-  console.log('General URL validation:', { url, isValid });
-  return isValid;
+  return urlRegex.test(url);
 }
 
 // Helper function to format link URL with prefix

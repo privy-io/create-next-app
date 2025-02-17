@@ -27,32 +27,32 @@ export function FontSelect({
   const [searchQuery, setSearchQuery] = useState("");
   const [loadedFonts, setLoadedFonts] = useState<Set<string>>(new Set());
 
-  // Load font for current value if not already loaded
+  // Load fonts
   useEffect(() => {
+    const fontsToLoad = new Set<string>();
+
+    // Add current value if not loaded
     if (value && value !== defaultValue && !loadedFonts.has(value)) {
-      const link = document.createElement("link");
-      link.href = `https://fonts.googleapis.com/css2?family=${value.replace(" ", "+")}`;
-      link.rel = "stylesheet";
-      document.head.appendChild(link);
-      setLoadedFonts((prev) => new Set([...prev, value]));
+      fontsToLoad.add(value);
     }
-  }, [value, defaultValue, loadedFonts]);
 
-  // Load all fonts for the category when it's first rendered
-  useEffect(() => {
+    // Add all category fonts if not loaded
     const allFonts = Object.values(FONT_CATEGORIES).flat();
-    const fontsToLoad = allFonts.filter(
-      (font) => !loadedFonts.has(font) && font !== "system",
-    );
+    allFonts.forEach(font => {
+      if (!loadedFonts.has(font) && font !== "system") {
+        fontsToLoad.add(font);
+      }
+    });
 
-    if (fontsToLoad.length > 0) {
+    // Load fonts if needed
+    if (fontsToLoad.size > 0) {
       const link = document.createElement("link");
-      link.href = `https://fonts.googleapis.com/css2?family=${fontsToLoad.map((font) => font.replace(" ", "+")).join("&family=")}`;
+      link.href = `https://fonts.googleapis.com/css2?family=${Array.from(fontsToLoad).map((font) => font.replace(" ", "+")).join("&family=")}`;
       link.rel = "stylesheet";
       document.head.appendChild(link);
       setLoadedFonts((prev) => new Set([...prev, ...fontsToLoad]));
     }
-  }, [loadedFonts]);
+  }, [value, defaultValue, loadedFonts]);
 
   const displayValue =
     value === defaultValue
