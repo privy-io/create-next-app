@@ -125,6 +125,11 @@ export function LinksTab({
     }
   };
 
+  const handleDragStart = () => {
+    // Close any open accordion when dragging starts
+    onLinkOpen?.(null);
+  };
+
   const handleUrlChange = (itemId: string, url: string) => {
     setPageDetails((prev) => {
       if (!prev?.items) return prev;
@@ -214,6 +219,7 @@ export function LinksTab({
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}
+        onDragStart={handleDragStart}
       >
         <SortableContext
           items={pageDetails?.items?.map((i) => getItemId(i)) || []}

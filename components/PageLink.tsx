@@ -150,32 +150,70 @@ export default function PageLink({
             }
           }}>
           <DrawerContent>
-            <DrawerHeader>
-              <DrawerTitle>Token Required</DrawerTitle>
-              <DrawerDescription>
-                You need {item.requiredTokens?.[0] || "0"} ${pageData.tokenSymbol}{" "}
-                tokens to access this link.
-              </DrawerDescription>
-            </DrawerHeader>
-
-            <DrawerFooter className="gap-3">
+            <DrawerFooter className="gap-3 text-center">
+              {pageData.image && (
+                <div className="flex justify-center mb-4">
+                  <img
+                    src={pageData.image}
+                    alt={`${pageData.tokenSymbol} token`}
+                    className="w-12 h-12 rounded-full animate-rotate3d"
+                  />
+                </div>
+              )}
               {!authenticated ? (
                 <Button onClick={handleLogin} className="w-full">
                   Connect Wallet
                 </Button>
               ) : hasAccess ? (
-                tokenGatedUrls.get(item.id) && (
-                  <Button asChild className="w-full">
-                    <a
-                      href={tokenGatedUrls.get(item.id)}
-                      target="_blank"
-                      rel="noopener noreferrer">
-                      Open Link
-                    </a>
-                  </Button>
-                )
+                <>
+                  <div className="inline-flex items-center justify-center gap-2 text-sm text-green-700 bg-green-50 px-3 py-1.5 rounded-full mx-auto mb-3">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 16 16"
+                      fill="currentColor"
+                      className="w-4 h-4 text-green-600">
+                      <path
+                        fillRule="evenodd"
+                        d="M12.416 3.376a.75.75 0 0 1 .208 1.04l-5 7.5a.75.75 0 0 1-1.154.114l-3-3a.75.75 0 0 1 1.06-1.06l2.353 2.353 4.493-6.74a.75.75 0 0 1 1.04-.207Z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    Access Verified
+                  </div>
+                  {tokenGatedUrls.get(item.id) ? (
+                    <Button asChild className="w-full">
+                      <a
+                        href={tokenGatedUrls.get(item.id)}
+                        target="_blank"
+                        rel="noopener noreferrer">
+                        Open Link
+                      </a>
+                    </Button>
+                  ) : (
+                    <Button disabled className="w-full">
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Fetching Link...
+                    </Button>
+                  )}
+                </>
               ) : hasAccess === false ? (
                 <>
+                  <div className="inline-flex items-center justify-center gap-2 text-sm text-orange-700 bg-orange-50 px-3 py-1.5 rounded-full mx-auto mb-3">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 16 16"
+                      fill="currentColor"
+                      className="w-4 h-4 text-orange-600">
+                      <path
+                        fillRule="evenodd"
+                        d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    You need {item.requiredTokens?.[0] || "0"}{" "}
+                    ${pageData.tokenSymbol}{" "}
+                    to access
+                  </div>
                   <Button variant="outline" asChild className="w-full">
                     <a
                       href={`https://jup.ag/swap/SOL-${pageData.connectedToken}`}
@@ -206,26 +244,28 @@ export default function PageLink({
                     )}
                   </Button>
                 </>
-              ) : !hasAccess && (
-                <Button
-                  onClick={() =>
-                    onVerifyAccess(
-                      item.id,
-                      pageData.connectedToken!,
-                      item.requiredTokens?.[0] || "0"
-                    )
-                  }
-                  disabled={verifying === item.id}
-                  className="w-full">
-                  {verifying === item.id ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      Verifying...
-                    </>
-                  ) : (
-                    "Check Balance"
-                  )}
-                </Button>
+              ) : (
+                !hasAccess && (
+                  <Button
+                    onClick={() =>
+                      onVerifyAccess(
+                        item.id,
+                        pageData.connectedToken!,
+                        item.requiredTokens?.[0] || "0"
+                      )
+                    }
+                    disabled={verifying === item.id}
+                    className="w-full">
+                    {verifying === item.id ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        Verifying...
+                      </>
+                    ) : (
+                      "Check Balance"
+                    )}
+                  </Button>
+                )
               )}
             </DrawerFooter>
           </DrawerContent>

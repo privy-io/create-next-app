@@ -26,6 +26,12 @@ const PageItemSchema = z
         z.string().regex(urlRegex, "Invalid URL format"),
         z.string().email("Invalid email format"),
         z.string().regex(/^mailto:.+/, "Invalid mailto format"),
+        z.string().regex(/^https:\/\/t\.me\//, "Invalid Telegram URL"),
+        z.string().regex(/^https:\/\/discord\.(gg|com)\//, "Invalid Discord URL"),
+        z.string().regex(/^https:\/\/(twitter\.com|x\.com)\//, "Invalid Twitter URL"),
+        z.string().regex(/^https:\/\/(www\.)?tiktok\.com\/@/, "Invalid TikTok URL"),
+        z.string().regex(/^https:\/\/(www\.)?instagram\.com\//, "Invalid Instagram URL"),
+        z.string().regex(/^https:\/\/dexscreener\.com\//, "Invalid DexScreener URL"),
         z.string().length(0),
         z.null(),
         z.undefined(),
@@ -46,19 +52,51 @@ const PageItemSchema = z
           isEmail: data.presetId === "email"
         });
 
+        // For email type
         if (data.presetId === "email") {
-          // For email type, accept:
-          // 1. Valid email addresses (contains @)
-          // 2. mailto: links
-          // 3. Empty strings
           const isValid = data.url.includes("@") || 
                          data.url.startsWith("mailto:") || 
                          data.url.length === 0;
-          
           console.log('Email validation result:', { url: data.url, isValid });
           return isValid;
-        } else if (!data.isPlugin) {
-          // For non-plugin items with URLs, ensure it's a valid URL
+        }
+
+        // For telegram links
+        if (data.presetId === "telegram" || data.presetId === "private-chat") {
+          return data.url.startsWith("https://t.me/");
+        }
+
+        // For discord links
+        if (data.presetId === "discord") {
+          return data.url.startsWith("https://discord.gg/") || 
+                 data.url.startsWith("https://discord.com/");
+        }
+
+        // For twitter links
+        if (data.presetId === "twitter") {
+          return data.url.startsWith("https://twitter.com/") || 
+                 data.url.startsWith("https://x.com/");
+        }
+
+        // For tiktok links
+        if (data.presetId === "tiktok") {
+          return data.url.startsWith("https://tiktok.com/@") || 
+                 data.url.startsWith("https://www.tiktok.com/@");
+        }
+
+        // For instagram links
+        if (data.presetId === "instagram") {
+          return data.url.startsWith("https://instagram.com/") || 
+                 data.url.startsWith("https://www.instagram.com/");
+        }
+
+        // For dexscreener links
+        if (data.presetId === "dexscreener") {
+          return data.url.startsWith("https://dexscreener.com/");
+        }
+
+        // For general links (terminal, filesystem, etc)
+        if (!data.isPlugin) {
           return data.url.match(urlRegex) !== null;
         }
       }
@@ -343,19 +381,8 @@ function sanitizePageData(pageData: PageData | null, isOwner: boolean = false): 
   // Clone the data to avoid mutating the original
   const sanitized = { ...pageData };
 
-  // For non-owners, remove URLs of token-gated items
-  if (sanitized.items) {
-    sanitized.items = sanitized.items.map(item => {
-      if (item.tokenGated) {
-        return {
-          ...item,
-          url: undefined // Remove URL for token-gated items
-        };
-      }
-      return item;
-    });
-  }
-
+  // For non-owners, we don't need to sanitize URLs here anymore
+  // This will be handled in [page].tsx
   return sanitized;
 }
 
@@ -363,12 +390,19 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
+  // Add request logging
+  console.log('API Request:', {
+    method: req.method,
+    url: req.url,
+    headers: req.headers,
+  });
+
   // GET: Fetch page data for a specific slug or wallet's pages
   if (req.method === "GET") {
     const { slug, walletAddress } = req.query;
 
     try {
-      // If walletAddress is provided, return pages for that wallet
+      // If walletAddress is provided, require authentication
       if (walletAddress) {
         const result = await getPagesForWallet(walletAddress as string, req);
         // These are the user's own pages, so don't sanitize them
@@ -383,8 +417,12 @@ export default async function handler(
         let isOwner = false;
         if (pageData) {
           try {
-            await verifyWalletOwnership(req, pageData.walletAddress);
-            isOwner = true;
+            // Only attempt to verify ownership if we have an identity token
+            const idToken = req.cookies["privy-id-token"];
+            if (idToken) {
+              await verifyWalletOwnership(req, pageData.walletAddress);
+              isOwner = true;
+            }
           } catch (error) {
             // Ignore verification errors - just means user doesn't own the page
             console.log("User does not own page:", error);
@@ -541,8 +579,18 @@ export default async function handler(
   // PATCH: Update existing page
   if (req.method === "PATCH") {
     try {
-      const { slug, connectedToken, title, description, image, items } =
-        req.body;
+      const { slug, connectedToken, title, description, image, items } = req.body;
+
+      console.log('PATCH Request Body:', {
+        slug,
+        hasItems: !!items,
+        itemsLength: items?.length,
+        itemsStructure: items?.map((item: PageItem) => ({
+          id: item.id,
+          presetId: item.presetId,
+          hasUrl: !!item.url,
+        }))
+      });
 
       if (!slug) {
         return res.status(400).json({ error: "Slug is required" });
@@ -550,6 +598,16 @@ export default async function handler(
 
       // Get current page data to verify ownership
       const currentPage = await redis.get<PageData>(getRedisKey(slug));
+      console.log('Current Redis Data:', {
+        hasCurrentPage: !!currentPage,
+        currentItemsLength: currentPage?.items?.length,
+        currentItemsStructure: currentPage?.items?.map((item: PageItem) => ({
+          id: item.id,
+          presetId: item.presetId,
+          hasUrl: !!item.url,
+        }))
+      });
+
       if (!currentPage) {
         return res.status(404).json({ error: "Page not found" });
       }
@@ -577,8 +635,28 @@ export default async function handler(
         updatedAt: new Date().toISOString(),
       };
 
+      console.log('Pre-validation Data:', {
+        hasItems: !!updateData.items,
+        itemsLength: updateData.items?.length,
+        itemsStructure: updateData.items?.map((item: PageItem) => ({
+          id: item.id,
+          presetId: item.presetId,
+          hasUrl: !!item.url,
+        }))
+      });
+
       // Validate the complete page data
       const validatedData = PageDataSchema.parse(updateData);
+      
+      console.log('Validation Success:', {
+        hasItems: !!validatedData.items,
+        itemsLength: validatedData.items?.length,
+        itemsStructure: validatedData.items?.map((item: PageItem) => ({
+          id: item.id,
+          presetId: item.presetId,
+          hasUrl: !!item.url,
+        }))
+      });
 
       // Save to Redis
       await redis.set(getRedisKey(slug), validatedData);

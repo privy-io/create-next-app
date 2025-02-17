@@ -3,7 +3,6 @@ import {
   MessageSquare,
   TrendingUp,
   Instagram,
-  Mail,
   MessageCircle,
   Terminal,
   FolderTree,
@@ -64,7 +63,7 @@ export const LINK_PRESETS: Record<string, LinkPreset> = {
   tiktok: {
     id: "tiktok",
     title: "TikTok",
-    defaultUrl: "https://tiktok.com/@",
+    defaultUrl: "https://tiktok.com/@username",
     icon: {
       classic: Video,
     },
@@ -76,21 +75,9 @@ export const LINK_PRESETS: Record<string, LinkPreset> = {
   instagram: {
     id: "instagram",
     title: "Instagram",
-    defaultUrl: "https://instagram.com/",
+    defaultUrl: "https://instagram.com/username",
     icon: {
       classic: Instagram,
-    },
-    options: {
-      requiresUrl: true,
-      canBeTokenGated: true,
-    },
-  },
-  email: {
-    id: "email",
-    title: "Email",
-    defaultUrl: "mailto:",
-    icon: {
-      classic: Mail,
     },
     options: {
       requiresUrl: true,
@@ -109,10 +96,11 @@ export const LINK_PRESETS: Record<string, LinkPreset> = {
       canBeTokenGated: true,
     },
   },
+  /*
   "private-chat": {
     id: "private-chat",
     title: "Private Chat",
-    defaultUrl: "https://t.me/",
+    defaultUrl: "https://t.me/name",
     icon: {
       classic: MessageCircle,
     },
@@ -144,5 +132,5 @@ export const LINK_PRESETS: Record<string, LinkPreset> = {
       requiresUrl: true,
       canBeTokenGated: true,
     },
-  },
+  }*/
 }; 

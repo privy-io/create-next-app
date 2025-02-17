@@ -56,7 +56,7 @@ export function GlobalProvider({
   const walletAddress = user?.linkedAccounts?.find(isSolanaWallet)?.address;
 
   const fetchPages = async () => {
-    if (!walletAddress) {
+    if (!walletAddress || !authenticated) {
       setUserPages([]);
       return;
     }
@@ -75,7 +75,7 @@ export function GlobalProvider({
   };
 
   const fetchTokens = async () => {
-    if (!walletAddress) {
+    if (!walletAddress || !authenticated) {
       setTokenHoldings([]);
       return;
     }
@@ -94,9 +94,11 @@ export function GlobalProvider({
   };
 
   useEffect(() => {
-    fetchPages();
-    fetchTokens();
-  }, [walletAddress]);
+    if (authenticated) {
+      fetchPages();
+      fetchTokens();
+    }
+  }, [walletAddress, authenticated]);
 
   return (
     <GlobalContext.Provider 

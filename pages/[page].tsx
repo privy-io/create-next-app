@@ -14,6 +14,7 @@ interface PageProps {
 
 export const getServerSideProps: GetServerSideProps<PageProps> = async ({
   params,
+  req,
 }) => {
   const slug = params?.page as string;
 
@@ -23,10 +24,23 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async ({
         process.env.NODE_ENV === "development" ? "http://localhost:3000" : ""
       }/api/page-store?slug=${slug}`,
     );
-    const { mapping } = await response.json();
+    const { mapping, isOwner } = await response.json();
 
     if (!mapping) {
       throw new Error("Page not found");
+    }
+
+    // If we're not the owner, remove URLs from token-gated items
+    if (!isOwner && mapping.items) {
+      mapping.items = mapping.items.map((item: PageItem) => {
+        if (item.tokenGated) {
+          return {
+            ...item,
+            url: null // Use null instead of undefined for serialization
+          };
+        }
+        return item;
+      });
     }
 
     return {
@@ -82,18 +96,29 @@ export default function Page({ pageData, slug }: PageProps) {
               href="https://fonts.gstatic.com"
               crossOrigin="anonymous"
             />
-            <link
-              href={`https://fonts.googleapis.com/css2?family=${[
-                processedPageData.fonts.global,
-                processedPageData.fonts.heading,
-                processedPageData.fonts.paragraph,
-                processedPageData.fonts.links,
-              ]
-                .filter(Boolean)
-                .map((font) => font?.replace(" ", "+"))
-                .join("&family=")}&display=swap`}
-              rel="stylesheet"
-            />
+            {/* Create a single link element for all fonts */}
+            {[
+              processedPageData.fonts.global,
+              processedPageData.fonts.heading,
+              processedPageData.fonts.paragraph,
+              processedPageData.fonts.links,
+            ]
+              .filter(Boolean)
+              .map((font) => font?.replace(" ", "+"))
+              .join("&family=") && (
+              <link
+                href={`https://fonts.googleapis.com/css2?family=${[
+                  processedPageData.fonts.global,
+                  processedPageData.fonts.heading,
+                  processedPageData.fonts.paragraph,
+                  processedPageData.fonts.links,
+                ]
+                  .filter(Boolean)
+                  .map((font) => font?.replace(" ", "+"))
+                  .join("&family=")}&display=swap`}
+                rel="stylesheet"
+              />
+            )}
           </>
         )}
       </Head>

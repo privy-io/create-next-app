@@ -96,6 +96,20 @@ async function handler(
       // Extract token info from DAS response
       const tokenInfo = token.token_info || {};
       const metadata = token.content?.metadata || {};
+      const links = token.content?.links || {};
+      const files = token.content?.file || {};
+      console.log('Files:', files);
+
+      /*
+          metadata: {
+      description: "As a symbol of this movement and in honor of Javier Milei's libertarian ideas the $LIBRA token is designed to strengthen the Argentine economy from the ground up by supporting entrepreneurship and innovation.",
+      name: 'LIBRA',
+      symbol: 'LIBRA',
+      token_standard: 'Fungible'
+    },
+    links: {
+      image: 'https://gateway.irys.xyz/GLUX6oLuVJ4tkaTZ5YV4ByGUad3HWs7Cc84SfEk6MGLp'
+    } */
 
       return {
         mint: token.id,
@@ -107,7 +121,7 @@ async function handler(
         tokenName: metadata.name || "Unknown Token",
         symbol: metadata.symbol || "",
         isPumpToken: false,
-        image: metadata.image || null,
+        image: links.image || null,
       };
     });
 

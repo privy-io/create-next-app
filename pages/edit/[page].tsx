@@ -287,18 +287,42 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
     
     setIsSaving(true);
     try {
-      const items = pageDetails.items?.map((item, index) => ({
-        ...item,
-        id: item.id || `item-${index}`,
-        order: index,
-        isPlugin: !!item.isPlugin,
-      }));
+      // Log the original items
+      console.log('Original items:', pageDetails.items);
+
+      const items = pageDetails.items?.map((item, index) => {
+        const mappedItem = {
+          id: item.id || `item-${index}`,
+          presetId: item.presetId,
+          title: item.title || '',
+          url: item.url || '',
+          order: index,
+          isPlugin: !!item.isPlugin,
+          tokenGated: !!item.tokenGated,
+          requiredTokens: item.requiredTokens || [],
+        };
+        
+        // Log each mapped item
+        console.log(`Mapped item ${index}:`, {
+          original: item,
+          mapped: mappedItem
+        });
+        
+        return mappedItem;
+      });
 
       // Add detailed logging for the actual save request
       const savePayload = {
         slug,
-        ...pageDetails,
-        items,
+        walletAddress: pageDetails.walletAddress,
+        connectedToken: pageDetails.connectedToken,
+        tokenSymbol: pageDetails.tokenSymbol,
+        title: pageDetails.title,
+        description: pageDetails.description,
+        image: pageDetails.image,
+        designStyle: pageDetails.designStyle,
+        fonts: pageDetails.fonts,
+        items: items?.filter(item => item.presetId), // Only include items with a valid presetId
       };
       console.log('Sending save request with payload:', JSON.stringify(savePayload, null, 2));
 
@@ -387,10 +411,13 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
         <title>Edit {pageDetails?.title || slug} - Page.fun</title>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link 
-          href={`https://fonts.googleapis.com/css2?family=${GOOGLE_FONTS.map(font => font.replace(' ', '+')).join('&family=')}&display=swap`}
-          rel="stylesheet"
-        />
+        {/* Create a single link element for all fonts */}
+        {GOOGLE_FONTS.length > 0 && (
+          <link 
+            href={`https://fonts.googleapis.com/css2?family=${GOOGLE_FONTS.map(font => font.replace(' ', '+')).join('&family=')}&display=swap`}
+            rel="stylesheet"
+          />
+        )}
       </Head>
 
       <main className="min-h-screen">

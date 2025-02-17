@@ -42,7 +42,11 @@ export default function HomePage() {
               Tokenize yourself, memes and AI bots
             </h1>
             <p className="text-lg opacity-75 mb-4">A Linktree alternative for Solana tokens.</p>
-            {isAuthenticated ? (
+            {typeof isAuthenticated === 'undefined' ? (
+              <Button variant="skeleton" disabled className="w-[180px]">
+                Loading...
+              </Button>
+            ) : isAuthenticated ? (
               <Button
                 onClick={isLoadingPages ? undefined : (
                   userPages.length > 0

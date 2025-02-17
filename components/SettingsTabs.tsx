@@ -51,7 +51,7 @@ export function SettingsTabs({
           <TabsList>
             <TabsTrigger value="general">Settings</TabsTrigger>
             <TabsTrigger value="links" className="relative">
-              Links & Features
+              Links & Plugins
               {hasErrors && (
                 <span className="ml-2 w-2 h-2 bg-red-500 rounded-full" />
               )}
