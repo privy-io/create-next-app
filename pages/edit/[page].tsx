@@ -13,6 +13,7 @@ import { GOOGLE_FONTS } from "@/lib/fonts";
 import { PageData, PageItem } from "@/types";
 import { validateLinkUrl } from "@/lib/links";
 import { LINK_PRESETS } from "@/lib/linkPresets";
+import { themes } from "@/lib/themes";
 import EditPageContent from "@/components/EditPageContent";
 import { ActionBar } from "@/components/ActionBar";
 import { LinkSettingsDrawer } from "@/components/LinkSettingsDrawer";
@@ -441,6 +442,7 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
         {previewData && (
           <EditPageContent
             pageData={previewData}
+            themeStyle={themes[previewData.designStyle || 'default'].colors}
             onLinkClick={handleLinkClick}
             onTitleClick={() => setSettingsDrawerOpen(true)}
             onDescriptionClick={() => setSettingsDrawerOpen(true)}

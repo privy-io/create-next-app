@@ -231,6 +231,15 @@ export function LinkSettingsDrawer({
         )}
 
         <div className="flex justify-between">
+          {error ? (
+            <Button onClick={() => {}} variant="outline" className="text-red-500 hover:bg-red-50">
+              Fix Error to Continue
+            </Button>
+          ) : (
+            <DrawerClose asChild>
+              <Button>Done</Button>
+            </DrawerClose>
+          )}
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button
@@ -257,15 +266,6 @@ export function LinkSettingsDrawer({
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-          {error ? (
-            <Button onClick={() => {}} variant="outline" className="text-red-500 hover:bg-red-50">
-              Fix Error to Continue
-            </Button>
-          ) : (
-            <DrawerClose asChild>
-              <Button>Done</Button>
-            </DrawerClose>
-          )}
         </div>
       </div>
     </div>

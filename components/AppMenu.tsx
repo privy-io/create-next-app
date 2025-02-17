@@ -109,66 +109,7 @@ export default function AppMenu({
 
                 {ready && authenticated ? (
                   <div className="space-y-4">
-                    {userPages.some(page => 
-                      router.asPath === `/${page.slug}` || 
-                      router.asPath === `/edit/${page.slug}`
-                    ) && (
-                      <div className="space-y-2">
-                        <div className="text-sm font-medium text-muted-foreground">Current</div>
-                        <div className="p-3 rounded-lg bg-primary/10 ring-1 ring-primary/20 space-y-2">
-                          {(() => {
-                            const currentPage = userPages.find(page => 
-                              router.asPath === `/${page.slug}` || 
-                              router.asPath === `/edit/${page.slug}`
-                            );
-                            const isEditPage = router.asPath === `/edit/${currentPage?.slug}`;
-                            const isLivePage = router.asPath === `/${currentPage?.slug}`;
-                            
-                            return (
-                              <div className="space-y-2">
-                                <div className="flex items-center gap-2">
-                                  {currentPage?.image && (
-                                    <div className="relative w-8 h-8 rounded-md overflow-hidden bg-muted shrink-0">
-                                      <img
-                                        src={currentPage.image}
-                                        alt={currentPage.title || 'Page image'}
-                                        className="object-cover w-full h-full"
-                                        onError={(e) => {
-                                          (e.target as HTMLImageElement).style.display = "none";
-                                        }}
-                                      />
-                                    </div>
-                                  )}
-                                  <div className="text-sm font-medium truncate">
-                                    {currentPage?.title || 'Untitled Page'}
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                  <span className="truncate">page.fun/{currentPage?.slug}</span>
-                                  <span className="px-1.5 py-0.5 rounded-full bg-muted text-[10px] uppercase">
-                                    {isEditPage ? 'Editing' : isLivePage ? 'Live' : ''}
-                                  </span>
-                                </div>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => {
-                                    if (currentPage) {
-                                      router.push(isEditPage ? `/${currentPage.slug}` : `/edit/${currentPage.slug}`);
-                                      setOpen(false);
-                                    }
-                                  }}
-                                  className="w-full"
-                                >
-                                  {isEditPage ? 'View live page' : 'Edit page'}
-                                </Button>
-                              </div>
-                            );
-                          })()}
-                        </div>
-                      </div>
-                    )}
-
+  
                     <div>
                       <div className="flex flex-col gap-2 mb-4">
                         <Button
@@ -202,7 +143,7 @@ export default function AppMenu({
                             .map((page) => (
                               <div
                                 key={page.slug}
-                                className="p-3 rounded-lg space-y-2 bg-muted hover:bg-muted/80"
+                                className="p-3 rounded-lg space-y-2 bg-background border border-primary"
                               >
                                 <div className="flex items-start justify-between gap-2">
                                   <div className="space-y-1 min-w-0">
@@ -248,7 +189,7 @@ export default function AppMenu({
             </div>
 
             {ready && authenticated && (
-              <div className="border-t border-primary pt-3 bg-green-50">
+              <div className="border-t pt-3 bg-muted">
                 {solanaWallet ? (
                   <div className="space-y-2">
                     <div className="flex gap-2 items-center">

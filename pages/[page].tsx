@@ -2,8 +2,6 @@ import { GetServerSideProps } from "next";
 import Head from "next/head";
 import PageContent from "../components/PageContent";
 import { PageData, PageItem } from "@/types";
-import { LinkType } from "@/lib/links";
-import AppMenu from "@/components/AppMenu";
 import { themes } from "@/lib/themes";
 import { useRouter } from 'next/router';
 import { useGlobalContext } from '@/lib/context';
@@ -94,14 +92,13 @@ export default function Page({ pageData, slug, error }: PageProps) {
   return (
     <>
       {isOwner && (
-        <Link href={`/edit/${slug}`}>
-          <Button
-            className="fixed top-2 right-2 z-50 gap-2"
-          >
-            <Pencil className="h-4 w-4" />
-            Edit Page
-          </Button>
-        </Link>
+        <Button
+          onClick={() => router.push(`/edit/${slug}`)}
+          className="fixed top-2 right-2 z-50 gap-2"
+        >
+          <Pencil className="h-4 w-4" />
+          Edit Page
+        </Button>
       )}
       
       <Head>
