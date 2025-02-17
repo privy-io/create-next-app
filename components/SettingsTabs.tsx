@@ -2,7 +2,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GeneralSettingsTab } from "./tabs/GeneralSettingsTab";
 import { LinksTab } from "./tabs/LinksTab";
 import { DesignTab } from "./tabs/DesignTab";
-import { SaveBar } from "./SaveBar";
 import { PageData } from "@/types";
 import { useState } from "react";
 
@@ -12,30 +11,26 @@ interface SettingsTabsProps {
     data: PageData | ((prev: PageData | null) => PageData | null),
   ) => void;
   extraHeaderContent?: React.ReactNode;
-  isSaving: boolean;
   isAuthenticated: boolean;
   canEdit: boolean;
-  onSave: () => void;
   onConnect: () => void;
   selectedTab?: string;
   onTabChange?: (tab: string) => void;
-  openLinkId?: string | null;
-  onLinkOpen?: (id: string | null) => void;
+  onClose?: () => void;
+  onLinkAdd?: (linkId: string) => void;
 }
 
 export function SettingsTabs({
   pageDetails,
   setPageDetails,
   extraHeaderContent,
-  isSaving,
   isAuthenticated,
   canEdit,
-  onSave,
   onConnect,
   selectedTab = "general",
   onTabChange,
-  openLinkId,
-  onLinkOpen,
+  onClose,
+  onLinkAdd,
 }: SettingsTabsProps) {
   const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({});
   const hasErrors = Object.keys(validationErrors).length > 0;
@@ -72,12 +67,8 @@ export function SettingsTabs({
           <LinksTab
             pageDetails={pageDetails}
             setPageDetails={setPageDetails}
-            isAuthenticated={isAuthenticated}
-            canEdit={canEdit}
-            onConnect={onConnect}
-            openLinkId={openLinkId || undefined}
-            onLinkOpen={onLinkOpen}
-            onValidationErrorsChange={setValidationErrors}
+            onClose={onClose}
+            onLinkAdd={onLinkAdd}
           />
         </TabsContent>
 
@@ -88,14 +79,6 @@ export function SettingsTabs({
           />
         </TabsContent>
       </Tabs>
-
-      <SaveBar
-        isSaving={isSaving}
-        isAuthenticated={isAuthenticated}
-        canEdit={canEdit}
-        onSave={onSave}
-        onConnect={onConnect}
-      />
     </div>
   );
 }

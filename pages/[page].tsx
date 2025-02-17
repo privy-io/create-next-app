@@ -5,6 +5,10 @@ import { PageData, PageItem } from "@/types";
 import { LinkType } from "@/lib/links";
 import AppMenu from "@/components/AppMenu";
 import { themes } from "@/lib/themes";
+import { useRouter } from 'next/router';
+import { useGlobalContext } from '@/lib/context';
+import { Button } from '@/components/ui/button';
+import { Pencil } from 'lucide-react';
 
 interface PageProps {
   pageData: PageData;
@@ -64,7 +68,11 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async ({
   }
 };
 
-export default function Page({ pageData, slug }: PageProps) {
+export default function Page({ pageData, slug, error }: PageProps) {
+  const router = useRouter();
+  const { walletAddress, isAuthenticated } = useGlobalContext();
+  const isOwner = isAuthenticated && walletAddress?.toLowerCase() === pageData?.walletAddress?.toLowerCase();
+
   const currentTheme = pageData.designStyle || 'default';
   const themeStyle = themes[currentTheme].colors;
 
@@ -77,8 +85,25 @@ export default function Page({ pageData, slug }: PageProps) {
     }))
   };
 
+  if (error) {
+    return (
+      <div>Error: {error}</div>
+    );
+  }
+
   return (
     <>
+      {isOwner && (
+        <Button
+          onClick={() => router.push(`/edit/${slug}`)}
+          size="sm"
+          className="fixed top-4 right-4 z-50 gap-2"
+        >
+          <Pencil className="h-4 w-4" />
+          Edit Page
+        </Button>
+      )}
+      
       <Head>
         <title>{processedPageData?.title || slug} - Page.fun</title>
         {processedPageData?.description && (

@@ -1,17 +1,20 @@
 import { Fragment } from "react";
 import { PageItem, PageData } from "@/types";
 import { LINK_PRESETS } from "@/lib/linkPresets";
+import { AlertCircle } from "lucide-react";
 
 interface EditPageLinkProps {
   item: PageItem;
   pageData: PageData;
   onLinkClick?: (itemId: string) => void;
+  error?: string;
 }
 
 export default function EditPageLink({
   item,
   pageData,
   onLinkClick,
+  error,
 }: EditPageLinkProps) {
   const preset = LINK_PRESETS[item.presetId];
   if (!preset) return null;
@@ -26,7 +29,10 @@ export default function EditPageLink({
   };
 
   const itemContent = (
-    <div className={`pf-link`}>
+    <div className={`pf-link relative ${error ? 'border border-red-500 rounded-lg' : ''}`}>
+      {error && (
+        <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-background" />
+      )}
       <div className="pf-link__inner">
         <div className="pf-link__icon-container">
           <div className="pf-link__icon">
@@ -60,7 +66,8 @@ export default function EditPageLink({
   return (
     <button
       onClick={handleClick}
-      className="w-full text-left cursor-pointer hover:opacity-80">
+      className={`w-full text-left cursor-pointer hover:opacity-80 ${error ? 'relative' : ''}`}
+    >
       {itemContent}
     </button>
   );

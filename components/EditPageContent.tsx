@@ -1,6 +1,23 @@
 import { useState } from "react";
 import { PageData, PageItem } from "@/types";
 import EditPageLink from "./EditPageLink";
+import { Button } from "@/components/ui/button";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { SortableItem } from "@/components/SortableItem";
+import { Plus } from "lucide-react";
 
 interface EditPageContentProps {
   pageData: PageData;
@@ -9,6 +26,9 @@ interface EditPageContentProps {
   onLinkClick?: (itemId: string) => void;
   onTitleClick?: () => void;
   onDescriptionClick?: () => void;
+  onItemsReorder?: (items: PageItem[]) => void;
+  validationErrors?: { [key: string]: string };
+  onAddLinkClick?: () => void;
 }
 
 export default function EditPageContent({
@@ -18,15 +38,34 @@ export default function EditPageContent({
   onLinkClick,
   onTitleClick,
   onDescriptionClick,
+  onItemsReorder,
+  validationErrors = {},
+  onAddLinkClick,
 }: EditPageContentProps) {
-  const [openDrawer, setOpenDrawer] = useState<string | null>(null);
-  const [verifying, setVerifying] = useState<string | null>(null);
-  const [accessStates, setAccessStates] = useState<Map<string, boolean>>(
-    new Map()
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
   );
-  const [tokenGatedUrls, setTokenGatedUrls] = useState<Map<string, string>>(
-    new Map()
-  );
+
+  const handleDragEnd = (event: any) => {
+    const { active, over } = event;
+
+    if (active.id !== over?.id) {
+      const oldIndex = items.findIndex((item) => item.id === active.id);
+      const newIndex = items.findIndex((item) => item.id === over?.id);
+
+      const newItems = arrayMove(items, oldIndex, newIndex).map(
+        (item, index) => ({
+          ...item,
+          order: index,
+        })
+      );
+
+      onItemsReorder?.(newItems);
+    }
+  };
 
   return (
     <div
@@ -80,24 +119,43 @@ export default function EditPageContent({
         {/* Social Links & Plugins */}
         {items && items.length > 0 && (
           <div className="pf-links">
-            <div className="pf-links__grid">
-              {items
-                .filter((item) => item && item.id && item.presetId)
-                .sort((a, b) => a.order - b.order)
-                .map((item) => (
-                  <EditPageLink
-                    key={item.id}
-                    item={item}
-                    pageData={pageData}
-                    openDrawer={openDrawer}
-                    setOpenDrawer={setOpenDrawer}
-                    verifying={verifying}
-                    accessStates={accessStates}
-                    tokenGatedUrls={tokenGatedUrls}
-                    onLinkClick={onLinkClick}
-                    isPreview={true}
-                  />
-                ))}
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={items.map((i) => i.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="pf-links__grid">
+                  {items
+                    .filter((item) => item && item.id && item.presetId)
+                    .sort((a, b) => a.order - b.order)
+                    .map((item) => (
+                      <EditPageLink
+                        key={item.id}
+                        item={item}
+                        pageData={pageData}
+                        onLinkClick={onLinkClick}
+                        error={validationErrors[item.id]}
+                      />
+                    ))}
+                </div>
+              </SortableContext>
+            </DndContext>
+            
+            {/* Add Link Button */}
+            <div className="flex justify-center mt-4">
+              <Button
+                onClick={onAddLinkClick}
+                variant="outline"
+                size="lg"
+                className="w-full max-w-md gap-2"
+              >
+                <Plus className="h-5 w-5" />
+                Add Link
+              </Button>
             </div>
           </div>
         )}

@@ -4,19 +4,13 @@ import { useState, useEffect } from 'react';
 
 interface SaveBarProps {
   isSaving: boolean;
-  isAuthenticated: boolean;
-  canEdit: boolean;
   onSave: () => void;
-  onConnect: () => void;
   className?: string;
 }
 
 export function SaveBar({
   isSaving,
-  isAuthenticated,
-  canEdit,
   onSave,
-  onConnect,
   className = ''
 }: SaveBarProps) {
   const router = useRouter();
@@ -33,45 +27,24 @@ export function SaveBar({
   }, [isSaving]);
 
   return (
-    <div className={`sticky bottom-0 w-full px-6 py-3 bg-background border-t flex justify-between space-x-2 ${className}`}>
-      <div>
-        <a
-          href={`https://${page}.page.fun`}
-          target="_blank"
-          rel="noreferrer"
-          className={`gap-2 inline-flex text-sm items-center text-muted-foreground hover:text-foreground ${showJiggle ? 'animate-wiggle' : ''}`}
-        >
-          page.fun/{page}
-        </a>
-      </div>
-
+    <div className={`flex items-center gap-4 ${className}`}>
       <div className="flex gap-2">
         <Button
-          variant="outline"
+          variant="ghost"
           size="sm"
           onClick={() => router.push(`/${page}`)}
           disabled={isSaving}
         >
-          Exit to Page
+          Go to page
         </Button>
         
-        {!isAuthenticated ? (
-          <Button onClick={onConnect} size="sm">
-            Connect Wallet to Save
-          </Button>
-        ) : !canEdit ? (
-          <Button disabled>
-            Not Authorized to Edit
-          </Button>
-        ) : (
-          <Button
-            onClick={onSave}
-            size="sm"
-            disabled={isSaving}
-          >
-            {isSaving ? 'Saving...' : 'Publish'}
-          </Button>
-        )}
+        <Button
+          onClick={onSave}
+          size="sm"
+          disabled={isSaving}
+        >
+          {isSaving ? 'Saving...' : 'Publish'}
+        </Button>
       </div>
     </div>
   );

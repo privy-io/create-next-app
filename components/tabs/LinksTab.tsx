@@ -1,66 +1,27 @@
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Plus } from "lucide-react";
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { SortableItem } from "@/components/SortableItem";
 import { PageData, PageItem } from "@/types";
 import React, { useState, useEffect } from "react";
-import { LINK_PRESETS, LinkPreset } from "@/lib/linkPresets";
+import { LINK_PRESETS } from "@/lib/linkPresets";
 import { validateLinkUrl } from "@/lib/links";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 
 interface LinksTabProps {
   pageDetails: PageData | null;
   setPageDetails: (data: PageData | ((prev: PageData | null) => PageData | null)) => void;
-  isAuthenticated?: boolean;
-  canEdit?: boolean;
-  onConnect?: () => void;
-  openLinkId?: string;
-  onLinkOpen?: (id: string | null) => void;
-  onValidationErrorsChange?: (errors: { [key: string]: string }) => void;
-}
-
-// Helper function to get a consistent item ID
-function getItemId(item: PageItem): string {
-  return item.id;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onLinkAdd?: (linkId: string) => void;
 }
 
 export function LinksTab({
   pageDetails,
   setPageDetails,
-  isAuthenticated,
-  canEdit,
-  onConnect,
-  openLinkId,
-  onLinkOpen,
-  onValidationErrorsChange,
+  open,
+  onOpenChange,
+  onLinkAdd,
 }: LinksTabProps) {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
 
   // Validate URLs when items change
   useEffect(() => {
@@ -92,183 +53,68 @@ export function LinksTab({
     });
     console.log('Setting validation errors:', newErrors);
     setErrors(newErrors);
-    onValidationErrorsChange?.(newErrors);
     return newErrors;
   };
 
-  const handleDragEnd = (event: any) => {
-    const { active, over } = event;
+  const handleAddLink = (presetId: string) => {
+    const preset = LINK_PRESETS[presetId];
+    if (!preset) return;
 
-    if (active.id !== over?.id && pageDetails?.items) {
-      const oldIndex = pageDetails.items.findIndex(
-        (item) => getItemId(item) === active.id,
-      );
-      const newIndex = pageDetails.items.findIndex(
-        (item) => getItemId(item) === over?.id,
-      );
+    const newItem: PageItem = {
+      presetId,
+      title: preset.title,
+      url: preset.defaultUrl?.replace('[connectedToken]', pageDetails?.connectedToken || '') || "",
+      id: `${presetId}-${Math.random().toString(36).substr(2, 9)}`,
+      order: pageDetails?.items?.length || 0,
+    };
 
-      setPageDetails((prevDetails) => {
-        if (!prevDetails?.items) return prevDetails;
-
-        const newItems = arrayMove(prevDetails.items, oldIndex, newIndex).map(
-          (item, index) => ({
-            ...item,
-            order: index,
-          }),
-        );
-
-        return {
-          ...prevDetails,
-          items: newItems,
-        };
-      });
-    }
-  };
-
-  const handleDragStart = () => {
-    // Close any open accordion when dragging starts
-    onLinkOpen?.(null);
-  };
-
-  const handleUrlChange = (itemId: string, url: string) => {
     setPageDetails((prev) => {
-      if (!prev?.items) return prev;
-
-      const updatedItems = prev.items.map((i) =>
-        i.id === itemId ? { ...i, url } : i
-      );
-
-      // Validate all items with the updated URL
-      validateItems(updatedItems);
-
+      if (!prev) return prev;
       return {
         ...prev,
-        items: updatedItems,
+        items: [...(prev.items || []), newItem],
       };
     });
-  };
 
-  // Get available link presets
-  const getAvailablePresets = () => {
-    return Object.values(LINK_PRESETS);
-  };
-
-  // Only show token gating if a token is connected
-  const canShowTokenGating = !!pageDetails?.connectedToken;
-
-  const handleAccordionToggle = (itemId: string) => {
-    // If the clicked item is already open, close it
-    if (openLinkId === itemId) {
-      onLinkOpen?.(null);
-    } else {
-      onLinkOpen?.(itemId);
-    }
+    // Call onLinkAdd immediately after setting the new item
+    onLinkAdd?.(newItem.id);
   };
 
   return (
-    <div className="space-y-6 px-6">
-      <div className="flex justify-between items-center">
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button size="sm" className="gap-2">
-              <Plus className="h-4 w-4" />
-              Add Link
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add Link</DialogTitle>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              {getAvailablePresets().map((preset) => {
-                const Icon = preset.icon.classic;
-                return (
-                  <Button
-                    key={preset.id}
-                    variant="outline"
-                    className="justify-start gap-2"
-                    onClick={() => {
-                      const newItem: PageItem = {
-                        presetId: preset.id,
-                        title: preset.title,
-                        url: preset.defaultUrl?.replace('[connectedToken]', pageDetails?.connectedToken || '') || "",
-                        id: `${preset.id}-${Math.random().toString(36).substr(2, 9)}`,
-                        order: pageDetails?.items?.length || 0,
-                      };
-
-                      setPageDetails((prev) => {
-                        if (!prev) return prev;
-                        return {
-                          ...prev,
-                          items: [...(prev.items || []), newItem],
-                        };
-                      });
-                    }}
-                  >
-                    <Icon className="h-4 w-4" />
-                    {preset.title}
-                  </Button>
-                );
-              })}
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-        onDragStart={handleDragStart}
-      >
-        <SortableContext
-          items={pageDetails?.items?.map((i) => getItemId(i)) || []}
-          strategy={verticalListSortingStrategy}
-        >
-          <div className="space-y-2">
-            {!canShowTokenGating && pageDetails?.items?.some(item => item.tokenGated) && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
-                <p className="text-sm text-yellow-800">
-                  Connect a token in the Settings tab to enable token gating for your links.
-                </p>
-              </div>
-            )}
-            {pageDetails?.items?.map((item) => {
-              const itemId = getItemId(item);
-              const preset = LINK_PRESETS[item.presetId];
-              if (!preset) return null;
-              
-              console.log(`Rendering item ${itemId}, error:`, errors[itemId]);
-              
+    <Drawer open={open} onOpenChange={onOpenChange}>
+      <DrawerContent>
+        <DrawerHeader>
+          <DrawerTitle>Add Link</DrawerTitle>
+        </DrawerHeader>
+        <div className="p-6">
+          <div className="grid gap-4">
+            {Object.entries(LINK_PRESETS).map(([id, preset]) => {
+              const Icon = preset.icon.classic;
               return (
-                <SortableItem
-                  key={itemId}
-                  id={itemId}
-                  item={item}
-                  preset={preset}
-                  error={errors[itemId]}
-                  onUrlChange={(url) => handleUrlChange(itemId, url)}
-                  setPageDetails={setPageDetails}
-                  tokenSymbol={pageDetails?.tokenSymbol || undefined}
-                  isOpen={openLinkId === itemId}
-                  onOpen={() => handleAccordionToggle(itemId)}
-                  onDelete={() => {
-                    const newErrors = { ...errors };
-                    delete newErrors[itemId];
-                    setErrors(newErrors);
-                    onValidationErrorsChange?.(newErrors);
-
-                    setPageDetails((prev) => ({
-                      ...prev!,
-                      items: prev!.items!.filter((i) => i.id !== item.id),
-                    }));
-                  }}
-                />
+                <Button
+                  key={id}
+                  variant="outline"
+                  className="justify-start gap-2 h-auto py-3"
+                  onClick={() => handleAddLink(id)}
+                >
+                  <Icon className="h-5 w-5" />
+                  <div className="text-left">
+                    <div className="font-medium">{preset.title}</div>
+                    <div className="text-sm text-muted-foreground">
+                      Add a {preset.title} link
+                    </div>
+                  </div>
+                </Button>
               );
             })}
           </div>
-        </SortableContext>
-      </DndContext>
-    </div>
+        </div>
+      </DrawerContent>
+    </Drawer>
   );
+}
+
+// Helper function to get a consistent item ID
+function getItemId(item: PageItem): string {
+  return item.id;
 }
