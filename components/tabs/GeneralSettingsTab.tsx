@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { useRouter } from "next/router";
 import { AlertCircle } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface GeneralSettingsTabProps {
   pageDetails: PageData | null;
@@ -27,6 +28,7 @@ export function GeneralSettingsTab({
   setPageDetails,
 }: GeneralSettingsTabProps) {
   const router = useRouter();
+  const { toast } = useToast();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
@@ -53,6 +55,12 @@ export function GeneralSettingsTab({
         throw new Error(error.error || "Failed to delete page");
       }
 
+      // Show success toast
+      toast({
+        title: "Page deleted",
+        description: "Your page has been successfully deleted.",
+      });
+
       // Redirect to home page after successful deletion
       router.push("/");
     } catch (error) {
@@ -60,13 +68,20 @@ export function GeneralSettingsTab({
       setDeleteError(
         error instanceof Error ? error.message : "Failed to delete page"
       );
+      
+      // Show error toast
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to delete page",
+        variant: "destructive",
+      });
     } finally {
       setIsDeleting(false);
     }
   };
 
   return (
-    <div className="space-y-6 px-6">
+    <div className="space-y-6">
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Solana Token

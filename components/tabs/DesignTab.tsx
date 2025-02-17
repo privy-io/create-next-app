@@ -32,7 +32,7 @@ export function DesignTab({ pageDetails, setPageDetails }: DesignTabProps) {
   };
 
   return (
-    <div className="space-y-6 px-6">
+    <div className="space-y-6">
       <div>
         <label className="block text-base font-bold text-gray-700 mb-1">
           Style

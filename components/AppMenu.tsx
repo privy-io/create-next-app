@@ -85,7 +85,7 @@ export default function AppMenu({
           <Button
             variant="outline"
             className={cn(
-              "h-7 px-1 py-0 gap-1 border-primary",
+              "px-2 gap-1",
             )}
           >
             <Logo />

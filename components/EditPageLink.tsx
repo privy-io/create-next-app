@@ -1,7 +1,10 @@
 import { Fragment } from "react";
 import { PageItem, PageData } from "@/types";
 import { LINK_PRESETS } from "@/lib/linkPresets";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, GripVertical } from "lucide-react";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface EditPageLinkProps {
   item: PageItem;
@@ -16,6 +19,19 @@ export default function EditPageLink({
   onLinkClick,
   error,
 }: EditPageLinkProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition: dndTransition,
+  } = useSortable({ id: item.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition: dndTransition,
+  };
+
   const preset = LINK_PRESETS[item.presetId];
   if (!preset) return null;
 
@@ -29,7 +45,16 @@ export default function EditPageLink({
   };
 
   const itemContent = (
-    <div className={`pf-link relative ${error ? 'border border-red-500 rounded-lg' : ''}`}>
+    <motion.div 
+      className={`pf-link relative ${error ? 'border border-red-500 rounded-lg' : ''}`}
+      initial={item.isNew ? { opacity: 0, scale: 0.5 } : false}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ 
+        duration: 0.3, 
+        delay: 0.1,
+        ease: "easeOut"
+      }}
+    >
       {error && (
         <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-background" />
       )}
@@ -60,16 +85,26 @@ export default function EditPageLink({
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 
   return (
-    <button
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="w-full text-left cursor-pointer group relative"
       onClick={handleClick}
-      className={`w-full text-left cursor-pointer hover:opacity-80 ${error ? 'relative' : ''}`}
     >
+      <div
+        {...attributes}
+        {...listeners}
+        className="absolute -left-11 top-1/2 -translate-y-1/2 cursor-grab w-11 h-11 flex items-center justify-center rounded-lg hover:bg-black/5"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <GripVertical className="h-5 w-5 text-gray-400" />
+      </div>
       {itemContent}
-    </button>
+    </div>
   );
 }
 

@@ -16,7 +16,6 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { SortableItem } from "@/components/SortableItem";
 import { Plus } from "lucide-react";
 
 interface EditPageContentProps {
@@ -146,15 +145,13 @@ export default function EditPageContent({
             </DndContext>
             
             {/* Add Link Button */}
-            <div className="flex justify-center mt-4">
+            <div className="fixed bottom-2 left-2">
               <Button
                 onClick={onAddLinkClick}
-                variant="outline"
-                size="lg"
-                className="w-full max-w-md gap-2"
+                size="icon"
               >
                 <Plus className="h-5 w-5" />
-                Add Link
+                
               </Button>
             </div>
           </div>

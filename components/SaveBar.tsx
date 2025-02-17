@@ -31,7 +31,6 @@ export function SaveBar({
       <div className="flex gap-2">
         <Button
           variant="ghost"
-          size="sm"
           onClick={() => router.push(`/${page}`)}
           disabled={isSaving}
         >
@@ -40,7 +39,6 @@ export function SaveBar({
         
         <Button
           onClick={onSave}
-          size="sm"
           disabled={isSaving}
         >
           {isSaving ? 'Saving...' : 'Publish'}

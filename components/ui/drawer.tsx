@@ -5,12 +5,18 @@ import { Drawer as DrawerPrimitive } from "vaul";
 
 import { cn } from "@/lib/utils";
 
+type DrawerProps = React.ComponentProps<typeof DrawerPrimitive.Root> & {
+  direction?: "bottom" | "right";
+};
+
 const Drawer = ({
   shouldScaleBackground = true,
+  direction = "bottom",
   ...props
-}: React.ComponentProps<typeof DrawerPrimitive.Root>) => (
+}: DrawerProps) => (
   <DrawerPrimitive.Root
     shouldScaleBackground={shouldScaleBackground}
+    direction={direction}
     {...props}
   />
 );
@@ -28,31 +34,47 @@ const DrawerOverlay = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DrawerPrimitive.Overlay
     ref={ref}
-    className={cn("fixed inset-0 z-50 bg-black/50", className)}
+    className={cn("fixed inset-0 z-40 bg-black/50", className)}
     {...props}
   />
 ));
 DrawerOverlay.displayName = DrawerPrimitive.Overlay.displayName;
 
+interface DrawerContentProps extends React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content> {
+  direction?: "bottom" | "right";
+}
+
 const DrawerContent = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content>
->(({ className, children, ...props }, ref) => (
-  <DrawerPortal>
-    <DrawerOverlay />
-    <DrawerPrimitive.Content
-      ref={ref}
-      className={cn(
-        "fixed inset-x-5 bottom-0 z-50 mt-24 rounded-t-[10px] border bg-background flex h-auto flex-col",
-        className
-      )}
-      {...props}>
-      <div className="p-4 mx-auto  w-full">
-        {children}
-      </div>
-    </DrawerPrimitive.Content>
-  </DrawerPortal>
-));
+  DrawerContentProps
+>(({ className, children, direction = "bottom", ...props }, ref) => {
+  const styles = {
+    bottom: "fixed inset-x-2 bottom-2 flex h-auto outline-none flex-col z-50",
+    right: "fixed inset-y-2 right-2 z-50 top-2 bottom-2 outline-none w-[300px] flex"
+  };
+
+  return (
+    <DrawerPortal>
+      <DrawerOverlay />
+      <DrawerPrimitive.Content
+        ref={ref}
+        className={cn(
+          styles[direction],
+          className
+        )}
+        style={direction === "right" ? { '--initial-transform': 'calc(100% + 12px)' } as React.CSSProperties : undefined}
+        {...props}>
+        <div className="bg-background border border-primary h-full w-full grow p-5 flex flex-col rounded-md">
+          {children}
+        </div>
+        {direction === "bottom" && (
+          <div className="absolute top-2 w-[50px] h-[5px] left-1/2 -translate-x-1/2 rounded-full bg-gray-300">
+          </div>
+        )}
+      </DrawerPrimitive.Content>
+    </DrawerPortal>
+  );
+});
 DrawerContent.displayName = "DrawerContent";
 
 const DrawerHeader = ({
@@ -60,7 +82,7 @@ const DrawerHeader = ({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={cn("grid gap-1.5 p-4 text-center sm:text-left", className)}
+    className={cn("grid gap-1.5 py-4 text-center sm:text-left", className)}
     {...props}
   />
 );

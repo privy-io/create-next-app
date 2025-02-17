@@ -142,7 +142,7 @@ export function LinkSettingsDrawer({
           <span>{preset.title} Settings</span>
         </DrawerTitle>
       </DrawerHeader>
-      <div className="p-6 space-y-6">
+      <div className="space-y-6">
         <div className="space-y-4">
           <div className="space-y-2">
             <label className="block text-sm text-gray-600">Title</label>
@@ -219,7 +219,7 @@ export function LinkSettingsDrawer({
           </div>
         )}
 
-        <div className="flex justify-between pt-4">
+        <div className="flex justify-between">
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button

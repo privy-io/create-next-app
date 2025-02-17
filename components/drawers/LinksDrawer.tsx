@@ -6,7 +6,7 @@ import { LINK_PRESETS } from "@/lib/linkPresets";
 import { validateLinkUrl } from "@/lib/links";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 
-interface LinksTabProps {
+interface LinksDrawerProps {
   pageDetails: PageData | null;
   setPageDetails: (data: PageData | ((prev: PageData | null) => PageData | null)) => void;
   open: boolean;
@@ -14,13 +14,13 @@ interface LinksTabProps {
   onLinkAdd?: (linkId: string) => void;
 }
 
-export function LinksTab({
+export function LinksDrawer({
   pageDetails,
   setPageDetails,
   open,
   onOpenChange,
   onLinkAdd,
-}: LinksTabProps) {
+}: LinksDrawerProps) {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   // Validate URLs when items change
@@ -66,6 +66,7 @@ export function LinksTab({
       url: preset.defaultUrl?.replace('[connectedToken]', pageDetails?.connectedToken || '') || "",
       id: `${presetId}-${Math.random().toString(36).substr(2, 9)}`,
       order: pageDetails?.items?.length || 0,
+      isNew: true,
     };
 
     setPageDetails((prev) => {
@@ -78,6 +79,14 @@ export function LinksTab({
 
     // Call onLinkAdd immediately after setting the new item
     onLinkAdd?.(newItem.id);
+
+    // Scroll to bottom of the page after a short delay to ensure content is rendered
+    setTimeout(() => {
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
+        behavior: 'smooth'
+      });
+    }, 100);
   };
 
   return (
@@ -86,8 +95,8 @@ export function LinksTab({
         <DrawerHeader>
           <DrawerTitle>Add Link</DrawerTitle>
         </DrawerHeader>
-        <div className="p-6">
-          <div className="grid gap-4">
+        <div className="py-3">
+          <div className="grid gap-4 grid-cols-2 sm:grid-cols-3">
             {Object.entries(LINK_PRESETS).map(([id, preset]) => {
               const Icon = preset.icon.classic;
               return (
@@ -100,9 +109,6 @@ export function LinksTab({
                   <Icon className="h-5 w-5" />
                   <div className="text-left">
                     <div className="font-medium">{preset.title}</div>
-                    <div className="text-sm text-muted-foreground">
-                      Add a {preset.title} link
-                    </div>
                   </div>
                 </Button>
               );
@@ -112,9 +118,4 @@ export function LinksTab({
       </DrawerContent>
     </Drawer>
   );
-}
-
-// Helper function to get a consistent item ID
-function getItemId(item: PageItem): string {
-  return item.id;
-}
+} 

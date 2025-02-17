@@ -1,6 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GeneralSettingsTab } from "./tabs/GeneralSettingsTab";
-import { LinksTab } from "./tabs/LinksTab";
+import { LinksDrawer } from "./drawers/LinksDrawer";
 import { DesignTab } from "./tabs/DesignTab";
 import { PageData } from "@/types";
 import { useState } from "react";
@@ -64,10 +64,15 @@ export function SettingsTabs({
         </TabsContent>
 
         <TabsContent value="links" className="mt-0">
-          <LinksTab
+          <LinksDrawer
             pageDetails={pageDetails}
             setPageDetails={setPageDetails}
-            onClose={onClose}
+            open={selectedTab === "links"}
+            onOpenChange={(open) => {
+              if (open) {
+                onTabChange?.("links");
+              }
+            }}
             onLinkAdd={onLinkAdd}
           />
         </TabsContent>

@@ -97,7 +97,7 @@ export default function Page({ pageData, slug, error }: PageProps) {
         <Button
           onClick={() => router.push(`/edit/${slug}`)}
           size="sm"
-          className="fixed top-4 right-4 z-50 gap-2"
+          className="fixed top-2 right-2 z-50 gap-2"
         >
           <Pencil className="h-4 w-4" />
           Edit Page

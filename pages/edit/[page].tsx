@@ -4,26 +4,20 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { PrivyClient } from "@privy-io/server-auth";
-import PagePreview from "@/components/PagePreview";
 import { Button } from "@/components/ui/button";
-import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
-import { Menu, Pencil } from "lucide-react";
+import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { isSolanaWallet } from "@/utils/wallet";
-import { SettingsTabs } from "@/components/SettingsTabs";
 import { GOOGLE_FONTS } from "@/lib/fonts";
 import { PageData, PageItem } from "@/types";
 import { validateLinkUrl } from "@/lib/links";
 import { LINK_PRESETS } from "@/lib/linkPresets";
 import EditPageContent from "@/components/EditPageContent";
-import { SaveBar } from "@/components/SaveBar";
+import { ActionBar } from "@/components/ActionBar";
 import { LinkSettingsDrawer } from "@/components/LinkSettingsDrawer";
-import { AnimatePresence, motion } from "framer-motion";
-import { LinksTab } from "@/components/tabs/LinksTab";
-import { FloatingButtons } from "@/components/FloatingButtons";
-import { GeneralSettingsDrawer } from "@/components/drawers/GeneralSettingsDrawer";
-import { DesignDrawer } from "@/components/drawers/DesignDrawer";
+import { LinksDrawer } from "@/components/drawers/LinksDrawer";
+import { SettingsDrawer } from "@/components/drawers/SettingsDrawer";
 
 interface PageProps {
   slug: string;
@@ -132,13 +126,10 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
   const [validationErrors, setValidationErrors] = useState<{
     [key: string]: string;
   }>({});
-  const [selectedTab, setSelectedTab] = useState("general");
   const [settingsDrawerOpen, setSettingsDrawerOpen] = useState(false);
   const [linkSettingsDrawerOpen, setLinkSettingsDrawerOpen] = useState(false);
   const [selectedLinkId, setSelectedLinkId] = useState<string | null>(null);
   const [linksDrawerOpen, setLinksDrawerOpen] = useState(false);
-  const [generalSettingsOpen, setGeneralSettingsOpen] = useState(false);
-  const [designDrawerOpen, setDesignDrawerOpen] = useState(false);
 
   // Handle ESC key to close drawer
   useEffect(() => {
@@ -439,53 +430,36 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
       </Head>
 
       <main className="min-h-screen">
-        {/* Top bar with save controls */}
-        <div className="fixed top-2 right-2 z-40">
-          <SaveBar
-            isSaving={isSaving}
-            onSave={handleSavePageDetails}
-            className="static px-0 py-0 border-none"
-          />
-        </div>
+        <ActionBar
+          isSaving={isSaving}
+          onSave={handleSavePageDetails}
+          onSettingsClick={() => setSettingsDrawerOpen(true)}
+          onLinksClick={() => setLinksDrawerOpen(true)}
+        />
 
         {/* Main content */}
         {previewData && (
           <EditPageContent
             pageData={previewData}
             onLinkClick={handleLinkClick}
-            onTitleClick={() => setGeneralSettingsOpen(true)}
-            onDescriptionClick={() => setGeneralSettingsOpen(true)}
+            onTitleClick={() => setSettingsDrawerOpen(true)}
+            onDescriptionClick={() => setSettingsDrawerOpen(true)}
             onItemsReorder={handleItemsReorder}
             validationErrors={validationErrors}
             onAddLinkClick={handleAddLink}
           />
         )}
 
-        {/* Floating Action Buttons */}
-        <FloatingButtons
-          onSettingsClick={() => setGeneralSettingsOpen(true)}
-          onLinksClick={() => setLinksDrawerOpen(true)}
-          onDesignClick={() => setDesignDrawerOpen(true)}
-        />
-
-        {/* General Settings Drawer */}
-        <GeneralSettingsDrawer
-          open={generalSettingsOpen}
-          onOpenChange={setGeneralSettingsOpen}
-          pageDetails={pageDetails}
-          setPageDetails={setPageDetails}
-        />
-
-        {/* Design Drawer */}
-        <DesignDrawer
-          open={designDrawerOpen}
-          onOpenChange={setDesignDrawerOpen}
+        {/* Settings Drawer */}
+        <SettingsDrawer
+          open={settingsDrawerOpen}
+          onOpenChange={setSettingsDrawerOpen}
           pageDetails={pageDetails}
           setPageDetails={setPageDetails}
         />
 
         {/* Links Drawer */}
-        <LinksTab
+        <LinksDrawer
           pageDetails={pageDetails}
           setPageDetails={setPageDetails}
           open={linksDrawerOpen}

@@ -10,10 +10,12 @@ export type PageItem = {
   isPlugin?: boolean;
   tokenGated?: boolean;
   requiredTokens?: string[];
+  isNew?: boolean;
 };
 
 export type PageData = {
   walletAddress: string;
+  slug: string;
   connectedToken?: string | null;
   tokenSymbol?: string | null;
   title?: string;
