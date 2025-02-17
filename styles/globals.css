@@ -5,21 +5,13 @@
 @layer base {
   /* normal */
   @font-face {
-    font-family: "Adelle Sans";
-    src: url("/fonts/AdelleSans-Regular.woff2") format("woff2");
+    font-family: "Silkscreen";
+    src: url("/fonts/Silkscreen-Regular.ttf") format("ttf");
     font-style: normal;
     font-display: swap;
-    font-weight: 300;
+    font-weight: 400;
   }
-
-  /* semibold */
-  @font-face {
-    font-family: "Adelle Sans";
-    src: url("/fonts/AdelleSans-Semibold.woff2") format("woff2");
-    font-style: normal;
-    font-display: swap;
-    font-weight: 600;
-  }
+  
   :root {
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;

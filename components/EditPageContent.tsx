@@ -147,7 +147,7 @@ export default function EditPageContent({
         </div>
       </div>
       {/* Add Link Button */}
-      <div className="fixed bottom-2 right-2">
+      <div className="fixed bottom-2 left-1/2 -translate-x-1/2">
         <Button onClick={onAddLinkClick}>
           <Plus className="h-5 w-5" />
           <span>Add link or Apps</span>

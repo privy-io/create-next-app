@@ -7,7 +7,26 @@ export const GOOGLE_FONTS = [
   'Raleway',
   'Inter',
   'Nunito',
-  // ... (rest of fonts)
+  'Playfair Display',
+  'Ubuntu',
+  'Source Code Pro',
+  'Merriweather',
+  'PT Serif',
+  'Crimson Text',
+  'Fira Sans',
+  'Josefin Sans',
+  'Inconsolata',
+  'Libre Baskerville',
+  'Anek Devanagari',
+  'Alegreya',
+  'Cabin',
+  'Domine',
+  'Karla',
+  'Maitree',
+  'Nanum Gothic',
+  'Quattrocento',
+  'Teko',
+  'Zilla Slab'
 ] as const;
 
 // Font categories with their fonts
@@ -21,7 +40,34 @@ export const FONT_CATEGORIES: Record<string, string[]> = {
     'Poppins',
     'Inter',
     'Nunito',
-    'Ubuntu'
+    'Ubuntu',
+    'Raleway'
+  ],
+  'Serif & Traditional': [
+    'Playfair Display',
+    'Merriweather',
+    'PT Serif',
+    'Crimson Text',
+    'Libre Baskerville',
+    'Alegreya',
+    'Quattrocento',
+    'Zilla Slab'
+  ],
+  'Modern Sans': [
+    'Fira Sans',
+    'Josefin Sans',
+    'Cabin',
+    'Karla',
+    'Anek Devanagari',
+    'Teko'
+  ],
+  'Monospace & Technical': [
+    'Source Code Pro',
+    'Inconsolata'
+  ],
+  'International': [
+    'Maitree',
+    'Nanum Gothic'
   ],
   'Pixel & Retro': [
     'Press Start 2P',
@@ -56,7 +102,8 @@ export const FONT_CATEGORIES: Record<string, string[]> = {
     'Space Grotesk',
     'Plus Jakarta Sans',
     'Urbanist',
-    'Sora'
+    'Sora',
+    'Domine'
   ],
   'Handwriting': [
     'Homemade Apple',
