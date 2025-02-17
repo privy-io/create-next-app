@@ -251,6 +251,17 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
       return;
     }
 
+    // Add detailed logging before validation
+    console.log('About to validate items:', {
+      items: pageDetails.items?.map(item => ({
+        id: item.id,
+        presetId: item.presetId,
+        url: item.url,
+        title: item.title,
+        isPlugin: item.isPlugin
+      }))
+    });
+
     // Validate links before saving
     const validationErrors = validateLinks(pageDetails.items);
     if (Object.keys(validationErrors).length > 0) {
@@ -283,22 +294,34 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
         isPlugin: !!item.isPlugin,
       }));
 
+      // Add detailed logging for the actual save request
+      const savePayload = {
+        slug,
+        ...pageDetails,
+        items,
+      };
+      console.log('Sending save request with payload:', JSON.stringify(savePayload, null, 2));
+
       const response = await fetch("/api/page-store", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          slug,
-          ...pageDetails,
-          items,
-        }),
+        body: JSON.stringify(savePayload),
         credentials: "same-origin",
       });
 
+      const data = await response.json();
+      console.log('Save response:', data);
+
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to save changes");
+        console.error('Save error details:', data);
+        if (data.details) {
+          // Log the full validation error details
+          console.error('Validation error details:', data.details);
+          throw new Error(`Validation error: ${JSON.stringify(data.details, null, 2)}`);
+        }
+        throw new Error(data.error || "Failed to save changes");
       }
 
       toast({

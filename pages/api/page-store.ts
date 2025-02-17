@@ -25,6 +25,7 @@ const PageItemSchema = z
       .union([
         z.string().regex(urlRegex, "Invalid URL format"),
         z.string().email("Invalid email format"),
+        z.string().regex(/^mailto:.+/, "Invalid mailto format"),
         z.string().length(0),
         z.null(),
         z.undefined(),
@@ -39,9 +40,23 @@ const PageItemSchema = z
     (data) => {
       // Only validate URL if one is provided and it's not empty
       if (data.url && data.url.length > 0) {
+        console.log('Validating URL in schema:', {
+          url: data.url,
+          presetId: data.presetId,
+          isEmail: data.presetId === "email"
+        });
+
         if (data.presetId === "email") {
-          // For email type, check if it's a valid email or starts with mailto:
-          return data.url.includes("@") || data.url.startsWith("mailto:");
+          // For email type, accept:
+          // 1. Valid email addresses (contains @)
+          // 2. mailto: links
+          // 3. Empty strings
+          const isValid = data.url.includes("@") || 
+                         data.url.startsWith("mailto:") || 
+                         data.url.length === 0;
+          
+          console.log('Email validation result:', { url: data.url, isValid });
+          return isValid;
         } else if (!data.isPlugin) {
           // For non-plugin items with URLs, ensure it's a valid URL
           return data.url.match(urlRegex) !== null;

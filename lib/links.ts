@@ -182,66 +182,78 @@ export function validateLinkUrl(url: string, presetId: string): boolean {
   
   if (!url) return false;
 
-  // Replace known placeholders with valid values for validation
-  const validationUrl = url
-    .replace('[token]', '123456789') // Dummy token address for validation
-    .replace('[connectedToken]', '123456789'); // For backward compatibility
-
   // For email links
   if (presetId === "email") {
+    console.log('Validating email link:', { url, presetId });
+    
     // Allow both email addresses and mailto: URLs
-    if (validationUrl.startsWith("mailto:")) {
-      const email = validationUrl.replace("mailto:", "");
-      return email.includes("@") || email === ""; // Allow empty email after mailto:
+    if (url.startsWith("mailto:")) {
+      const email = url.replace("mailto:", "");
+      const isValid = email.includes("@") || email === ""; // Allow empty email after mailto:
+      console.log('Email validation (mailto):', { 
+        url, 
+        email, 
+        hasAt: email.includes("@"),
+        isEmpty: email === "",
+        isValid 
+      });
+      return isValid;
     }
-    return validationUrl.includes("@");
+    
+    const isValid = url.includes("@");
+    console.log('Email validation (direct):', { 
+      url, 
+      hasAt: url.includes("@"),
+      isValid 
+    });
+    return isValid;
   }
 
   // For telegram links
   if (presetId === "telegram" || presetId === "private-chat") {
-    const isValid = validationUrl.startsWith("https://t.me/");
-    console.log('Telegram validation:', { url: validationUrl, isValid });
+    const isValid = url.startsWith("https://t.me/");
+    console.log('Telegram validation:', { url, isValid });
     return isValid;
   }
 
   // For discord links
   if (presetId === "discord") {
-    const isValid = validationUrl.startsWith("https://discord.gg/") || validationUrl.startsWith("https://discord.com/");
-    console.log('Discord validation:', { url: validationUrl, isValid });
+    const isValid = url.startsWith("https://discord.gg/") || url.startsWith("https://discord.com/");
+    console.log('Discord validation:', { url, isValid });
     return isValid;
   }
 
   // For twitter links
   if (presetId === "twitter") {
-    const isValid = validationUrl.startsWith("https://twitter.com/") || validationUrl.startsWith("https://x.com/");
-    console.log('Twitter validation:', { url: validationUrl, isValid });
+    const isValid = url.startsWith("https://twitter.com/") || url.startsWith("https://x.com/");
+    console.log('Twitter validation:', { url, isValid });
     return isValid;
   }
 
   // For tiktok links
   if (presetId === "tiktok") {
-    const isValid = validationUrl.startsWith("https://tiktok.com/@") || validationUrl.startsWith("https://www.tiktok.com/@");
-    console.log('TikTok validation:', { url: validationUrl, isValid });
+    const isValid = url.startsWith("https://tiktok.com/@") || url.startsWith("https://www.tiktok.com/@");
+    console.log('TikTok validation:', { url, isValid });
     return isValid;
   }
 
   // For instagram links
   if (presetId === "instagram") {
-    const isValid = validationUrl.startsWith("https://instagram.com/") || validationUrl.startsWith("https://www.instagram.com/");
-    console.log('Instagram validation:', { url: validationUrl, isValid });
+    const isValid = url.startsWith("https://instagram.com/") || url.startsWith("https://www.instagram.com/");
+    console.log('Instagram validation:', { url, isValid });
     return isValid;
   }
 
   // For dexscreener links
   if (presetId === "dexscreener") {
-    const isValid = validationUrl.startsWith("https://dexscreener.com/");
-    console.log('DexScreener validation:', { url: validationUrl, isValid });
+    const isValid = url.startsWith("https://dexscreener.com/");
+    console.log('DexScreener validation:', { url, isValid });
     return isValid;
   }
 
   // For general links (terminal, filesystem, etc)
-  const isValid = urlRegex.test(validationUrl);
-  console.log('General URL validation:', { url: validationUrl, isValid });
+  const isValid = urlRegex.test(url);
+  console.log('General URL validation:', { url, isValid });
   return isValid;
 }
 
