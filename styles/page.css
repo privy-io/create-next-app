@@ -32,7 +32,7 @@
   --pf-link-min-height: 3.5rem;
 
   /* Theme variables with defaults */
-  --pf-background: #f9f9f9;
+  --pf-background: #ececec;
   --pf-text: #111;
   --pf-heading-size: 2rem;
   --pf-heading-weight: 300;
@@ -47,8 +47,8 @@
   --pf-link-hover: #111;
   --pf-link-transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, color 0.2s ease;
   --pf-link-transform-hover: translateY(-2px);
-  --pf-link-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  --pf-link-shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.1);
+  --pf-link-shadow: 1px 2px 0 0 rgba(0, 0, 0, 0.1);
+  --pf-link-shadow-hover: var(--pf-link-shadow);
 }
 
 .pf-page {

@@ -121,12 +121,10 @@ export default function EditPageContent({
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
+              onDragEnd={handleDragEnd}>
               <SortableContext
                 items={items.map((i) => i.id)}
-                strategy={verticalListSortingStrategy}
-              >
+                strategy={verticalListSortingStrategy}>
                 <div className="pf-links__grid">
                   {items
                     .filter((item) => item && item.id && item.presetId)
@@ -143,15 +141,12 @@ export default function EditPageContent({
                 </div>
               </SortableContext>
             </DndContext>
-            
+
             {/* Add Link Button */}
-            <div className="fixed bottom-2 left-2">
-              <Button
-                onClick={onAddLinkClick}
-                size="icon"
-              >
+            <div className="fixed bottom-2 left-1/2 -translate-x-1/2">
+              <Button onClick={onAddLinkClick}>
                 <Plus className="h-5 w-5" />
-                
+                <span>Add link</span>
               </Button>
             </div>
           </div>

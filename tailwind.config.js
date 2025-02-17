@@ -55,6 +55,9 @@ module.exports = {
         "marquee2": "marquee2 var(--marquee-duration, 10s) linear infinite",
         "rotate3d": "rotate3d 3s linear infinite",
       },
+      boxShadow: {
+        'brutalist': '3px 3px 0px -1px rgba(0,0,0,1)',
+      },
   		colors: {
   			'privy-navy': '#160B45',
   			'privy-light-blue': '#EFF1FD',

@@ -168,7 +168,6 @@ export function LinkSettingsDrawer({
                 {item.url && (
                   <Button
                     variant="outline"
-                    size="sm"
                     onClick={() => window.open(item.url, '_blank')}
                     className="whitespace-nowrap"
                   >

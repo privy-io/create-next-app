@@ -65,10 +65,10 @@ const DrawerContent = React.forwardRef<
         )}
         {...props}>
         <div className={cn(
-          "border border-primary h-full w-full grow p-5 flex flex-col rounded-md overflow-y-auto",
-          direction === "bottom" && "bg-yellow-50",
-          direction === "right" && "bg-blue-50", 
-          direction === "left" && "bg-green-50"
+          "border border-primary shadow-brutalist h-full w-full grow p-5 flex flex-col rounded-md overflow-y-auto",
+          direction === "bottom" && "bg-muted",
+          direction === "right" && "bg-muted", 
+          direction === "left" && "bg-muted"
         )}>
           {children}
         </div>
