@@ -60,7 +60,7 @@
   text-rendering: optimizeLegibility;
   min-height: 100vh;
   transition: box-shadow 0.2s ease;
-  padding: 3.333%;
+  padding: 4rem 2rem;
   display: flex;
   place-content: center;
   place-items: center;

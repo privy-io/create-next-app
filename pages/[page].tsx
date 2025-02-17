@@ -94,14 +94,14 @@ export default function Page({ pageData, slug, error }: PageProps) {
   return (
     <>
       {isOwner && (
-        <Button
-          onClick={() => router.push(`/edit/${slug}`)}
-          size="sm"
-          className="fixed top-2 right-2 z-50 gap-2"
-        >
-          <Pencil className="h-4 w-4" />
-          Edit Page
-        </Button>
+        <Link href={`/edit/${slug}`}>
+          <Button
+            className="fixed top-2 right-2 z-50 gap-2"
+          >
+            <Pencil className="h-4 w-4" />
+            Edit Page
+          </Button>
+        </Link>
       )}
       
       <Head>

@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 import { ChevronDown, Plus, Home } from "lucide-react";
 import Link from "next/link";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  Drawer,
+  DrawerContent,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 import {
   Tooltip,
   TooltipContent,
@@ -80,8 +80,8 @@ export default function AppMenu({
 
   return (
     <div className={className}>
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
+      <Drawer open={open} onOpenChange={setOpen} direction="left">
+        <DrawerTrigger asChild>
           <Button
             variant="outline"
             className={cn(
@@ -92,205 +92,211 @@ export default function AppMenu({
             {showLogoName && <span>Built with Page.fun</span>}
             <ChevronDown className="h-4 w-4" />
           </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-[300px] p-0" align="center">
-          <div className="p-4 pb-0">
-            <div>
-              <Link href="/" className="flex items-center gap-1.5">
-                <div className="font-bold">page.fun</div>
-                <div className="text-xs text-green-500">beta</div>
-              </Link>
-              <div className="text-sm text-gray-600">
-                Tokenize yourself, memes and AI bots.
-              </div>
-            </div>
-          </div>
-
-          <div className="p-4">
-            {ready && authenticated ? (
+        </DrawerTrigger>
+        <DrawerContent direction="left" className="w-[300px]">
+          <div className="h-full flex flex-col">
+            <div className="flex-1 overflow-y-auto">
               <div className="space-y-4">
                 <div>
-                  <div className="flex flex-col gap-2 mb-4">
+                  <Link href="/" className="flex items-center gap-1.5">
+                    <div className="font-bold">page.fun</div>
+                    <div className="text-xs text-green-500">beta</div>
+                  </Link>
+                  <div className="text-sm text-gray-600">
+                    Tokenize yourself, memes and AI bots.
+                  </div>
+                </div>
+
+                {ready && authenticated ? (
+                  <div className="space-y-4">
                     {userPages.some(page => 
                       router.asPath === `/${page.slug}` || 
                       router.asPath === `/edit/${page.slug}`
                     ) && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          const currentPage = userPages.find(page => 
-                            router.asPath === `/${page.slug}` || 
-                            router.asPath === `/edit/${page.slug}`
-                          );
-                          if (currentPage) {
-                            const isEditPage = router.asPath === `/edit/${currentPage.slug}`;
-                            router.push(isEditPage ? `/${currentPage.slug}` : `/edit/${currentPage.slug}`);
-                            setOpen(false);
-                          }
-                        }}
-                        className="w-full"
-                      >
-                        {(() => {
-                          const currentPage = userPages.find(page => 
-                            router.asPath === `/${page.slug}` || 
-                            router.asPath === `/edit/${page.slug}`
-                          );
-                          const isEditPage = router.asPath.startsWith('/edit/');
-                          return isEditPage 
-                            ? `Exit to ${currentPage?.title || 'page'}` 
-                            : `Edit ${currentPage?.title || 'page'}`;
-                        })()}
-                      </Button>
-                    )}
-                    <Button
-                      size="sm"
-                      onClick={() => {
-                        setShowCreateModal(true);
-                        setOpen(false);
-                      }}
-                      className="w-full"
-                    >
-                      <Plus className="h-4 w-4" />
-                      New Page
-                    </Button>
-                  </div>
-
-                  <div className="space-y-3 max-h-[300px] overflow-y-auto">
-                    {isLoadingPages ? (
-                      <div className="text-sm text-gray-600">
-                        Loading pages...
-                      </div>
-                    ) : userPages.length === 0 ? (
-                      <div className="text-sm text-gray-600">
-                        No pages created yet
-                      </div>
-                    ) : (
-                      userPages
-                        .sort((a, b) => {
-                          const isCurrentA = router.asPath === `/${a.slug}` || router.asPath === `/edit/${a.slug}`;
-                          const isCurrentB = router.asPath === `/${b.slug}` || router.asPath === `/edit/${b.slug}`;
-                          if (isCurrentA) return -1;
-                          if (isCurrentB) return 1;
-                          return a.title?.localeCompare(b.title || '') || 0;
-                        })
-                        .map((page) => {
-                          const isCurrentPage =
-                            router.asPath === `/${page.slug}` ||
-                            router.asPath === `/edit/${page.slug}`;
-
-                          return (
-                            <div
-                              key={page.slug}
-                              className={cn(
-                                "p-3 rounded-lg space-y-2",
-                                isCurrentPage
-                                  ? "bg-primary/10 ring-1 ring-primary/20"
-                                  : "bg-muted hover:bg-muted/80",
-                              )}
-                            >
-                              <div className="flex items-start justify-between gap-2">
-                                <div className="space-y-1 min-w-0">
-                                  <Link
-                                    href={`/${page.slug}`}
-                                    className={cn(
-                                      "block text-sm font-medium truncate",
-                                      isCurrentPage
-                                        ? "text-primary"
-                                        : "text-primary hover:text-primary/80",
-                                    )}
-                                  >
-                                    page.fun/{page.slug}
-                                  </Link>
-                                  {page.title && (
-                                    <p className="text-xs text-muted-foreground truncate">
-                                      {page.title}
-                                    </p>
+                      <div className="space-y-2">
+                        <div className="text-sm font-medium text-muted-foreground">Current</div>
+                        <div className="p-3 rounded-lg bg-primary/10 ring-1 ring-primary/20 space-y-2">
+                          {(() => {
+                            const currentPage = userPages.find(page => 
+                              router.asPath === `/${page.slug}` || 
+                              router.asPath === `/edit/${page.slug}`
+                            );
+                            const isEditPage = router.asPath === `/edit/${currentPage?.slug}`;
+                            const isLivePage = router.asPath === `/${currentPage?.slug}`;
+                            
+                            return (
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2">
+                                  {currentPage?.image && (
+                                    <div className="relative w-8 h-8 rounded-md overflow-hidden bg-muted shrink-0">
+                                      <img
+                                        src={currentPage.image}
+                                        alt={currentPage.title || 'Page image'}
+                                        className="object-cover w-full h-full"
+                                        onError={(e) => {
+                                          (e.target as HTMLImageElement).style.display = "none";
+                                        }}
+                                      />
+                                    </div>
                                   )}
+                                  <div className="text-sm font-medium truncate">
+                                    {currentPage?.title || 'Untitled Page'}
+                                  </div>
                                 </div>
-                                <Link
-                                  href={`/edit/${page.slug}`}
-                                  passHref
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                  <span className="truncate">page.fun/{currentPage?.slug}</span>
+                                  <span className="px-1.5 py-0.5 rounded-full bg-muted text-[10px] uppercase">
+                                    {isEditPage ? 'Editing' : isLivePage ? 'Live' : ''}
+                                  </span>
+                                </div>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    if (currentPage) {
+                                      router.push(isEditPage ? `/${currentPage.slug}` : `/edit/${currentPage.slug}`);
+                                      setOpen(false);
+                                    }
+                                  }}
+                                  className="w-full"
                                 >
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="shrink-0"
-                                  >
-                                    Edit
-                                  </Button>
-                                </Link>
+                                  {isEditPage ? 'View live page' : 'Edit page'}
+                                </Button>
                               </div>
-                            </div>
-                          );
-                        })
-                    )}
-                  </div>
-                </div>
-                {ready ? (
-                  authenticated ? (
-                    <>
-                      {solanaWallet ? (
-                        <div className="space-y-2">
-                          <div className="flex gap-2 items-center">
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <input
-                                    type="text"
-                                    value={solanaWallet.address}
-                                    disabled
-                                    className="flex-1 text-sm text-muted-foreground bg-muted px-2 py-1 rounded-md border"
-                                  />
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>Your wallet address is hidden to visitors and kept private</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={logout}
-                              className="shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-                            >
-                              Logout
-                            </Button>
-                          </div>
-                          {canRemoveAccount && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => unlinkWallet(solanaWallet.address)}
-                              className="w-full"
-                            >
-                              Disconnect Wallet
-                            </Button>
-                          )}
+                            );
+                          })()}
                         </div>
-                      ) : (
-                        <Button onClick={linkWallet} className="w-full">
-                          Connect Wallet
+                      </div>
+                    )}
+
+                    <div>
+                      <div className="flex flex-col gap-2 mb-4">
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            setShowCreateModal(true);
+                            setOpen(false);
+                          }}
+                          className="w-full"
+                        >
+                          <Plus className="h-4 w-4" />
+                          New Page
                         </Button>
-                      )}
-                    </>
-                  ) : (
-                    <Button onClick={login}>Sign In</Button>
-                  )
+                      </div>
+
+                      <div className="space-y-3">
+                        {isLoadingPages ? (
+                          <div className="text-sm text-gray-600">
+                            Loading pages...
+                          </div>
+                        ) : userPages.length === 0 ? (
+                          <div className="text-sm text-gray-600">
+                            No pages created yet
+                          </div>
+                        ) : (
+                          userPages
+                            .filter(page => 
+                              !(router.asPath === `/${page.slug}` || router.asPath === `/edit/${page.slug}`)
+                            )
+                            .sort((a, b) => a.title?.localeCompare(b.title || '') || 0)
+                            .map((page) => (
+                              <div
+                                key={page.slug}
+                                className="p-3 rounded-lg space-y-2 bg-muted hover:bg-muted/80"
+                              >
+                                <div className="flex items-start justify-between gap-2">
+                                  <div className="space-y-1 min-w-0">
+                                    <Link
+                                      href={`/${page.slug}`}
+                                      className="block text-sm font-medium truncate text-primary hover:text-primary/80"
+                                    >
+                                      page.fun/{page.slug}
+                                    </Link>
+                                    {page.title && (
+                                      <p className="text-xs text-muted-foreground truncate">
+                                        {page.title}
+                                      </p>
+                                    )}
+                                  </div>
+                                  <Link
+                                    href={`/edit/${page.slug}`}
+                                    passHref
+                                  >
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="shrink-0"
+                                    >
+                                      Edit
+                                    </Button>
+                                  </Link>
+                                </div>
+                              </div>
+                            ))
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ) : ready ? (
+                  <Button onClick={login} className="w-full">
+                    Sign In
+                  </Button>
                 ) : (
-                  <div className="text-sm text-muted-foreground">Loading...</div>
+                  <div className="text-sm text-gray-600">Loading...</div>
                 )}
               </div>
-            ) : ready ? (
-                <Button onClick={login} className="w-full">
-                  Sign In
-                </Button>
-            ) : (
-              <div className="text-sm text-gray-600">Loading...</div>
+            </div>
+
+            {ready && authenticated && (
+              <div className="border-t border-primary pt-3 bg-green-50">
+                {solanaWallet ? (
+                  <div className="space-y-2">
+                    <div className="flex gap-2 items-center">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <input
+                              type="text"
+                              value={solanaWallet.address}
+                              disabled
+                              className="flex-1 text-sm text-muted-foreground bg-muted px-2 py-1 rounded-md border"
+                            />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Your wallet address is hidden to visitors and kept private</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={logout}
+                        className="shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      >
+                        Logout
+                      </Button>
+                    </div>
+                    {canRemoveAccount && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => unlinkWallet(solanaWallet.address)}
+                        className="w-full"
+                      >
+                        Disconnect Wallet
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  <Button onClick={linkWallet} className="w-full">
+                    Connect Wallet
+                  </Button>
+                )}
+              </div>
             )}
           </div>
-        </PopoverContent>
-      </Popover>
+        </DrawerContent>
+      </Drawer>
 
       {showCreateModal && solanaWallet && (
         <CreatePageModal

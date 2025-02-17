@@ -10,7 +10,7 @@ import "../styles/page.css";
 function AppContent({ Component, pageProps }: AppProps) {
   return (
     <GlobalProvider>
-      <div className="fixed top-2 left-2 z-50">
+      <div className="fixed top-2 left-2 z-20">
         <AppMenu />
       </div>
       <Component {...pageProps} />

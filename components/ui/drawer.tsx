@@ -6,7 +6,7 @@ import { Drawer as DrawerPrimitive } from "vaul";
 import { cn } from "@/lib/utils";
 
 type DrawerProps = React.ComponentProps<typeof DrawerPrimitive.Root> & {
-  direction?: "bottom" | "right";
+  direction?: "bottom" | "right" | "left";
 };
 
 const Drawer = ({
@@ -34,14 +34,14 @@ const DrawerOverlay = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DrawerPrimitive.Overlay
     ref={ref}
-    className={cn("fixed inset-0 z-40 bg-black/50", className)}
+    className={cn("fixed inset-0 z-40 bg-transparent", className)}
     {...props}
   />
 ));
 DrawerOverlay.displayName = DrawerPrimitive.Overlay.displayName;
 
 interface DrawerContentProps extends React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content> {
-  direction?: "bottom" | "right";
+  direction?: "bottom" | "right" | "left";
 }
 
 const DrawerContent = React.forwardRef<
@@ -50,7 +50,8 @@ const DrawerContent = React.forwardRef<
 >(({ className, children, direction = "bottom", ...props }, ref) => {
   const styles = {
     bottom: "fixed inset-x-2 bottom-2 flex h-auto outline-none flex-col z-50",
-    right: "fixed inset-y-2 right-2 z-50 top-2 bottom-2 outline-none w-[300px] flex"
+    right: "fixed inset-y-2 right-2 z-50 top-2 bottom-2 outline-none w-[380px] flex data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right duration-300",
+    left: "fixed inset-y-2 left-2 z-50 top-2 bottom-2 outline-none w-[380px] flex data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left duration-300"
   };
 
   return (
@@ -62,9 +63,13 @@ const DrawerContent = React.forwardRef<
           styles[direction],
           className
         )}
-        style={direction === "right" ? { '--initial-transform': 'calc(100% + 12px)' } as React.CSSProperties : undefined}
         {...props}>
-        <div className="bg-background border border-primary h-full w-full grow p-5 flex flex-col rounded-md">
+        <div className={cn(
+          "border border-primary h-full w-full grow p-5 flex flex-col rounded-md overflow-y-auto",
+          direction === "bottom" && "bg-yellow-50",
+          direction === "right" && "bg-blue-50", 
+          direction === "left" && "bg-green-50"
+        )}>
           {children}
         </div>
         {direction === "bottom" && (

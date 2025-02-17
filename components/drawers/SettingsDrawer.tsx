@@ -26,8 +26,8 @@ export function SettingsDrawer({
 }: SettingsDrawerProps) {
   return (
     <Drawer open={open} onOpenChange={onOpenChange} direction="right">
-      <DrawerContent direction="right" className="h-full">
-        <Tabs defaultValue="general" className="h-full">
+      <DrawerContent direction="right">
+        <Tabs defaultValue="general">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="design">Design</TabsTrigger>
