@@ -56,7 +56,8 @@ module.exports = {
         "rotate3d": "rotate3d 3s linear infinite",
       },
       boxShadow: {
-        'brutalist': '3px 3px 0px -1px rgba(0,0,0,1)',
+        'brutalist': '3px 3px 0px 0 rgba(0,0,0,1)',
+		'brutalist-sm': '1px 1px 0px 0 rgba(0, 0, 0, .1)',
       },
   		colors: {
   			'privy-navy': '#160B45',

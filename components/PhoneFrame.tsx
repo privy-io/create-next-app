@@ -18,7 +18,7 @@ export function PhoneFrame({ color = 'white' }: PhoneFrameProps) {
   const colorStyle = phoneColors[color];
   
   return (
-    <div className={`w-[280px] h-[500px] relative p-5 border-[1.5px] ${colorStyle.border} rounded-[20px] ${colorStyle.bg} shadow-2xl pixelated shrink-0`}>
+    <div className={`w-[280px]  shadow-brutalist h-[500px] relative p-5 border-[1.5px] ${colorStyle.border} rounded-[20px] ${colorStyle.bg} shadow-2xl pixelated shrink-0`}>
       {/* Phone screen */}
       <div className={`w-full h-full bg-zinc-200 border-[1.5px] ${colorStyle.border} rounded-[10px] overflow-hidden relative`}>
         {/* Screen content - pixelated effect */}
@@ -35,9 +35,7 @@ export function PhoneFrame({ color = 'white' }: PhoneFrameProps) {
 
       </div>
 
-      <div className={`w-[280px] h-[500px] -z-10 absolute -bottom-[8px] -right-[4px] p-5 border-[1.5px] ${colorStyle.border} rounded-[20px] ${colorStyle.screen} shadow-2xl pixelated shrink-0`}>
-
-      </div>
+    
     </div>
   );
 } 

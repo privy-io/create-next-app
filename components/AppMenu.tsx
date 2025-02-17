@@ -93,7 +93,7 @@ export default function AppMenu({
             <ChevronDown className="h-4 w-4" />
           </Button>
         </DrawerTrigger>
-        <DrawerContent direction="left" className="w-[300px]">
+        <DrawerContent direction="left">
           <div className="h-full flex flex-col">
             <div className="flex-1 overflow-y-auto">
               <div className="space-y-4">

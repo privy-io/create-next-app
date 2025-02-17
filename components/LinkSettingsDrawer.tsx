@@ -29,7 +29,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 interface LinkSettingsDrawerProps {
   item?: PageItem;
@@ -52,6 +52,23 @@ export function LinkSettingsDrawer({
   onValidationChange,
   onBack,
 }: LinkSettingsDrawerProps) {
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const titleInputRef = useRef<HTMLInputElement>(null);
+  
+  useEffect(() => {
+    // Focus the title input when the component mounts
+    if (titleInputRef.current) {
+      titleInputRef.current.focus();
+    }
+  }, []);
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !error) {
+      e.preventDefault();
+      closeButtonRef.current?.click();
+    }
+  };
+
   // Validate URL whenever it changes
   useEffect(() => {
     if (!item || !onValidationChange) return;
@@ -148,9 +165,11 @@ export function LinkSettingsDrawer({
             <label className="block text-sm text-gray-600">Title</label>
             <Input
               type="text"
+              ref={titleInputRef}
               placeholder={preset.title}
               value={item.title || ""}
               onChange={(e) => handleTitleChange(e.target.value)}
+              onKeyDown={handleKeyDown}
             />
           </div>
 
@@ -163,6 +182,7 @@ export function LinkSettingsDrawer({
                   placeholder={item.presetId === 'email' ? "Enter email address" : `Enter ${preset.title} URL`}
                   value={item.url || ''}
                   onChange={(e) => handleUrlChange(e.target.value)}
+                  onKeyDown={handleKeyDown}
                   className={`${error ? "border-red-500 focus:ring-red-500" : ""} flex-1`}
                 />
                 {item.url && (
@@ -217,6 +237,7 @@ export function LinkSettingsDrawer({
                     min="1"
                     value={item.requiredTokens?.[0] || "1"}
                     onChange={(e) => handleRequiredTokensChange(e.target.value)}
+                    onKeyDown={handleKeyDown}
                     className="w-24"
                   />
                   {tokenSymbol && (
@@ -231,15 +252,6 @@ export function LinkSettingsDrawer({
         )}
 
         <div className="flex justify-between">
-          {error ? (
-            <Button onClick={() => {}} variant="outline" className="text-red-500 hover:bg-red-50">
-              Fix Error to Continue
-            </Button>
-          ) : (
-            <DrawerClose asChild>
-              <Button>Done</Button>
-            </DrawerClose>
-          )}
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button
@@ -266,6 +278,15 @@ export function LinkSettingsDrawer({
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+          {error ? (
+            <Button onClick={() => {}} variant="outline" className="text-red-500 hover:bg-red-50">
+              Fix Error to Continue
+            </Button>
+          ) : (
+            <DrawerClose asChild>
+              <Button ref={closeButtonRef}>Done</Button>
+            </DrawerClose>
+          )}
         </div>
       </div>
     </div>

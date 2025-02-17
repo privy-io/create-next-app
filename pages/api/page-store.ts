@@ -117,7 +117,12 @@ const PageDataSchema = z.object({
   image: z.string().regex(urlRegex).nullable().optional(),
   items: z.array(PageItemSchema).optional(),
   designStyle: z.enum(["default", "minimal", "modern"]).optional(),
-  fonts: FontsSchema,
+  fonts: z.object({
+    global: z.string().optional(),
+    heading: z.string().optional(),
+    paragraph: z.string().optional(),
+    links: z.string().optional(),
+  }).optional(),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
 });
@@ -579,12 +584,14 @@ export default async function handler(
   // PATCH: Update existing page
   if (req.method === "PATCH") {
     try {
-      const { slug, connectedToken, title, description, image, items } = req.body;
+      const { slug, connectedToken, title, description, image, items, designStyle, fonts } = req.body;
 
       console.log('PATCH Request Body:', {
         slug,
         hasItems: !!items,
         itemsLength: items?.length,
+        designStyle,
+        fonts,
         itemsStructure: items?.map((item: PageItem) => ({
           id: item.id,
           presetId: item.presetId,
@@ -601,6 +608,8 @@ export default async function handler(
       console.log('Current Redis Data:', {
         hasCurrentPage: !!currentPage,
         currentItemsLength: currentPage?.items?.length,
+        currentDesignStyle: currentPage?.designStyle,
+        currentFonts: currentPage?.fonts,
         currentItemsStructure: currentPage?.items?.map((item: PageItem) => ({
           id: item.id,
           presetId: item.presetId,
@@ -632,12 +641,16 @@ export default async function handler(
         ...(description !== undefined && { description }),
         ...(image !== undefined && { image }),
         ...(items !== undefined && { items }),
+        ...(designStyle !== undefined && { designStyle }),
+        ...(fonts !== undefined && { fonts }),
         updatedAt: new Date().toISOString(),
       };
 
       console.log('Pre-validation Data:', {
         hasItems: !!updateData.items,
         itemsLength: updateData.items?.length,
+        designStyle: updateData.designStyle,
+        fonts: updateData.fonts,
         itemsStructure: updateData.items?.map((item: PageItem) => ({
           id: item.id,
           presetId: item.presetId,
@@ -651,6 +664,8 @@ export default async function handler(
       console.log('Validation Success:', {
         hasItems: !!validatedData.items,
         itemsLength: validatedData.items?.length,
+        designStyle: validatedData.designStyle,
+        fonts: validatedData.fonts,
         itemsStructure: validatedData.items?.map((item: PageItem) => ({
           id: item.id,
           presetId: item.presetId,

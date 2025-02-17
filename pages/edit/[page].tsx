@@ -164,16 +164,20 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
   // Initialize state after component mounts to prevent hydration mismatch
   useEffect(() => {
     if (pageData) {
+      const currentTheme = pageData.designStyle || 'default';
+      const themePreset = themes[currentTheme];
+      
       const fonts = {
-        global: pageData.fonts?.global || undefined,
-        heading: pageData.fonts?.heading || undefined,
-        paragraph: pageData.fonts?.paragraph || undefined,
-        links: pageData.fonts?.links || undefined,
+        global: pageData.fonts?.global || themePreset.fonts.global || undefined,
+        heading: pageData.fonts?.heading || themePreset.fonts.heading || undefined,
+        paragraph: pageData.fonts?.paragraph || themePreset.fonts.paragraph || undefined,
+        links: pageData.fonts?.links || themePreset.fonts.links || undefined,
       };
 
       const initialPageData: PageData = {
         ...pageData,
-        fonts,
+        designStyle: currentTheme,
+        fonts: fonts,
       };
 
       setPageDetails(initialPageData);
@@ -184,8 +188,10 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
   // Update preview data whenever pageDetails changes
   useEffect(() => {
     if (pageDetails) {
+      const currentTheme = pageDetails.designStyle || 'default';
       setPreviewData({
         ...pageDetails,
+        designStyle: currentTheme,
         fonts: {
           ...pageDetails.fonts,
         },
@@ -321,9 +327,14 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
         title: pageDetails.title,
         description: pageDetails.description,
         image: pageDetails.image,
-        designStyle: pageDetails.designStyle,
-        fonts: pageDetails.fonts,
-        items: items?.filter((item) => item.presetId), // Only include items with a valid presetId
+        designStyle: pageDetails.designStyle || 'default',
+        fonts: {
+          global: pageDetails.fonts?.global || themes[pageDetails.designStyle || 'default'].fonts.global,
+          heading: pageDetails.fonts?.heading || themes[pageDetails.designStyle || 'default'].fonts.heading,
+          paragraph: pageDetails.fonts?.paragraph || themes[pageDetails.designStyle || 'default'].fonts.paragraph,
+          links: pageDetails.fonts?.links || themes[pageDetails.designStyle || 'default'].fonts.links,
+        },
+        items: items?.filter((item) => item.presetId),
       };
       console.log(
         "Sending save request with payload:",
@@ -419,7 +430,22 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
           href="https://fonts.gstatic.com"
           crossOrigin="anonymous"
         />
-        {/* Create a single link element for all fonts */}
+        {/* Load theme fonts */}
+        {pageDetails?.fonts && (
+          <link
+            href={`https://fonts.googleapis.com/css2?family=${[
+              pageDetails.fonts.global,
+              pageDetails.fonts.heading,
+              pageDetails.fonts.paragraph,
+              pageDetails.fonts.links,
+            ]
+              .filter(Boolean)
+              .map((font) => font?.replace(" ", "+"))
+              .join("&family=")}&display=swap`}
+            rel="stylesheet"
+          />
+        )}
+        {/* Load all available fonts for the font selector */}
         {GOOGLE_FONTS.length > 0 && (
           <link
             href={`https://fonts.googleapis.com/css2?family=${GOOGLE_FONTS.map(

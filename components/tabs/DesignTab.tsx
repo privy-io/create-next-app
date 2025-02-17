@@ -19,16 +19,19 @@ interface DesignTabProps {
 export function DesignTab({ pageDetails, setPageDetails }: DesignTabProps) {
   const handleThemeChange = (value: ThemeStyle) => {
     const themePreset = themes[value];
-    setPageDetails((prev) => ({
-      ...prev!,
-      designStyle: value,
-      fonts: {
-        global: themePreset.fonts.global || 'system',
-        heading: themePreset.fonts.heading || 'inherit',
-        paragraph: themePreset.fonts.paragraph || 'inherit',
-        links: themePreset.fonts.links || 'inherit'
-      }
-    }));
+    setPageDetails((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        designStyle: value,
+        fonts: {
+          global: themePreset.fonts.global || prev.fonts?.global || 'system',
+          heading: themePreset.fonts.heading || prev.fonts?.heading || 'inherit',
+          paragraph: themePreset.fonts.paragraph || prev.fonts?.paragraph || 'inherit',
+          links: themePreset.fonts.links || prev.fonts?.links || 'inherit'
+        }
+      };
+    });
   };
 
   return (

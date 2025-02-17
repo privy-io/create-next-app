@@ -18,7 +18,7 @@ export function ActionBar({
   return (
     <>
       {/* Top bar with save controls */}
-      <div className="fixed top-2 right-2 z-40">
+      <div className="fixed top-2 right-2 z-50">
         <div className="flex items-center gap-3">
           <Button
             variant="outline"
