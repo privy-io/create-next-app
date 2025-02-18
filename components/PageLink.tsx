@@ -46,6 +46,25 @@ interface PageLinkProps {
   isPreview?: boolean;
 }
 
+// Helper to track link clicks
+async function trackClick(slug: string, itemId: string, isGated: boolean) {
+  try {
+    await fetch('/api/analytics/track-click', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        slug,
+        itemId,
+        isGated,
+      }),
+    });
+  } catch (error) {
+    console.error('Failed to track click:', error);
+  }
+}
+
 export default function PageLink({
   item,
   pageData,
@@ -73,11 +92,20 @@ export default function PageLink({
     }
   };
 
-  const handleClick = (e: React.MouseEvent) => {
+  const handleClick = async (e: React.MouseEvent) => {
     if (isPreview && onLinkClick) {
       e.preventDefault();
       onLinkClick(item.id);
       return;
+    }
+
+    // Get the page slug from the URL
+    const slug = window.location.pathname.split('/').pop();
+    if (!slug) return;
+
+    // Only track non-gated links immediately
+    if (!item.tokenGated) {
+      await trackClick(slug, item.id, false);
     }
 
     if (item.tokenGated && openDrawer !== item.id) {
@@ -181,7 +209,17 @@ export default function PageLink({
                     Access Verified
                   </div>
                   {tokenGatedUrls.get(item.id) ? (
-                    <Button asChild className="w-full">
+                    <Button 
+                      asChild 
+                      className="w-full"
+                      onClick={async () => {
+                        // Track click when user clicks the actual gated link
+                        const slug = window.location.pathname.split('/').pop();
+                        if (slug) {
+                          await trackClick(slug, item.id, true);
+                        }
+                      }}
+                    >
                       <a
                         href={tokenGatedUrls.get(item.id)}
                         target="_blank"

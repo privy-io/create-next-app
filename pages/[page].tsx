@@ -1,5 +1,6 @@
 import { GetServerSideProps } from "next";
 import Head from "next/head";
+import { useEffect } from "react";
 import PageContent from "../components/PageContent";
 import { PageData, PageItem } from "@/types";
 import { themes } from "@/lib/themes";
@@ -29,6 +30,27 @@ const redis = new Redis({
 
 const getRedisKey = (slug: string) => `page:${slug}`;
 const getWalletPagesKey = (walletAddress: string) => `wallet:${walletAddress.toLowerCase()}:pages`;
+
+// Helper to generate a visitor ID
+function generateVisitorId() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
+// Helper to get or create visitor ID
+function getVisitorId() {
+  if (typeof window === 'undefined') return null;
+  
+  let visitorId = localStorage.getItem('visitorId');
+  if (!visitorId) {
+    visitorId = generateVisitorId();
+    localStorage.setItem('visitorId', visitorId);
+  }
+  return visitorId;
+}
 
 export const getServerSideProps: GetServerSideProps<PageProps> = async ({
   params,
@@ -132,6 +154,31 @@ export default function Page({ pageData, slug, error, isOwner }: PageProps) {
   const router = useRouter();
   const currentTheme = pageData.designStyle || 'default';
   const themeStyle = themes[currentTheme].colors;
+
+  // Track page visit
+  useEffect(() => {
+    const trackVisit = async () => {
+      const visitorId = getVisitorId();
+      if (!visitorId) return;
+
+      try {
+        await fetch('/api/analytics/track-visit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            slug,
+            visitorId,
+          }),
+        });
+      } catch (error) {
+        console.error('Failed to track visit:', error);
+      }
+    };
+
+    trackVisit();
+  }, [slug]); // Only run when slug changes
 
   // Replace placeholders in URLs
   const processedPageData: PageData = {

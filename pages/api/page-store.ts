@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { Redis } from "@upstash/redis";
 import { PrivyClient } from "@privy-io/server-auth";
 import { z } from "zod";
+import { validateLinkUrl } from "../../lib/links";
 
 // Validation schemas
 const urlPattern = /^[a-zA-Z0-9-]+$/;
@@ -60,90 +61,27 @@ const PageItemSchema = z
     presetId: z.string().min(1),
     title: z.string().optional(),
     url: z
-      .union([
-        z.string().regex(urlRegex, "Invalid URL format"),
-        z.string().email("Invalid email format"),
-        z.string().regex(/^mailto:.+/, "Invalid mailto format"),
-        z.string().regex(/^https:\/\/t\.me\//, "Invalid Telegram URL"),
-        z.string().regex(/^https:\/\/discord\.(gg|com)\//, "Invalid Discord URL"),
-        z.string().regex(/^https:\/\/(twitter\.com|x\.com)\//, "Invalid Twitter URL"),
-        z.string().regex(/^https:\/\/(www\.)?tiktok\.com\/@/, "Invalid TikTok URL"),
-        z.string().regex(/^https:\/\/(www\.)?instagram\.com\//, "Invalid Instagram URL"),
-        z.string().regex(/^https:\/\/dexscreener\.com\//, "Invalid DexScreener URL"),
-        z.string().length(0),
-        z.null(),
-        z.undefined(),
-      ])
-      .optional(),
+      .string()
+      .optional()
+      .nullable()
+      .superRefine((url, ctx) => {
+        if (!url || url.length === 0) return true;
+        const presetId = (ctx as any).path[0].parent.presetId;
+        if (!validateLinkUrl(url, presetId)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Invalid URL format for this item type",
+            path: ["url"],
+          });
+          return false;
+        }
+        return true;
+      }),
     order: z.number().int().min(0),
     isPlugin: z.boolean().optional(),
     tokenGated: z.boolean().optional(),
     requiredTokens: z.array(z.string()).optional(),
-  })
-  .refine(
-    (data) => {
-      // Only validate URL if one is provided and it's not empty
-      if (data.url && data.url.length > 0) {
-        console.log('Validating URL in schema:', {
-          url: data.url,
-          presetId: data.presetId,
-        });
-
-        // For email type
-        if (data.presetId === "email") {
-          const isValid = data.url.includes("@") || 
-                         data.url.startsWith("mailto:") || 
-                         data.url.length === 0;
-          console.log('Email validation result:', { url: data.url, isValid });
-          return isValid;
-        }
-
-        // For telegram links
-        if (data.presetId === "telegram" || data.presetId === "private-chat") {
-          return data.url.startsWith("https://t.me/");
-        }
-
-        // For discord links
-        if (data.presetId === "discord") {
-          return data.url.startsWith("https://discord.gg/") || 
-                 data.url.startsWith("https://discord.com/");
-        }
-
-        // For twitter links
-        if (data.presetId === "twitter") {
-          return data.url.startsWith("https://twitter.com/") || 
-                 data.url.startsWith("https://x.com/");
-        }
-
-        // For tiktok links
-        if (data.presetId === "tiktok") {
-          return data.url.startsWith("https://tiktok.com/@") || 
-                 data.url.startsWith("https://www.tiktok.com/@");
-        }
-
-        // For instagram links
-        if (data.presetId === "instagram") {
-          return data.url.startsWith("https://instagram.com/") || 
-                 data.url.startsWith("https://www.instagram.com/");
-        }
-
-        // For dexscreener links
-        if (data.presetId === "dexscreener") {
-          return data.url.startsWith("https://dexscreener.com/");
-        }
-
-        // For general links (terminal, filesystem, etc)
-        if (!data.isPlugin) {
-          return data.url.match(urlRegex) !== null;
-        }
-      }
-      return true;
-    },
-    {
-      message: "Invalid URL format for this item type",
-      path: ["url"],
-    },
-  );
+  });
 
 const PageDataSchema = z.object({
   walletAddress: z.string().min(1),
