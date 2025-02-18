@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
+import { ToastAction } from "@/components/ui/toast";
 import { isSolanaWallet } from "@/utils/wallet";
 import { GOOGLE_FONTS } from "@/lib/fonts";
 import { PageData, PageItem } from "@/types";
@@ -386,6 +387,11 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
       toast({
         title: "Changes saved",
         description: "Your page has been updated successfully.",
+        action: (
+          <ToastAction altText="View page" onClick={() => router.push(`/${slug}`)}>
+            Go to page
+          </ToastAction>
+        ),
       });
     } catch (error) {
       console.error("Error saving page:", error);

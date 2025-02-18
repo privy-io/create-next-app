@@ -90,7 +90,7 @@
   font-size: var(--pf-title-size);
   font-weight: var(--pf-title-weight);
   margin-top: 0;
-  margin-bottom: 1.5rem;
+  margin-bottom: .5rem;
   font-family: var(--pf-font-family-heading);
   color: var(--pf-text);
 }
