@@ -90,7 +90,7 @@ export function LinkSettingsDrawer({
   const preset = LINK_PRESETS[item.presetId];
   if (!preset) return null;
 
-  const Icon = preset.icon.classic;
+  const Icon = preset.icon;
 
   const handleTitleChange = (value: string) => {
     setPageDetails((prev) => {

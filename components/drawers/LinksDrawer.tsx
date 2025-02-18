@@ -98,7 +98,7 @@ export function LinksDrawer({
         <div className="py-3">
           <div className="grid gap-4 grid-cols-2 sm:grid-cols-3">
             {Object.entries(LINK_PRESETS).map(([id, preset]) => {
-              const Icon = preset.icon.classic;
+              const Icon = preset.icon;
               return (
                 <Button
                   key={id}

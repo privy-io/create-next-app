@@ -2,20 +2,7 @@ import { useState } from "react";
 import { PageData, PageItem } from "@/types";
 import EditPageLink from "./EditPageLink";
 import { Button } from "@/components/ui/button";
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
+import { DragDropProvider } from "@dnd-kit/react";
 import { Plus } from "lucide-react";
 
 interface EditPageContentProps {
@@ -25,6 +12,7 @@ interface EditPageContentProps {
   onLinkClick?: (itemId: string) => void;
   onTitleClick?: () => void;
   onDescriptionClick?: () => void;
+  onImageClick?: () => void;
   onItemsReorder?: (items: PageItem[]) => void;
   validationErrors?: { [key: string]: string };
   onAddLinkClick?: () => void;
@@ -37,39 +25,40 @@ export default function EditPageContent({
   onLinkClick,
   onTitleClick,
   onDescriptionClick,
+  onImageClick,
   onItemsReorder,
   validationErrors = {},
   onAddLinkClick,
 }: EditPageContentProps) {
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
   const handleDragEnd = (event: any) => {
-    const { active, over } = event;
+    const { operation, canceled } = event;
+    const { source, target } = operation;
 
-    if (active.id !== over?.id) {
-      const oldIndex = items.findIndex((item) => item.id === active.id);
-      const newIndex = items.findIndex((item) => item.id === over?.id);
+    if (canceled) {
+      return;
+    }
 
-      const newItems = arrayMove(items, oldIndex, newIndex).map(
-        (item, index) => ({
-          ...item,
-          order: index,
-        })
-      );
+    if (source && target && source.id !== target.id) {
+      const oldIndex = items.findIndex((item) => item.id === source.id);
+      const newIndex = items.findIndex((item) => item.id === target.id);
 
-      onItemsReorder?.(newItems);
+      const newItems = [...items];
+      const [movedItem] = newItems.splice(oldIndex, 1);
+      newItems.splice(newIndex, 0, movedItem);
+
+      const reorderedItems = newItems.map((item, index) => ({
+        ...item,
+        order: index,
+      }));
+
+      onItemsReorder?.(reorderedItems);
     }
   };
 
   return (
     <div>
       <div
-        className="pf-page"
+        className="pf-page !pb-[100px]"
         style={
           {
             "--pf-font-family-global": pageData.fonts?.global
@@ -93,9 +82,10 @@ export default function EditPageContent({
             <div className="pf-page__header-inner">
               {pageData?.image && (
                 <img
-                  className="pf-page__image"
+                  className="pf-page__image cursor-pointer hover:opacity-80"
                   src={pageData.image}
                   alt={pageData.title}
+                  onClick={onImageClick}
                   onError={(e) => {
                     (e.target as HTMLImageElement).style.display = "none";
                   }}
@@ -119,39 +109,37 @@ export default function EditPageContent({
           {/* Social Links & Plugins */}
           {items && items.length > 0 && (
             <div className="pf-links">
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={handleDragEnd}>
-                <SortableContext
-                  items={items.map((i) => i.id)}
-                  strategy={verticalListSortingStrategy}>
-                  <div className="pf-links__grid">
-                    {items
-                      .filter((item) => item && item.id && item.presetId)
-                      .sort((a, b) => a.order - b.order)
-                      .map((item) => (
-                        <EditPageLink
-                          key={item.id}
-                          item={item}
-                          pageData={pageData}
-                          onLinkClick={onLinkClick}
-                          error={validationErrors[item.id]}
-                        />
-                      ))}
-                  </div>
-                </SortableContext>
-              </DndContext>
+              <DragDropProvider onDragEnd={handleDragEnd}>
+                <div className="pf-links__grid">
+                  {items
+                    .filter((item): item is PageItem =>
+                      Boolean(item && item.id && item.presetId)
+                    )
+                    .sort((a, b) => a.order - b.order)
+                    .map((item, index) => (
+                      <EditPageLink
+                        key={item.id}
+                        item={item}
+                        index={index}
+                        pageData={pageData}
+                        onLinkClick={onLinkClick}
+                        error={validationErrors[item.id]}
+                      />
+                    ))}
+                </div>
+              </DragDropProvider>
             </div>
           )}
         </div>
       </div>
       {/* Add Link Button */}
-      <div className="fixed bottom-2 left-1/2 -translate-x-1/2">
-        <Button onClick={onAddLinkClick}>
-          <Plus className="h-5 w-5" />
-          <span>Add link or Apps</span>
-        </Button>
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2">
+        <div className="animate-slide-up">
+          <Button variant={"secondary"} size={"lg"} onClick={onAddLinkClick}>
+            <Plus className="h-5 w-5" />
+            <span>Add link or Apps</span>
+          </Button>
+        </div>
       </div>
     </div>
   );

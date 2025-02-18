@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import TokenSelector from "@/components/TokenSelector";
 import { PageData } from "@/types";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -21,11 +21,13 @@ interface GeneralSettingsTabProps {
   setPageDetails: (
     data: PageData | ((prev: PageData | null) => PageData | null)
   ) => void;
+  focusField?: 'title' | 'description' | 'image';
 }
 
 export function GeneralSettingsTab({
   pageDetails,
   setPageDetails,
+  focusField,
 }: GeneralSettingsTabProps) {
   const router = useRouter();
   const { toast } = useToast();
@@ -33,6 +35,24 @@ export function GeneralSettingsTab({
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const titleInputRef = useRef<HTMLInputElement>(null);
+  const descriptionInputRef = useRef<HTMLTextAreaElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+
+  // Focus the correct field when the component mounts
+  useEffect(() => {
+    if (!focusField) return;
+
+    setTimeout(() => {
+      if (focusField === 'title' && titleInputRef.current) {
+        titleInputRef.current.focus();
+      } else if (focusField === 'description' && descriptionInputRef.current) {
+        descriptionInputRef.current.focus();
+      } else if (focusField === 'image' && imageInputRef.current) {
+        imageInputRef.current.focus();
+      }
+    }, 100); // Small delay to ensure drawer is fully open
+  }, [focusField]);
 
   const handleDelete = async () => {
     if (!pageDetails || deleteConfirmation !== pageDetails.slug) return;
@@ -81,7 +101,7 @@ export function GeneralSettingsTab({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-6">
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Solana Token
@@ -165,6 +185,7 @@ export function GeneralSettingsTab({
           </label>
           <div className="flex gap-2">
             <Input
+              ref={imageInputRef}
               type="text"
               value={pageDetails?.image || ""}
               onChange={(e) =>
@@ -200,6 +221,7 @@ export function GeneralSettingsTab({
           Title
         </label>
         <Input
+          ref={titleInputRef}
           type="text"
           value={pageDetails?.title || ""}
           onChange={(e) =>
@@ -221,6 +243,7 @@ export function GeneralSettingsTab({
           Description
         </label>
         <Textarea
+          ref={descriptionInputRef}
           value={pageDetails?.description || ""}
           onChange={(e) =>
             setPageDetails((prev) =>

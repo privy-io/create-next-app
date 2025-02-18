@@ -1,6 +1,3 @@
-import { LinkType } from '@/lib/links';
-import { ThemeStyle } from '@/lib/themes';
-
 export type PageItem = {
   id: string;
   presetId: string;
@@ -22,7 +19,7 @@ export type PageData = {
   description?: string;
   image?: string | null;
   items?: PageItem[];
-  designStyle?: "default" | "minimal" | "modern";
+  designStyle?: string;
   fonts?: {
     global?: string;
     heading?: string;

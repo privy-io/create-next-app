@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { PageData, PageItem } from "@/types";
+import Link from "next/link";
 import PageLink from "./PageLink";
+import { Logo } from "./logo";
 
 interface PageContentProps {
   pageData: PageData;
@@ -169,6 +171,13 @@ export default function PageContent({
             </div>
           </div>
         )}
+        <div className="flex mt-10 items-center justify-center gap-1 text-sm opacity-50 hover:opacity-100 transition-opacity">
+          <Link href="/" className="flex items-center gap-1">
+            <span> Built with</span>
+            <Logo />
+            <span>page.fun</span>
+          </Link>
+        </div>
       </div>
     </div>
   );

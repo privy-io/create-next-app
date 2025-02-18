@@ -92,9 +92,6 @@ export default function AppMenu({
                     <div className="font-bold">page.fun</div>
                     <div className="text-xs text-green-500">beta</div>
                   </Link>
-                  <div className="text-sm text-gray-600">
-                    Tokenize yourself, memes and AI bots.
-                  </div>
                 </div>
 
                 {ready && authenticated ? (

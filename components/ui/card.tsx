@@ -4,12 +4,13 @@ import { cn } from "@/lib/utils";
 
 const Card = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
+  React.HTMLAttributes<HTMLDivElement> & { hasHover?: boolean }
+>(({ className, hasHover, ...props }, ref) => (
   <div
     ref={ref}
     className={cn(
-      "rounded-xl border bg-card text-card-foreground shadow",
+      "rounded-xl border border-primary bg-background/60 shadow-brutalist-sm",
+      hasHover && "cursor-pointer hover:bg-background/80 hover:shadow-brutalist transition-all hover:translate-x-[-2px] hover:translate-y-[-2px]",
       className,
     )}
     {...props}

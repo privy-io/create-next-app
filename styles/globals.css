@@ -2,16 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  /* normal */
-  @font-face {
-    font-family: "Silkscreen";
-    src: url("/fonts/Silkscreen-Regular.ttf") format("ttf");
-    font-style: normal;
-    font-display: swap;
-    font-weight: 400;
-  }
-  
+@layer base {  
   :root {
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;

@@ -12,10 +12,9 @@
     "lint": "next lint && npx prettier --check \"{__tests__,components,pages,styles}/**/*.{ts,tsx,js,jsx}\" && npx tsc --noEmit"
   },
   "dependencies": {
-    "@dnd-kit/core": "^6.3.1",
-    "@dnd-kit/sortable": "^10.0.0",
-    "@dnd-kit/utilities": "^3.2.2",
+    "@dnd-kit/react": "^0.0.9",
     "@headlessui/react": "^1.7.3",
+    "@hello-pangea/dnd": "^18.0.1",
     "@heroicons/react": "^2.0.12",
     "@preact/signals-react": "^3.0.1",
     "@privy-io/react-auth": "2.4.2",

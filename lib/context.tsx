@@ -28,6 +28,7 @@ interface GlobalContextType {
   walletAddress?: string;
   isAuthenticated: boolean;
   error?: string;
+  hasPageTokenAccess: boolean;
 }
 
 const GlobalContext = createContext<GlobalContextType>({
@@ -39,6 +40,7 @@ const GlobalContext = createContext<GlobalContextType>({
   refreshTokens: async () => {},
   walletAddress: undefined,
   isAuthenticated: false,
+  hasPageTokenAccess: false,
 });
 
 export const useGlobalContext = () => useContext(GlobalContext);
@@ -55,6 +57,7 @@ export function GlobalProvider({
   const [isLoadingPages, setIsLoadingPages] = useState(false);
   const [isLoadingTokens, setIsLoadingTokens] = useState(false);
   const [error, setError] = useState<string>();
+  const [hasPageTokenAccess, setHasPageTokenAccess] = useState(false);
 
   // Get the first Solana wallet if one exists
   const walletAddress = user?.linkedAccounts?.find(isSolanaWallet)?.address;
@@ -103,6 +106,7 @@ export function GlobalProvider({
   const fetchTokens = async () => {
     if (!walletAddress || !authenticated) {
       setTokenHoldings([]);
+      setHasPageTokenAccess(false);
       return;
     }
 
@@ -116,6 +120,28 @@ export function GlobalProvider({
       
       const { tokens } = await response.json();
       setTokenHoldings(tokens || []);
+
+      // Check if user has enough PAGE_DOT_FUN_TOKEN tokens
+      const pageDotFunToken = process.env.NEXT_PUBLIC_PAGE_DOT_FUN_TOKEN;
+      if (!pageDotFunToken) {
+        console.error('PAGE_DOT_FUN_TOKEN not configured');
+        setHasPageTokenAccess(false);
+        return;
+      }
+
+      const tokenHolding = tokens?.find((t: TokenHolding) => 
+        t.tokenAddress.toLowerCase() === pageDotFunToken.toLowerCase()
+      );
+
+      if (!tokenHolding) {
+        // User doesn't have the token at all
+        setHasPageTokenAccess(false);
+        return;
+      }
+        
+      // Check if user has 10,000 or more tokens
+      const hasEnoughTokens = parseFloat(tokenHolding.balance) >= 10000;
+      setHasPageTokenAccess(hasEnoughTokens);
     } catch (error) {
       console.error('Error fetching token holdings:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to fetch token holdings';
@@ -125,6 +151,7 @@ export function GlobalProvider({
         variant: "destructive",
       });
       setTokenHoldings([]);
+      setHasPageTokenAccess(false);
     } finally {
       setIsLoadingTokens(false);
     }
@@ -150,6 +177,7 @@ export function GlobalProvider({
         walletAddress,
         isAuthenticated: authenticated,
         error,
+        hasPageTokenAccess,
       }}
     >
       {children}

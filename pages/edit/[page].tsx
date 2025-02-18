@@ -148,6 +148,7 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
   const [linkSettingsDrawerOpen, setLinkSettingsDrawerOpen] = useState(false);
   const [selectedLinkId, setSelectedLinkId] = useState<string | null>(null);
   const [linksDrawerOpen, setLinksDrawerOpen] = useState(false);
+  const [focusField, setFocusField] = useState<'title' | 'description' | 'image'>();
 
   // Handle ESC key to close drawer
   useEffect(() => {
@@ -487,8 +488,18 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
             pageData={previewData}
             themeStyle={themes[previewData.designStyle || 'default'].colors}
             onLinkClick={handleLinkClick}
-            onTitleClick={() => setSettingsDrawerOpen(true)}
-            onDescriptionClick={() => setSettingsDrawerOpen(true)}
+            onTitleClick={() => {
+              setFocusField('title');
+              setSettingsDrawerOpen(true);
+            }}
+            onDescriptionClick={() => {
+              setFocusField('description');
+              setSettingsDrawerOpen(true);
+            }}
+            onImageClick={() => {
+              setFocusField('image');
+              setSettingsDrawerOpen(true);
+            }}
             onItemsReorder={handleItemsReorder}
             validationErrors={validationErrors}
             onAddLinkClick={handleAddLink}
@@ -498,9 +509,13 @@ export default function EditPage({ slug, pageData, error }: PageProps) {
         {/* Settings Drawer */}
         <SettingsDrawer
           open={settingsDrawerOpen}
-          onOpenChange={setSettingsDrawerOpen}
+          onOpenChange={(open) => {
+            setSettingsDrawerOpen(open);
+            if (!open) setFocusField(undefined);
+          }}
           pageDetails={pageDetails}
           setPageDetails={setPageDetails}
+          focusField={focusField}
         />
 
         {/* Links Drawer */}

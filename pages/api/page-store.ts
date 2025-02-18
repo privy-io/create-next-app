@@ -63,25 +63,22 @@ const PageItemSchema = z
     url: z
       .string()
       .optional()
-      .nullable()
-      .superRefine((url, ctx) => {
-        if (!url || url.length === 0) return true;
-        const presetId = (ctx as any).path[0].parent.presetId;
-        if (!validateLinkUrl(url, presetId)) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "Invalid URL format for this item type",
-            path: ["url"],
-          });
-          return false;
-        }
-        return true;
-      }),
+      .nullable(),
     order: z.number().int().min(0),
     isPlugin: z.boolean().optional(),
     tokenGated: z.boolean().optional(),
     requiredTokens: z.array(z.string()).optional(),
-  });
+  })
+  .refine(
+    (data) => {
+      if (!data.url || data.url.length === 0) return true;
+      return validateLinkUrl(data.url, data.presetId);
+    },
+    {
+      message: "Invalid URL format for this item type",
+      path: ["url"],
+    }
+  );
 
 const PageDataSchema = z.object({
   walletAddress: z.string().min(1),
@@ -91,7 +88,7 @@ const PageDataSchema = z.object({
   description: z.string().max(500).optional(),
   image: z.string().regex(urlRegex).nullable().optional(),
   items: z.array(PageItemSchema).optional(),
-  designStyle: z.enum(["default", "minimal", "modern"]).optional(),
+  designStyle: z.string().optional(),
   fonts: z.object({
     global: z.string().optional(),
     heading: z.string().optional(),
@@ -122,7 +119,7 @@ const CreatePageSchema = z.object({
   connectedToken: z.string().nullable().optional(),
   tokenSymbol: z.string().nullable().optional(),
   image: z.string().regex(urlRegex).nullable().optional(),
-  designStyle: z.enum(["default", "minimal", "modern"]).optional(),
+  designStyle: z.string().optional(),
   fonts: FontsSchema,
 });
 
@@ -144,7 +141,7 @@ type PageData = {
   description?: string;
   image?: string;
   items?: PageItem[];
-  designStyle?: "default" | "minimal" | "modern";
+  designStyle?: string;
   fonts?: {
     global?: string;
     heading?: string;
@@ -173,60 +170,27 @@ async function verifyWalletOwnership(
   const idToken = req.cookies["privy-id-token"];
 
   if (!idToken) {
-    console.log("Missing identity token. Available cookies:", req.cookies);
     throw new Error("Missing identity token");
   }
 
   try {
     const user = await client.getUser({ idToken });
 
-    // More detailed debug logging
-    console.log("Full user data:", JSON.stringify(user, null, 2));
-    console.log("Wallet verification check:", {
-      requestedWallet: walletAddress,
-      walletAddressType: typeof walletAddress,
-      linkedAccounts: user.linkedAccounts.map((acc) => ({
-        type: acc.type,
-        ...(acc.type === "wallet" && {
-          address: (acc as any).address,
-          chainType: (acc as any).chainType,
-        }),
-      })),
-    });
-
     // Check if the wallet address is in the user's linked accounts
     const hasWallet = user.linkedAccounts.some((account) => {
       if (account.type === "wallet" && account.chainType === "solana") {
         const walletAccount = account as { address?: string };
-        const matches =
-          walletAccount.address?.toLowerCase() === walletAddress.toLowerCase();
-        console.log("Checking wallet match:", {
-          accountAddress: walletAccount.address?.toLowerCase(),
-          requestedWallet: walletAddress.toLowerCase(),
-          matches,
-        });
-        return matches;
+        return walletAccount.address?.toLowerCase() === walletAddress.toLowerCase();
       }
       return false;
     });
 
     if (!hasWallet) {
-      console.log("Wallet ownership verification failed:", {
-        requestedWallet: walletAddress,
-        availableWallets: user.linkedAccounts
-          .filter((acc) => acc.type === "wallet" && acc.chainType === "solana")
-          .map((acc) => {
-            const walletAcc = acc as { address?: string };
-            return walletAcc.address;
-          })
-          .filter(Boolean),
-      });
       throw new Error("Wallet not owned by authenticated user");
     }
 
     return user;
   } catch (error) {
-    console.error("Verification error details:", error);
     throw error;
   }
 }
@@ -244,7 +208,6 @@ async function addPageToWallet(walletAddress: string, slug: string) {
     // Add to sorted set with timestamp as score for ordering
     await redis.zadd(pagesKey, { score: Date.now(), member: slug });
   } catch (error) {
-    console.error("Error adding page to wallet:", error);
     throw new Error("Failed to add page to wallet");
   }
 }
@@ -255,7 +218,6 @@ async function removePageFromWallet(walletAddress: string, slug: string) {
     const pagesKey = getWalletPagesKey(walletAddress);
     await redis.zrem(pagesKey, slug);
   } catch (error) {
-    console.error("Error removing page from wallet:", error);
     throw new Error("Failed to remove page from wallet");
   }
 }
@@ -292,7 +254,6 @@ async function getPagesForWallet(walletAddress: string, req: NextApiRequest) {
 
     return { pages: pages.filter(Boolean) };
   } catch (error) {
-    console.error("Error getting pages for wallet:", error);
     return { pages: [] };
   }
 }
@@ -313,7 +274,6 @@ async function addPageToUserMetadata(
       try {
         currentPages = JSON.parse(pagesStr as string);
       } catch (e) {
-        console.error("Error parsing pages:", e);
         currentPages = [];
       }
     }
@@ -331,7 +291,6 @@ async function addPageToUserMetadata(
       });
     }
   } catch (error) {
-    console.error("Error updating user metadata:", error);
     throw new Error("Failed to update user metadata");
   }
 }
@@ -348,7 +307,6 @@ async function removePageFromUserMetadata(userId: string, slug: string) {
       try {
         currentPages = JSON.parse(pagesStr as string);
       } catch (e) {
-        console.error("Error parsing pages:", e);
         currentPages = [];
       }
     }
@@ -363,7 +321,6 @@ async function removePageFromUserMetadata(userId: string, slug: string) {
       pages: JSON.stringify(updatedPages),
     });
   } catch (error) {
-    console.error("Error updating user metadata:", error);
     throw new Error("Failed to update user metadata");
   }
 }
@@ -423,8 +380,7 @@ async function checkRateLimit(userId: string): Promise<{ allowed: boolean; timeL
     const timeLeft = windowSeconds - (now - currentData.timestamp);
     return { allowed: false, timeLeft };
   } catch (error) {
-    console.error("Rate limit check error:", error);
-    // In case of error, allow the request but log the error
+    // In case of error, allow the request
     return { allowed: true };
   }
 }
@@ -433,13 +389,6 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  // Add request logging
-  console.log('API Request:', {
-    method: req.method,
-    url: req.url,
-    headers: req.headers,
-  });
-
   // GET: Fetch page data for a specific slug or wallet's pages
   if (req.method === "GET") {
     const { slug, walletAddress } = req.query;
@@ -468,7 +417,6 @@ export default async function handler(
             }
           } catch (error) {
             // Ignore verification errors - just means user doesn't own the page
-            console.log("User does not own page:", error);
           }
         }
 
@@ -480,7 +428,6 @@ export default async function handler(
       // Return error if neither slug nor walletAddress provided
       return res.status(400).json({ error: "Slug or wallet address is required" });
     } catch (error) {
-      console.error("Error fetching page data:", error);
       return res.status(500).json({ error: "Failed to fetch page data" });
     }
   }
@@ -581,7 +528,6 @@ export default async function handler(
       }
       return res.status(200).json({ success: true });
     } catch (error) {
-      console.error("Error storing page data:", error);
       if (error instanceof z.ZodError) {
         return res.status(400).json({
           error: "Invalid data format",
@@ -625,7 +571,6 @@ export default async function handler(
       await removePageFromWallet(currentPage.walletAddress, slug);
       return res.status(200).json({ success: true });
     } catch (error) {
-      console.error("Error deleting page:", error);
       return res.status(500).json({ error: "Failed to delete page" });
     }
   }
@@ -679,7 +624,6 @@ export default async function handler(
         }
 
       } catch (error) {
-        console.error("Auth verification error:", error);
         return res.status(401).json({ error: "Authentication failed" });
       }
 
@@ -703,7 +647,6 @@ export default async function handler(
       await redis.set(getRedisKey(slug), validatedData);
       return res.status(200).json({ success: true });
     } catch (error) {
-      console.error("Error updating page:", error);
       if (error instanceof z.ZodError) {
         return res.status(400).json({
           error: "Invalid data format",

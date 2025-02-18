@@ -1,32 +1,15 @@
 import { Fragment } from "react";
 import { usePrivy } from "@privy-io/react-auth";
-import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Loader from "@/components/ui/loader";
 import {
   Drawer,
   DrawerContent,
-  DrawerDescription,
   DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
 } from "@/components/ui/drawer";
 import { JupiterLogo } from "./icons/JupiterLogo";
 import { PageItem, PageData } from "@/types";
 import { LINK_PRESETS } from "@/lib/linkPresets";
-
-// Helper to format token amounts
-function formatTokenAmount(amount: string): string {
-  const num = parseInt(amount, 10);
-  if (isNaN(num)) return amount;
-
-  if (num >= 1000000) {
-    return (num / 1000000).toFixed(1) + "m";
-  }
-  if (num >= 1000) {
-    return (num / 1000).toFixed(1) + "k";
-  }
-  return num.toString();
-}
 
 interface PageLinkProps {
   item: PageItem;
@@ -118,7 +101,7 @@ export default function PageLink({
       <div className="pf-link__inner">
         <div className="pf-link__icon-container">
           <div className="pf-link__icon">
-            <preset.icon.classic className="pf-link__icon" aria-hidden="true" />
+            <preset.icon className="pf-link__icon" aria-hidden="true" />
           </div>
         </div>
         <div className="pf-link__title">
@@ -229,7 +212,7 @@ export default function PageLink({
                     </Button>
                   ) : (
                     <Button disabled className="w-full">
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      <Loader className="h-4 w-4 mr-2" />
                       Fetching Link...
                     </Button>
                   )}
@@ -274,7 +257,7 @@ export default function PageLink({
                     className="w-full">
                     {verifying === item.id ? (
                       <>
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        <Loader className="h-4 w-4 mr-2" />
                         Verifying...
                       </>
                     ) : (
@@ -296,7 +279,7 @@ export default function PageLink({
                     className="w-full">
                     {verifying === item.id ? (
                       <>
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        <Loader className="h-4 w-4 mr-2" />
                         Verifying...
                       </>
                     ) : (

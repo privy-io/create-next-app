@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/select";
 import { FontSelect } from "@/components/FontSelector";
 import { PageData } from "@/types";
-import { ThemeStyle, themes } from "@/lib/themes";
+import { themes } from "@/lib/themes";
 
 interface DesignTabProps {
   pageDetails: PageData | null;
@@ -17,8 +17,10 @@ interface DesignTabProps {
 }
 
 export function DesignTab({ pageDetails, setPageDetails }: DesignTabProps) {
-  const handleThemeChange = (value: ThemeStyle) => {
+  const handleThemeChange = (value: string) => {
     const themePreset = themes[value];
+    if (!themePreset) return;
+
     setPageDetails((prev) => {
       if (!prev) return prev;
       return {
@@ -48,9 +50,11 @@ export function DesignTab({ pageDetails, setPageDetails }: DesignTabProps) {
             <SelectValue placeholder="Select style" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="default">Default</SelectItem>
-            <SelectItem value="minimal">Minimal</SelectItem>
-            <SelectItem value="modern">Modern</SelectItem>
+            {Object.entries(themes).map(([key, theme]) => (
+              <SelectItem key={key} value={key}>
+                {theme.title}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>

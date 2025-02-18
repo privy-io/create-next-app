@@ -16,6 +16,7 @@ interface SettingsDrawerProps {
   setPageDetails: (
     data: PageData | ((prev: PageData | null) => PageData | null)
   ) => void;
+  focusField?: 'title' | 'description' | 'image';
 }
 
 export function SettingsDrawer({
@@ -23,11 +24,12 @@ export function SettingsDrawer({
   onOpenChange,
   pageDetails,
   setPageDetails,
+  focusField,
 }: SettingsDrawerProps) {
   return (
     <Drawer open={open} onOpenChange={onOpenChange} direction="right">
       <DrawerContent direction="right">
-        <Tabs defaultValue="general">
+        <Tabs defaultValue={focusField === 'image' ? 'general' : 'general'}>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="design">Design</TabsTrigger>
@@ -36,6 +38,7 @@ export function SettingsDrawer({
             <GeneralSettingsTab
               pageDetails={pageDetails}
               setPageDetails={setPageDetails}
+              focusField={focusField}
             />
           </TabsContent>
           <TabsContent value="design">

@@ -1,10 +1,33 @@
 import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
-
+import { useRouter } from "next/router";
 import { cn } from "@/lib/utils";
 
-const Dialog = DialogPrimitive.Root;
+const Dialog = ({ ...props }) => {
+  const router = useRouter();
+  const [open, setOpen] = React.useState(props.open);
+
+  React.useEffect(() => {
+    setOpen(props.open);
+  }, [props.open]);
+
+  React.useEffect(() => {
+    const handleRouteChange = () => {
+      setOpen(false);
+    };
+
+    router.events.on('routeChangeStart', handleRouteChange);
+
+    return () => {
+      router.events.off('routeChangeStart', handleRouteChange);
+    };
+  }, [router]);
+
+  return (
+    <DialogPrimitive.Root open={open} onOpenChange={setOpen} {...props} />
+  );
+};
 
 const DialogTrigger = DialogPrimitive.Trigger;
 

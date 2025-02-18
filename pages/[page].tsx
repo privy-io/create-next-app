@@ -1,15 +1,15 @@
 import { GetServerSideProps } from "next";
 import Head from "next/head";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import PageContent from "../components/PageContent";
 import { PageData, PageItem } from "@/types";
 import { themes } from "@/lib/themes";
 import { useRouter } from 'next/router';
-import { useGlobalContext } from '@/lib/context';
 import { Button } from '@/components/ui/button';
 import { Pencil } from 'lucide-react';
 import { PrivyClient } from "@privy-io/server-auth";
 import { Redis } from "@upstash/redis";
+import Loader from "@/components/ui/loader";
 
 interface PageProps {
   pageData: PageData;
@@ -152,6 +152,7 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async ({
 
 export default function Page({ pageData, slug, error, isOwner }: PageProps) {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
   const currentTheme = pageData.designStyle || 'default';
   const themeStyle = themes[currentTheme].colors;
 
@@ -209,11 +210,20 @@ export default function Page({ pageData, slug, error, isOwner }: PageProps) {
     <>
       {isOwner && (
         <Button
-          onClick={() => router.push(`/edit/${slug}`)}
-          className="fixed top-2 right-2 z-50 gap-2"
+          size="icon"
+          variant="outline"
+          onClick={async () => {
+            setIsLoading(true);
+            await router.push(`/edit/${slug}`);
+          }}
+          className="fixed top-2 bg-green-200 hover:bg-green-300 right-2 z-50 gap-2 animate-slide-down"
+          disabled={isLoading}
         >
-          <Pencil className="h-4 w-4" />
-          Edit Page
+          {isLoading ? (
+            <Loader className="h-4 w-4" />
+          ) : (
+            <Pencil className="h-4 w-4" />
+          )}
         </Button>
       )}
       

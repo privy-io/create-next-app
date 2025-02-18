@@ -21,6 +21,18 @@ module.exports = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: 0 },
         },
+        "slide-down": {
+          from: { transform: "translateY(-100%)" },
+          to: { transform: "translateY(0)" },
+        },
+        "fade-in": {
+          from: { opacity: 0 },
+          to: { opacity: 1 },
+        },
+        "slide-up": {
+          from: { transform: "translateY(100%)" },
+          to: { transform: "translateY(0)" },
+        },
         wiggle: {
           "0%, 100%": { transform: "rotate(-3deg)" },
           "50%": { transform: "rotate(3deg)" },
@@ -48,8 +60,11 @@ module.exports = {
         },
       },
       animation: {
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up": "accordion-up 0.2s ease-out",
+        "accordion-down": "accordion-down 0.3s ease-out",
+        "accordion-up": "accordion-up 0.3s ease-out",
+        "slide-down": "slide-down 0.3s ease-out",
+        "slide-up": "slide-up 0.3s ease-out",
+        "fade-in": "fade-in 0.3s ease-out",
         wiggle: "wiggle 0.3s ease-in-out",
         marquee: "marquee var(--marquee-duration, 10s) linear infinite",
         marquee2: "marquee2 var(--marquee-duration, 10s) linear infinite",
