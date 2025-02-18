@@ -39,6 +39,11 @@
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
   }
+
+  body #privy-modal-content {
+    border: 1px solid rgba(0,0,0,1);
+    box-shadow: 3px 3px 0px 0 rgba(0,0,0,1)!important;
+  }
 }
 
 @layer base {

@@ -7,6 +7,44 @@ import { z } from "zod";
 const urlPattern = /^[a-zA-Z0-9-]+$/;
 const urlRegex = /^https?:\/\/[^\s/$.?#].[^\s]*$/i;
 
+// Reserved slugs that cannot be used for pages
+const RESERVED_SLUGS = [
+  'pricing',
+  'page',
+  'about',
+  'account',
+  'faq',
+  'terms',
+  'blog',
+  'edit',
+  'api',
+  'admin',
+  'settings',
+  'dashboard',
+  'login',
+  'signup',
+  'register',
+  'help',
+  'support',
+  'docs',
+  'documentation',
+  'privacy',
+  'contact',
+  'status',
+  'home',
+  'index',
+  'app',
+  'auth',
+  'public',
+  'static',
+  'assets',
+  'images',
+  'css',
+  'js',
+  'fonts',
+  'media'
+];
+
 const FontsSchema = z
   .object({
     global: z.string().optional(),
@@ -131,7 +169,13 @@ const CreatePageSchema = z.object({
     .string()
     .regex(urlPattern, "Only letters, numbers, and hyphens allowed")
     .min(1)
-    .max(50),
+    .max(50)
+    .refine(
+      (slug) => !RESERVED_SLUGS.includes(slug.toLowerCase()),
+      {
+        message: "This URL is reserved and cannot be used"
+      }
+    ),
   walletAddress: z.string().min(1),
   isSetupWizard: z.boolean().optional(),
   title: z.string().max(100).optional(),

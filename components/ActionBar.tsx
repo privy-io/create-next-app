@@ -1,5 +1,7 @@
 import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
 import { useRouter } from "next/router";
+import Link from "next/link";
 
 interface ActionBarProps {
   onSettingsClick: () => void;
@@ -20,14 +22,17 @@ export function ActionBar({
       {/* Top bar with save controls */}
       <div className="fixed top-2 right-2 z-40">
         <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            onClick={onSettingsClick}>
+          <Button variant="outline" onClick={onSettingsClick}>
             Settings
           </Button>
           <Button onClick={onSave} disabled={isSaving}>
             {isSaving ? "Saving..." : "Publish"}
           </Button>
+          <Link href={`/${router.query.page}`}>
+            <Button variant="outline" size={'icon'}>
+              <X />
+            </Button>
+          </Link>
         </div>
       </div>
     </>

@@ -1,13 +1,9 @@
 import { useRouter } from "next/router";
 import { usePrivy, useLogin } from "@privy-io/react-auth";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Plus, Home } from "lucide-react";
+import { ChevronDown, Plus, Menu } from "lucide-react";
 import Link from "next/link";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
+import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import {
   Tooltip,
   TooltipContent,
@@ -82,15 +78,8 @@ export default function AppMenu({
     <div className={className}>
       <Drawer open={open} onOpenChange={setOpen} direction="left">
         <DrawerTrigger asChild>
-          <Button
-            variant="outline"
-            className={cn(
-              "px-2 gap-1",
-            )}
-          >
-            <Logo />
-            {showLogoName && <span>Built with Page.fun</span>}
-            <ChevronDown className="h-4 w-4" />
+          <Button variant="outline" className={cn("px-2")}>
+            <Menu className="h-5 w-5" />
           </Button>
         </DrawerTrigger>
         <DrawerContent direction="left">
@@ -99,6 +88,7 @@ export default function AppMenu({
               <div className="space-y-4">
                 <div>
                   <Link href="/" className="flex items-center gap-1.5">
+                    <Logo className="w-5 h-5" />
                     <div className="font-bold">page.fun</div>
                     <div className="text-xs text-green-500">beta</div>
                   </Link>
@@ -109,7 +99,6 @@ export default function AppMenu({
 
                 {ready && authenticated ? (
                   <div className="space-y-4">
-  
                     <div>
                       <div className="flex flex-col gap-2 mb-4">
                         <Button
@@ -118,8 +107,7 @@ export default function AppMenu({
                             setShowCreateModal(true);
                             setOpen(false);
                           }}
-                          className="w-full"
-                        >
+                          className="w-full">
                           <Plus className="h-4 w-4" />
                           New Page
                         </Button>
@@ -136,18 +124,19 @@ export default function AppMenu({
                           </div>
                         ) : (
                           userPages
-                            .sort((a, b) => a.title?.localeCompare(b.title || '') || 0)
+                            .sort(
+                              (a, b) =>
+                                a.title?.localeCompare(b.title || "") || 0
+                            )
                             .map((page) => (
                               <div
                                 key={page.slug}
-                                className="p-3 rounded-lg space-y-2 bg-muted border border-primary"
-                              >
+                                className="p-3 rounded-lg space-y-2 bg-muted border border-primary">
                                 <div className="flex items-start justify-between gap-2">
                                   <div className="space-y-1 min-w-0">
                                     <Link
                                       href={`/${page.slug}`}
-                                      className="block text-sm font-medium truncate text-primary hover:text-primary/80"
-                                    >
+                                      className="block text-sm font-medium truncate text-primary hover:text-primary/80">
                                       page.fun/{page.slug}
                                     </Link>
                                     {page.title && (
@@ -156,15 +145,11 @@ export default function AppMenu({
                                       </p>
                                     )}
                                   </div>
-                                  <Link
-                                    href={`/edit/${page.slug}`}
-                                    passHref
-                                  >
+                                  <Link href={`/edit/${page.slug}`} passHref>
                                     <Button
                                       size="sm"
                                       variant="outline"
-                                      className="shrink-0"
-                                    >
+                                      className="shrink-0">
                                       Edit
                                     </Button>
                                   </Link>
@@ -201,7 +186,10 @@ export default function AppMenu({
                             />
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p>Your wallet address is hidden to visitors and kept private</p>
+                            <p>
+                              Your wallet address is hidden to visitors and kept
+                              private
+                            </p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
@@ -209,8 +197,7 @@ export default function AppMenu({
                         variant="outline"
                         size="sm"
                         onClick={logout}
-                        className="shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-                      >
+                        className="shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10">
                         Logout
                       </Button>
                     </div>
@@ -219,8 +206,7 @@ export default function AppMenu({
                         variant="outline"
                         size="sm"
                         onClick={() => unlinkWallet(solanaWallet.address)}
-                        className="w-full"
-                      >
+                        className="w-full">
                         Disconnect Wallet
                       </Button>
                     )}
