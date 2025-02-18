@@ -40,8 +40,8 @@ export const themes: ThemesConfig = {
       '--pf-link-radius': '0.25rem',
       '--pf-link-color': 'var(--pf-muted)',
       '--pf-link-hover': 'var(--pf-primary)',
-      '--pf-shadow': 'none',
-      '--pf-shadow-hover': '0 2px 8px rgba(0, 0, 0, 0.05)',
+      '--pf-link-shadow': 'none',
+      '--pf-link-shadow-hover': '0 2px 8px rgba(0, 0, 0, 0.05)',
     },
     fonts: {
       global: 'Albert Sans',
@@ -66,8 +66,8 @@ export const themes: ThemesConfig = {
       '--pf-link-radius': '1rem',
       '--pf-link-color': 'var(--pf-text)',
       '--pf-link-hover': 'var(--pf-primary)',
-      '--pf-shadow': '0 0 0 1px rgba(255, 255, 255, 0.1)',
-      '--pf-shadow-hover': '0 8px 24px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.2)',
+      '--pf-link-shadow': '0 0 0 1px rgba(255, 255, 255, 0.1)',
+      '--pf-link-shadow-hover': '0 8px 24px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.2)',
     },
     fonts: {
       global: 'Space Grotesk',

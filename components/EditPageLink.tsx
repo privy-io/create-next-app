@@ -1,10 +1,9 @@
-import { Fragment } from "react";
 import { PageItem, PageData } from "@/types";
 import { LINK_PRESETS } from "@/lib/linkPresets";
-import { AlertCircle, GripVertical } from "lucide-react";
+import { GripVertical } from "lucide-react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 interface EditPageLinkProps {
   item: PageItem;
@@ -15,7 +14,6 @@ interface EditPageLinkProps {
 
 export default function EditPageLink({
   item,
-  pageData,
   onLinkClick,
   error,
 }: EditPageLinkProps) {
@@ -98,7 +96,7 @@ export default function EditPageLink({
       <div
         {...attributes}
         {...listeners}
-        className="absolute -left-11 top-1/2 -translate-y-1/2 cursor-grab w-11 h-11 flex items-center justify-center rounded-lg hover:bg-black/5"
+        className="absolute -left-7 md:-left-11 top-1/2 z-10 -translate-y-1/2 cursor-grab w-6 md:w-9 h-11 flex items-center justify-center rounded-lg hover:bg-black/5"
         onClick={(e) => e.stopPropagation()}
       >
         <GripVertical className="h-5 w-5 text-gray-400" />
@@ -106,18 +104,4 @@ export default function EditPageLink({
       {itemContent}
     </div>
   );
-}
-
-// Helper to format token amounts
-function formatTokenAmount(amount: string): string {
-  const num = parseInt(amount, 10);
-  if (isNaN(num)) return amount;
-
-  if (num >= 1000000) {
-    return (num / 1000000).toFixed(1) + "m";
-  }
-  if (num >= 1000) {
-    return (num / 1000).toFixed(1) + "k";
-  }
-  return num.toString();
 }

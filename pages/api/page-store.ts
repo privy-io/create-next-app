@@ -49,7 +49,6 @@ const PageItemSchema = z
         console.log('Validating URL in schema:', {
           url: data.url,
           presetId: data.presetId,
-          isEmail: data.presetId === "email"
         });
 
         // For email type

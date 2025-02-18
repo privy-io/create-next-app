@@ -80,7 +80,7 @@ export default function HomePage() {
           />
 
           {/* Marquee container */}
-          <div className="absolute top-5 sm:top-1/2 left-0 sm:-translate-y-1/2 w-full z-50">
+          <div className="absolute top-5 sm:top-1/2 left-0 sm:-translate-y-1/2 w-full z-30">
             <div className="relative flex overflow-x-hidden py-5">
               <div
                 style={{ "--marquee-duration": "30s" } as React.CSSProperties}

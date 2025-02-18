@@ -140,7 +140,7 @@ export default function AppMenu({
                             .map((page) => (
                               <div
                                 key={page.slug}
-                                className="p-3 rounded-lg space-y-2 bg-background border border-primary"
+                                className="p-3 rounded-lg space-y-2 bg-muted border border-primary"
                               >
                                 <div className="flex items-start justify-between gap-2">
                                   <div className="space-y-1 min-w-0">
@@ -186,7 +186,7 @@ export default function AppMenu({
             </div>
 
             {ready && authenticated && (
-              <div className="border-t pt-3 bg-muted">
+              <div className="border-t pt-3 bg-background">
                 {solanaWallet ? (
                   <div className="space-y-2">
                     <div className="flex gap-2 items-center">

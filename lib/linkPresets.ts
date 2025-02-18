@@ -1,13 +1,12 @@
 import {
-  Twitter,
   MessageSquare,
-  TrendingUp,
   Instagram,
   MessageCircle,
   Terminal,
   FolderTree,
   Video,
 } from "lucide-react";
+import { TikTokIcon, DexScreenerIcon, TwitterIcon, DiscordIcon, TelegramIcon, JupiterIcon, FacebookIcon, GitHubIcon, BubblemapsIcon } from "./icons";
 
 export interface LinkPreset {
   id: string;
@@ -24,12 +23,37 @@ export interface LinkPreset {
 }
 
 export const LINK_PRESETS: Record<string, LinkPreset> = {
+  /*
+  bubblemaps: {
+    id: "bubblemaps",
+    title: "Bubblemaps",
+    defaultUrl: "https://app.bubblemaps.io/",
+    icon: {
+      classic: BubblemapsIcon,
+    },
+    options: {
+      requiresUrl: true,
+      canBeTokenGated: true,
+    },
+  }, */
+  jupiter: {
+    id: "jupiter",
+    title: "Jupiter",
+    defaultUrl: "https://jup.ag/tokens/[token]",
+    icon: {
+      classic: JupiterIcon,
+    },
+    options: {
+      requiresUrl: true,
+      canBeTokenGated: false,
+    },
+  },
   twitter: {
     id: "twitter",
     title: "Twitter",
     defaultUrl: "https://twitter.com/",
     icon: {
-      classic: Twitter,
+      classic: TwitterIcon,
     },
     options: {
       requiresUrl: true,
@@ -41,7 +65,7 @@ export const LINK_PRESETS: Record<string, LinkPreset> = {
     title: "Telegram",
     defaultUrl: "https://t.me/",
     icon: {
-      classic: MessageSquare,
+      classic: TelegramIcon,
     },
     options: {
       requiresUrl: true,
@@ -53,11 +77,11 @@ export const LINK_PRESETS: Record<string, LinkPreset> = {
     title: "DexScreener",
     defaultUrl: "https://dexscreener.com/solana/[token]",
     icon: {
-      classic: TrendingUp,
+      classic: DexScreenerIcon,
     },
     options: {
       requiresUrl: true,
-      canBeTokenGated: true,
+      canBeTokenGated: false,
     },
   },
   tiktok: {
@@ -65,7 +89,7 @@ export const LINK_PRESETS: Record<string, LinkPreset> = {
     title: "TikTok",
     defaultUrl: "https://tiktok.com/@username",
     icon: {
-      classic: Video,
+      classic: TikTokIcon,
     },
     options: {
       requiresUrl: true,
@@ -89,7 +113,31 @@ export const LINK_PRESETS: Record<string, LinkPreset> = {
     title: "Discord",
     defaultUrl: "https://discord.gg/",
     icon: {
-      classic: MessageCircle,
+      classic: DiscordIcon,
+    },
+    options: {
+      requiresUrl: true,
+      canBeTokenGated: true,
+    },
+  },
+  facebook: {
+    id: "facebook",
+    title: "Facebook",
+    defaultUrl: "https://facebook.com/",
+    icon: {
+      classic: FacebookIcon,
+    },
+    options: {
+      requiresUrl: true,
+      canBeTokenGated: true,
+    },
+  },
+  github: {
+    id: "github",
+    title: "GitHub",
+    defaultUrl: "https://github.com/",
+    icon: {
+      classic: GitHubIcon,
     },
     options: {
       requiresUrl: true,
