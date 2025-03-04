@@ -2,6 +2,7 @@ import "../styles/globals.css";
 import type { AppProps } from "next/app";
 import Head from "next/head";
 import { PrivyProvider } from "@privy-io/react-auth";
+import { odysseyTestnet } from "viem/chains";
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
@@ -44,8 +45,10 @@ function MyApp({ Component, pageProps }: AppProps) {
         appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ""}
         config={{
           embeddedWallets: {
+            showWalletUIs: false,
             createOnLogin: "all-users",
           },
+          supportedChains: [odysseyTestnet],
         }}
       >
         <Component {...pageProps} />

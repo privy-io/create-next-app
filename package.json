@@ -14,12 +14,16 @@
   "dependencies": {
     "@headlessui/react": "^1.7.3",
     "@heroicons/react": "^2.0.12",
-    "@privy-io/react-auth": "2.4.5",
+    "@privy-io/react-auth": "^2.6.1",
     "@privy-io/server-auth": "1.18.9",
     "@tailwindcss/forms": "^0.5.3",
+    "@zerodev/ecdsa-validator": "^5.4.4",
+    "@zerodev/sdk": "^5.4.24",
     "next": "latest",
+    "permissionless": "^0.2.34",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "viem": "^2.23.5"
   },
   "devDependencies": {
     "@tsconfig/next": "^2.0.0",

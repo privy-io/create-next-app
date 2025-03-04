@@ -39,7 +39,7 @@ export default function LoginPage() {
   return (
     <>
       <Head>
-        <title>Login · Privy</title>
+        <title>7702 with Privy & Zerodev</title>
       </Head>
 
       <main className="flex min-h-screen min-w-full">
