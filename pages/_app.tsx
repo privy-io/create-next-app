@@ -48,7 +48,7 @@ function MyApp({ Component, pageProps }: AppProps) {
             primary: ["privy:cm7vcg3i5006nks9xmobmfxlw"],
           },
           embeddedWallets: {
-            createOnLogin: "all-users",
+            createOnLogin: "off",
           },
           supportedChains: [monadTestnet],
         }}
