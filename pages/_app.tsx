@@ -2,6 +2,7 @@ import "../styles/globals.css";
 import type { AppProps } from "next/app";
 import Head from "next/head";
 import { PrivyProvider } from "@privy-io/react-auth";
+import { monadTestnet } from "viem/chains";
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
@@ -43,9 +44,13 @@ function MyApp({ Component, pageProps }: AppProps) {
       <PrivyProvider
         appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ""}
         config={{
+          loginMethodsAndOrder: {
+            primary: ["privy:cm7vcg3i5006nks9xmobmfxlw"],
+          },
           embeddedWallets: {
             createOnLogin: "all-users",
           },
+          supportedChains: [monadTestnet],
         }}
       >
         <Component {...pageProps} />
