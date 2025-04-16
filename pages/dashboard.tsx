@@ -16,7 +16,7 @@ async function verifyToken() {
 }
 
 export default function DashboardPage() {
-  const [verifyResult, setVerifyResult] = useState();
+  const [verifyResult, setVerifyResult] = useState<any>(null);
   const router = useRouter();
   const {
     ready,
