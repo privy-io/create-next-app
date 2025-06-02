@@ -2,6 +2,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { getAccessToken, usePrivy } from "@privy-io/react-auth";
 import Head from "next/head";
+import WalletList from "../components/WalletList";
 
 async function verifyToken() {
   const url = "/api/verify";
@@ -208,6 +209,11 @@ export default function DashboardPage() {
                   </pre>
                 </details>
               )}
+
+              <div className="space-y-6">
+                <h2 className="text-xl font-bold">Your Wallets</h2>
+                <WalletList />
+              </div>
             </div>
 
             <p className="mt-6 font-bold uppercase text-sm text-gray-600">
