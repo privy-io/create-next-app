@@ -2,6 +2,8 @@ import { useCallback, useState } from "react";
 import {
   getAccessToken,
   useSessionSigners,
+  useSignMessage,
+  useSignMessage as useSignMessageSolana,
   WalletWithMetadata,
 } from "@privy-io/react-auth";
 import axios from "axios";
@@ -14,8 +16,11 @@ interface WalletCardProps {
 
 export default function WalletCard({ wallet }: WalletCardProps) {
   const { addSessionSigners, removeSessionSigners } = useSessionSigners();
+  const { signMessage: signMessageEthereum } = useSignMessage();
+  const { signMessage: signMessageSolana } = useSignMessageSolana();
   const [isLoading, setIsLoading] = useState(false);
-  const [isSigning, setIsSigning] = useState(false);
+  const [isRemoteSigning, setIsRemoteSigning] = useState(false);
+  const [isClientSigning, setIsClientSigning] = useState(false);
 
   // Check if this specific wallet has session signers
   const hasSessionSigners = wallet.delegated === true;
@@ -56,7 +61,7 @@ export default function WalletCard({ wallet }: WalletCardProps) {
       try {
         await removeSessionSigners({ address: walletAddress });
       } catch (error) {
-        console.error("Error removing session signers:", error);
+        console.error("Error removing session signer:", error);
       } finally {
         setIsLoading(false);
       }
@@ -64,8 +69,32 @@ export default function WalletCard({ wallet }: WalletCardProps) {
     [removeSessionSigners, hasSessionSigners]
   );
 
+  const handleClientSign = useCallback(async () => {
+    if (!hasSessionSigners) return;
+
+    setIsClientSigning(true);
+    try {
+      const message = `Signing this message to verify ownership of ${wallet.address}`;
+      let signature;
+      if (wallet.chainType === "ethereum") {
+        const result = await signMessageEthereum({ message });
+        signature = result.signature;
+      } else if (wallet.chainType === "solana") {
+        const result = await signMessageSolana({
+          message,
+        });
+        signature = result.signature;
+      }
+      console.log("Message signed on client! Signature: ", signature);
+    } catch (error) {
+      console.error("Error signing message:", error);
+    } finally {
+      setIsClientSigning(false);
+    }
+  }, [wallet, hasSessionSigners]);
+
   const handleRemoteSign = useCallback(async () => {
-    setIsSigning(true);
+    setIsRemoteSigning(true);
     try {
       const authToken = await getAccessToken();
       const path =
@@ -90,7 +119,7 @@ export default function WalletCard({ wallet }: WalletCardProps) {
 
       if (response.status === 200) {
         console.log(
-          "Message signed successfully! Signature: " + data.data.signature
+          "Message signed on server! Signature: " + data.data.signature
         );
       } else {
         throw new Error(data.error || "Failed to sign message");
@@ -98,7 +127,7 @@ export default function WalletCard({ wallet }: WalletCardProps) {
     } catch (error) {
       console.error("Error signing message:", error);
     } finally {
-      setIsSigning(false);
+      setIsRemoteSigning(false);
     }
   }, [wallet.id]);
 
@@ -142,17 +171,31 @@ export default function WalletCard({ wallet }: WalletCardProps) {
         </div>
       )}
 
-      <button
-        onClick={handleRemoteSign}
-        disabled={isSigning || !hasSessionSigners}
-        className={`mt-2 text-sm py-2 px-4 rounded-md text-white ${
-          isSigning || !hasSessionSigners
-            ? "bg-blue-400 cursor-not-allowed"
-            : "bg-blue-600 hover:bg-blue-700"
-        }`}
-      >
-        {isSigning ? "Signing..." : "Sign message from server"}
-      </button>
+      <div className="flex flex-row gap-2">
+        <button
+          onClick={handleRemoteSign}
+          disabled={isRemoteSigning || !hasSessionSigners}
+          className={`text-sm py-2 px-4 rounded-md text-white ${
+            isRemoteSigning || !hasSessionSigners
+              ? "bg-blue-400 cursor-not-allowed"
+              : "bg-blue-600 hover:bg-blue-700"
+          }`}
+        >
+          {isRemoteSigning ? "Signing..." : "Sign message from server"}
+        </button>
+
+        <button
+          onClick={handleClientSign}
+          disabled={isClientSigning || !hasSessionSigners}
+          className={`text-sm py-2 px-4 rounded-md text-white ${
+            isClientSigning || !hasSessionSigners
+              ? "bg-green-400 cursor-not-allowed"
+              : "bg-green-600 hover:bg-green-700"
+          }`}
+        >
+          {isClientSigning ? "Signing..." : "Sign message from client"}
+        </button>
+      </div>
     </div>
   );
 }

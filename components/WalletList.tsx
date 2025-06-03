@@ -8,7 +8,7 @@ import { useCallback, useMemo, useState } from "react";
 import WalletCard from "./WalletCard";
 
 export default function WalletList() {
-  const { user, refreshUser } = useUser();
+  const { user } = useUser();
   const { createWallet } = useCreateWallet();
   const { createWallet: createSolanaWallet } = useSolanaWallets();
   const [isCreating, setIsCreating] = useState(false);
@@ -40,7 +40,6 @@ export default function WalletList() {
     setIsCreating(true);
     try {
       await createWallet();
-      //await refreshUser();
     } catch (error) {
       console.error("Error creating wallet:", error);
     } finally {
@@ -52,7 +51,6 @@ export default function WalletList() {
     setIsCreating(true);
     try {
       await createSolanaWallet();
-      //await refreshUser();
     } catch (error) {
       console.error("Error creating wallet:", error);
     } finally {
