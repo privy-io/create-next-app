@@ -1,19 +1,18 @@
 import {
   useCreateWallet,
+  useSolanaWallets,
   WalletWithMetadata,
   useUser,
-  useSolanaWallets,
 } from "@privy-io/react-auth";
 import { useCallback, useMemo, useState } from "react";
 import WalletCard from "./WalletCard";
 
 export default function WalletList() {
   const { user } = useUser();
-  const { createWallet } = useCreateWallet();
+  const { createWallet: createEthereumWallet } = useCreateWallet();
   const { createWallet: createSolanaWallet } = useSolanaWallets();
   const [isCreating, setIsCreating] = useState(false);
 
-  // Filter and cast the wallets to our custom type
   const ethereumEmbeddedWallets = useMemo<WalletWithMetadata[]>(
     () =>
       (user?.linkedAccounts.filter(
@@ -36,27 +35,23 @@ export default function WalletList() {
     [user]
   );
 
-  const handleCreateEthereumWallet = useCallback(async () => {
-    setIsCreating(true);
-    try {
-      await createWallet();
-    } catch (error) {
-      console.error("Error creating wallet:", error);
-    } finally {
-      setIsCreating(false);
-    }
-  }, [createWallet]);
-
-  const handleCreateSolanaWallet = useCallback(async () => {
-    setIsCreating(true);
-    try {
-      await createSolanaWallet();
-    } catch (error) {
-      console.error("Error creating wallet:", error);
-    } finally {
-      setIsCreating(false);
-    }
-  }, [createSolanaWallet]);
+  const handleCreateWallet = useCallback(
+    async (type: "ethereum" | "solana") => {
+      setIsCreating(true);
+      try {
+        if (type === "ethereum") {
+          await createEthereumWallet();
+        } else if (type === "solana") {
+          await createSolanaWallet();
+        }
+      } catch (error) {
+        console.error("Error creating wallet:", error);
+      } finally {
+        setIsCreating(false);
+      }
+    },
+    [createEthereumWallet, createSolanaWallet]
+  );
 
   return (
     <div className="space-y-4">
@@ -66,7 +61,7 @@ export default function WalletList() {
             No Ethereum embedded wallets found.
           </p>
           <button
-            onClick={handleCreateEthereumWallet}
+            onClick={() => handleCreateWallet("ethereum")}
             disabled={isCreating}
             className="text-sm bg-violet-600 hover:bg-violet-700 py-2 px-4 rounded-md text-white disabled:bg-violet-400 disabled:cursor-not-allowed"
           >
@@ -86,7 +81,7 @@ export default function WalletList() {
             No Solana embedded wallets found.
           </p>
           <button
-            onClick={handleCreateSolanaWallet}
+            onClick={() => handleCreateWallet("solana")}
             disabled={isCreating}
             className="text-sm bg-violet-600 hover:bg-violet-700 py-2 px-4 rounded-md text-white disabled:bg-violet-400 disabled:cursor-not-allowed"
           >
