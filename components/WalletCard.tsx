@@ -55,8 +55,6 @@ export default function WalletCard({ wallet }: WalletCardProps) {
 
   const removeSessionSigner = useCallback(
     async (walletAddress: string) => {
-      if (!hasSessionSigners) return;
-
       setIsLoading(true);
       try {
         await removeSessionSigners({ address: walletAddress });
@@ -66,12 +64,10 @@ export default function WalletCard({ wallet }: WalletCardProps) {
         setIsLoading(false);
       }
     },
-    [removeSessionSigners, hasSessionSigners]
+    [removeSessionSigners]
   );
 
   const handleClientSign = useCallback(async () => {
-    if (!hasSessionSigners) return;
-
     setIsClientSigning(true);
     try {
       const message = `Signing this message to verify ownership of ${wallet.address}`;
@@ -91,7 +87,7 @@ export default function WalletCard({ wallet }: WalletCardProps) {
     } finally {
       setIsClientSigning(false);
     }
-  }, [wallet, hasSessionSigners]);
+  }, [wallet]);
 
   const handleRemoteSign = useCallback(async () => {
     setIsRemoteSigning(true);
@@ -186,9 +182,9 @@ export default function WalletCard({ wallet }: WalletCardProps) {
 
         <button
           onClick={handleClientSign}
-          disabled={isClientSigning || !hasSessionSigners}
+          disabled={isClientSigning}
           className={`text-sm py-2 px-4 rounded-md text-white ${
-            isClientSigning || !hasSessionSigners
+            isClientSigning
               ? "bg-green-400 cursor-not-allowed"
               : "bg-green-600 hover:bg-green-700"
           }`}
