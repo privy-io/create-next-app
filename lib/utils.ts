@@ -35,9 +35,8 @@ export const createPrivyClient = () => {
     process.env.NEXT_PUBLIC_PRIVY_APP_ID as string,
     process.env.PRIVY_APP_SECRET as string,
     {
-      apiURL: process.env.PRIVY_AUTH_URL_OVERRIDE,
       walletApi: {
-        authorizationPrivateKey: process.env.WALLET_API_PRIVATE_KEY,
+        authorizationPrivateKey: process.env.SESSION_SIGNER_SECRET,
       },
     }
   );

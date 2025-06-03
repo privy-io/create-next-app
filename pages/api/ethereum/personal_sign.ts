@@ -1,11 +1,10 @@
 import { WalletApiRpcResponseType } from "@privy-io/public-api";
-import { WalletWithMetadata } from "@privy-io/server-auth";
 import type { NextApiRequest, NextApiResponse } from "next";
 import {
   APIError,
   fetchAndVerifyAuthorization,
   createPrivyClient,
-} from "../../lib/utils";
+} from "../../../lib/utils";
 
 const client = createPrivyClient();
 
@@ -22,35 +21,23 @@ export default async function POST(
   if (!authorized) return errorOrVerifiedClaims;
 
   const message = req.body.message;
-  const payload = {
-    address: req.body.address,
-    chainType: req.body.chain_type,
-    method: "personal_sign" as const,
-    params: {
-      message,
-    },
-  };
+  const walletId = req.body.wallet_id;
+
+  if (!message || !walletId) {
+    return res
+      .status(400)
+      .json({ error: "Message and wallet_id are required" });
+  }
+
   // Testing server-auth functionality for fetching actively delegated wallets
   const user = await client.getUser(errorOrVerifiedClaims.userId);
   if (!user) {
     return res.status(500).json({ error: "Unable to fetch current user" });
   }
-  const delegatedWallet = user.linkedAccounts.find(
-    (account: any): account is WalletWithMetadata =>
-      account.type === "wallet" &&
-      account.walletClientType === "privy" &&
-      account.address === payload.address &&
-      account.delegated
-  );
-  if (!delegatedWallet?.delegated || !delegatedWallet.id) {
-    return res
-      .status(401)
-      .json({ error: "Wallet is not delegated for the current user" });
-  }
 
   try {
     const { signature } = await client.walletApi.ethereum.signMessage({
-      walletId: delegatedWallet.id,
+      walletId,
       message,
     });
     return res.status(200).json({

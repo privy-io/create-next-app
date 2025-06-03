@@ -209,13 +209,11 @@ export default function DashboardPage() {
                   </pre>
                 </details>
               )}
-
-              <div className="space-y-6">
-                <h2 className="text-xl font-bold">Your Wallets</h2>
-                <WalletList />
-              </div>
             </div>
-
+            <div className="space-y-6 max-w-4xl mt-6">
+              <h2 className="text-xl font-bold">Your Wallet</h2>
+              <WalletList />
+            </div>
             <p className="mt-6 font-bold uppercase text-sm text-gray-600">
               User object
             </p>

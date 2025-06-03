@@ -1,6 +1,10 @@
 import { useCallback, useState } from "react";
-import { useSessionSigners, WalletWithMetadata } from "@privy-io/react-auth";
-import { toast } from "react-hot-toast";
+import {
+  getAccessToken,
+  useSessionSigners,
+  WalletWithMetadata,
+} from "@privy-io/react-auth";
+import axios from "axios";
 
 const SESSION_SIGNER_ID = process.env.NEXT_PUBLIC_SESSION_SIGNER_ID;
 
@@ -60,6 +64,44 @@ export default function WalletCard({ wallet }: WalletCardProps) {
     [removeSessionSigners, hasSessionSigners]
   );
 
+  const handleRemoteSign = useCallback(async () => {
+    setIsSigning(true);
+    try {
+      const authToken = await getAccessToken();
+      const path =
+        wallet.chainType === "ethereum"
+          ? "/api/ethereum/personal_sign"
+          : "/api/solana/sign_message";
+      const message = `Signing this message to verify ownership of ${wallet.address}`;
+      const response = await axios.post(
+        path,
+        {
+          wallet_id: wallet.id,
+          message: message,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        }
+      );
+
+      const data = response.data;
+
+      if (response.status === 200) {
+        console.log(
+          "Message signed successfully! Signature: " + data.data.signature
+        );
+      } else {
+        throw new Error(data.error || "Failed to sign message");
+      }
+    } catch (error) {
+      console.error("Error signing message:", error);
+    } finally {
+      setIsSigning(false);
+    }
+  }, [wallet.id]);
+
   return (
     <div className="flex flex-col gap-4 p-4 border border-gray-200 rounded-lg">
       <div className="text-sm text-violet-700">
@@ -101,42 +143,7 @@ export default function WalletCard({ wallet }: WalletCardProps) {
       )}
 
       <button
-        onClick={async () => {
-          if (!wallet.address) return;
-
-          setIsSigning(true);
-          try {
-            const message = `Signing this message to verify ownership of ${wallet.address}`;
-            const response = await fetch("/api/server_personal_sign", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                address: wallet.address,
-                chain_type: "ethereum",
-                message: message,
-              }),
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-              toast.success(
-                "Message signed successfully! Signature: " + data.data.signature
-              );
-            } else {
-              throw new Error(data.error || "Failed to sign message");
-            }
-          } catch (error) {
-            console.error("Error signing message:", error);
-            toast.error(
-              error instanceof Error ? error.message : "Failed to sign message"
-            );
-          } finally {
-            setIsSigning(false);
-          }
-        }}
+        onClick={handleRemoteSign}
         disabled={isSigning || !hasSessionSigners}
         className={`mt-2 text-sm py-2 px-4 rounded-md text-white ${
           isSigning || !hasSessionSigners
