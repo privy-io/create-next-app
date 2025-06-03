@@ -29,12 +29,6 @@ export default async function POST(
       .json({ error: "Message and wallet_id are required" });
   }
 
-  // Testing server-auth functionality for fetching actively delegated wallets
-  const user = await client.getUser(errorOrVerifiedClaims.userId);
-  if (!user) {
-    return res.status(500).json({ error: "Unable to fetch current user" });
-  }
-
   try {
     const { signature } = await client.walletApi.ethereum.signMessage({
       walletId,
