@@ -1,12 +1,14 @@
-import "../styles/globals.css";
-import type { AppProps } from "next/app";
-import Head from "next/head";
-import { PrivyProvider } from "@privy-io/react-auth";
+import Providers from "../components/Providers";
+import "./globals.css";
 
-function MyApp({ Component, pageProps }: AppProps) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <>
-      <Head>
+    <html lang="en">
+      <head>
         <link
           rel="preload"
           href="/fonts/AdelleSans-Regular.woff"
@@ -39,19 +41,10 @@ function MyApp({ Component, pageProps }: AppProps) {
 
         <title>Privy Auth Starter</title>
         <meta name="description" content="Privy Auth Starter" />
-      </Head>
-      <PrivyProvider
-        appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ""}
-        config={{
-          embeddedWallets: {
-            createOnLogin: "all-users",
-          },
-        }}
-      >
-        <Component {...pageProps} />
-      </PrivyProvider>
-    </>
+      </head>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
+    </html>
   );
 }
-
-export default MyApp;

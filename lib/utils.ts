@@ -1,5 +1,4 @@
 import { AuthTokenClaims, PrivyClient } from "@privy-io/server-auth";
-import type { NextApiRequest, NextApiResponse } from "next";
 
 export type APIError = {
   error: string;
@@ -8,25 +7,17 @@ export type APIError = {
 
 /**
  * Authorizes a user to call an endpoint, returning either an error result or their verifiedClaims
- * @param req - The API request
- * @param res - The API response
+ * @param authToken - The auth token to verify
  * @param client - A PrivyClient
  */
 export const fetchAndVerifyAuthorization = async (
-  req: NextApiRequest,
-  res: NextApiResponse,
-  client: PrivyClient
+  authToken: string,
+  client: PrivyClient,
 ): Promise<AuthTokenClaims | void> => {
-  const header = req.headers.authorization;
-  if (!header) {
-    return res.status(401).json({ error: "Missing auth token." });
-  }
-  const authToken = header.replace(/^Bearer /, "");
-
   try {
-    return client.verifyAuthToken(authToken);
+    return await client.verifyAuthToken(authToken);
   } catch {
-    return res.status(401).json({ error: "Invalid auth token." });
+    throw new Error("Invalid auth token.");
   }
 };
 
@@ -38,6 +29,6 @@ export const createPrivyClient = () => {
       walletApi: {
         authorizationPrivateKey: process.env.SESSION_SIGNER_SECRET,
       },
-    }
+    },
   );
 };
