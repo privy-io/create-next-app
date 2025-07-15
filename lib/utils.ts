@@ -15,7 +15,7 @@ export type APIError = {
 export const fetchAndVerifyAuthorization = async (
   req: NextApiRequest,
   res: NextApiResponse,
-  client: PrivyClient
+  client: PrivyClient,
 ): Promise<AuthTokenClaims | void> => {
   const header = req.headers.authorization;
   if (!header) {
@@ -38,6 +38,6 @@ export const createPrivyClient = () => {
       walletApi: {
         authorizationPrivateKey: process.env.SESSION_SIGNER_SECRET,
       },
-    }
+    },
   );
 };
