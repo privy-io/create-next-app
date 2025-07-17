@@ -1,0 +1,230 @@
+name: Auto-Generate News Documentation
+
+on:
+  pull_request:
+    types: [opened]
+    branches:
+      - main
+
+jobs:
+  analyze-pr:
+    name: Analyze PR Details
+    runs-on: ubuntu-latest
+    outputs:
+      pr_number: ${{ steps.analyze.outputs.pr_number }}
+      pr_title: ${{ steps.analyze.outputs.pr_title }}
+      pr_author: ${{ steps.analyze.outputs.pr_author }}
+    
+    steps:
+      - name: Checkout create-next-app repo
+        uses: actions/checkout@v4
+        
+      - name: Extract PR information
+        id: analyze
+        run: |
+          echo "pr_number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+          echo "pr_title=${{ github.event.pull_request.title }}" >> $GITHUB_OUTPUT
+          echo "pr_author=${{ github.event.pull_request.user.login }}" >> $GITHUB_OUTPUT
+          
+          echo "PR #${{ github.event.pull_request.number }} opened by ${{ github.event.pull_request.user.login }}"
+          echo "Title: ${{ github.event.pull_request.title }}"
+
+  generate-news-content:
+    name: Generate Fake News Summary
+    needs: analyze-pr
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Install dependencies
+        run: |
+          npm install -g tsx
+          npm install @anthropic-ai/sdk@latest
+          
+      - name: Generate fake news with Claude
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          cat > /tmp/generate-news.ts << 'EOF'
+          import Anthropic from '@anthropic-ai/sdk';
+          import { writeFileSync } from 'fs';
+          
+          const anthropic = new Anthropic({
+            apiKey: process.env.ANTHROPIC_API_KEY,
+          });
+          
+          async function generateFakeNews() {
+            const prTitle = '${{ needs.analyze-pr.outputs.pr_title }}';
+            const prAuthor = '${{ needs.analyze-pr.outputs.pr_author }}';
+            const prNumber = '${{ needs.analyze-pr.outputs.pr_number }}';
+            
+            const prompt = `Generate a completely fictional "5-minute news summary" for a documentation page. This should be fake news stories that are obviously fictional and humorous.
+
+Requirements:
+- Create 4-5 fake news stories
+- Make them obviously fictional (like tech companies doing absurd things)
+- Include timestamps from the last 5 minutes
+- Write in a news bulletin style
+- Make it engaging but clearly fake
+- Include some tech-related stories since this is for a developer docs site
+- Reference that this was triggered by PR #${prNumber} by ${prAuthor} with title "${prTitle}"
+
+Format as a complete MDX file with:
+- Frontmatter with title and description
+- Proper headings and structure
+- Timestamps for each story
+- A note at the bottom explaining this is auto-generated fake content
+
+Return ONLY the MDX content, no other text.`;
+
+            const message = await anthropic.messages.create({
+              model: 'claude-3-5-sonnet-20241022',
+              max_tokens: 2000,
+              temperature: 0.8,
+              system: 'You are a creative writer generating obviously fictional news content for documentation purposes. Make it humorous and clearly fake.',
+              messages: [{ role: 'user', content: prompt }],
+            });
+            
+            const result = message.content[0].type === 'text' ? message.content[0].text : '';
+            writeFileSync('/tmp/news_content.mdx', result);
+          }
+          
+          generateFakeNews().catch(console.error);
+          EOF
+          
+          tsx /tmp/generate-news.ts
+          
+      - name: Upload news content artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: news-content
+          path: /tmp/news_content.mdx
+
+  create-docs-pr:
+    name: Create Documentation PR with News
+    needs: [analyze-pr, generate-news-content]
+    runs-on: ubuntu-latest
+    
+    steps:          
+      - name: Checkout docs repository
+        uses: actions/checkout@v4
+        with:
+          repository: privy-io/docs
+          token: ${{ secrets.GH_TOKEN }}
+          path: docs-repo
+          
+      - name: Download news content artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: news-content
+          path: /tmp/
+          
+      - name: Setup Git
+        run: |
+          cd docs-repo
+          git config user.name "privy-bot[bot]"
+          git config user.email "privy-bot[bot]@users.noreply.github.com"
+          
+      - name: Create news documentation page
+        id: create-page
+        run: |
+          cd docs-repo
+          
+          # Create new branch
+          BRANCH_NAME="news-update-pr-${{ needs.analyze-pr.outputs.pr_number }}-$(date +%s)"
+          git checkout -b $BRANCH_NAME
+          
+          # Create the news page at root level
+          NEWS_FILE="docs/latest-news.mdx"
+          cp /tmp/news_content.mdx "$NEWS_FILE"
+          
+          # Add to git
+          git add "$NEWS_FILE"
+          git commit -m "feat: add latest news summary page
+          
+          Auto-generated from create-next-app PR #${{ needs.analyze-pr.outputs.pr_number }}
+          Triggered by: @${{ needs.analyze-pr.outputs.pr_author }}
+          PR Title: ${{ needs.analyze-pr.outputs.pr_title }}"
+          
+          git push origin $BRANCH_NAME
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+          echo "news_file=$NEWS_FILE" >> $GITHUB_OUTPUT
+          
+      - name: Create Documentation Pull Request
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GH_TOKEN }}
+          script: |
+            const prBody = `## 📰 Latest News Summary Page
+            
+            This PR was automatically generated from create-next-app PR: https://github.com/privy-io/create-next-app/pull/${{ needs.analyze-pr.outputs.pr_number }}
+            
+            ### Trigger Details
+            - **Original PR:** #${{ needs.analyze-pr.outputs.pr_number }} - "${{ needs.analyze-pr.outputs.pr_title }}"
+            - **Author:** @${{ needs.analyze-pr.outputs.pr_author }}
+            - **Timestamp:** ${new Date().toISOString()}
+            
+            ### What's Added
+            - 📄 New root-level page: \`docs/latest-news.mdx\`
+            - 📰 Contains a 5-minute fictional news summary
+            - 🤖 Auto-generated content triggered by PR opening
+            
+            ### Review Notes
+            - This is completely fictional content for demonstration purposes
+            - The news stories are obviously fake and humorous
+            - Content is auto-generated and refreshed with each PR
+            
+            ### Next Steps
+            - [ ] Review the generated content
+            - [ ] Verify the page renders correctly
+            - [ ] Consider adding to navigation if desired
+            
+            _This documentation page was automatically created when PR #${{ needs.analyze-pr.outputs.pr_number }} was opened in create-next-app._`;
+            
+            const pr = await github.rest.pulls.create({
+              owner: 'privy-io',
+              repo: 'docs',
+              title: `📰 Add latest news page (triggered by create-next-app PR #${{ needs.analyze-pr.outputs.pr_number }})`,
+              body: prBody,
+              head: '${{ steps.create-page.outputs.branch_name }}',
+              base: 'main',
+              draft: false
+            });
+            
+            // Add labels
+            await github.rest.issues.addLabels({
+              owner: 'privy-io',
+              repo: 'docs',
+              issue_number: pr.data.number,
+              labels: ['documentation', 'automated', 'news-content', 'create-next-app-trigger']
+            });
+            
+            console.log(`Created news documentation PR: ${pr.data.html_url}`);
+            
+      - name: Comment on original PR
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GH_TOKEN }}
+          script: |
+            await github.rest.issues.createComment({
+              owner: 'privy-io',
+              repo: 'create-next-app',
+              issue_number: ${{ needs.analyze-pr.outputs.pr_number }},
+              body: `## 📰 Documentation Update Triggered!
+              
+              Opening this PR has automatically generated a new documentation page with the latest fictional news summary!
+              
+              **What happened:**
+              - 🤖 A new documentation PR was created in the docs repository
+              - 📄 Added a new root-level page: \`docs/latest-news.mdx\`
+              - 📰 Contains completely fictional "breaking news" content
+              - ⏱️ Generated at: ${new Date().toLocaleString()}
+              
+              This is a demonstration of automated documentation generation triggered by PR events.
+              
+              _The news content is completely fictional and created for demo purposes!_`
+            });
