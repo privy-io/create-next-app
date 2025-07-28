@@ -40,7 +40,7 @@ export default function WalletCard({ wallet }: WalletCardProps) {
 
   const privyWallet = wallets.find((w) => w.address === wallet.address);
 
-  if (!privyWallet) return;
+  if (!privyWallet) return null;
 
   const account = Account.from({
     source: "privateKey",
