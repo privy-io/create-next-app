@@ -5,13 +5,19 @@
     "@tsconfig/next/tsconfig"
   ],
   "compilerOptions": {
+    "target": "es2016",
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "outDir": "dist",
     "lib": ["dom", "dom.iterable", "esnext"],
     "declaration": true,
     "sourceMap": true,
     "stripInternal": true,
     "allowJs": true,
     "noEmit": true,
-    "module": "esnext",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
@@ -21,6 +27,6 @@
     "exactOptionalPropertyTypes": false,
     "moduleResolution": "node"
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
+  "include": ["*.ts"],
   "exclude": ["node_modules"]
 }

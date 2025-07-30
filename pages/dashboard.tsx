@@ -2,6 +2,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { getAccessToken, usePrivy } from "@privy-io/react-auth";
 import Head from "next/head";
+import {useFundWallet} from '@privy-io/react-auth';
 
 async function verifyToken() {
   const url = "/api/verify";
@@ -36,6 +37,8 @@ export default function DashboardPage() {
     linkDiscord,
     unlinkDiscord,
   } = usePrivy();
+
+  const {fundWallet} = useFundWallet();
 
   useEffect(() => {
     if (ready && !authenticated) {
@@ -197,6 +200,19 @@ export default function DashboardPage() {
               >
                 Verify token on server
               </button>
+
+              <button
+                onClick={() => fundWallet(wallet?.address || "", {
+                  chain: {
+                    id: 8453,
+                  },
+                  amount: "10",
+                  asset: "USDC",
+                })}
+                className="text-sm bg-violet-600 hover:bg-violet-700 py-2 px-4 rounded-md text-white border-none"
+            >
+                Fund wallet
+            </button>
 
               {Boolean(verifyResult) && (
                 <details className="w-full">
