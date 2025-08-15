@@ -43,9 +43,7 @@ function MyApp({ Component, pageProps }: AppProps) {
       <PrivyProvider
         appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ""}
         config={{
-          embeddedWallets: {
-            createOnLogin: "all-users",
-          },
+          embeddedWallets: { showWalletUIs: false },
         }}
       >
         <Component {...pageProps} />

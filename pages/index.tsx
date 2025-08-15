@@ -1,5 +1,5 @@
 import Portal from "../components/graphics/portal";
-import { useLogin } from "@privy-io/react-auth";
+import { useGuestAccounts, useLogin } from "@privy-io/react-auth";
 import { PrivyClient } from "@privy-io/server-auth";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
@@ -32,7 +32,8 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login } = useLogin({
+  const { createGuestAccount } = useGuestAccounts();
+  useLogin({
     onComplete: () => router.push("/dashboard"),
   });
 
@@ -51,9 +52,9 @@ export default function LoginPage() {
             <div className="mt-6 flex justify-center text-center">
               <button
                 className="bg-violet-600 hover:bg-violet-700 py-3 px-6 text-white rounded-lg"
-                onClick={login}
+                onClick={createGuestAccount}
               >
-                Log in
+                Continue as guest
               </button>
             </div>
           </div>
