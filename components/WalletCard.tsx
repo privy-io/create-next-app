@@ -1,6 +1,6 @@
 import { useWallets, WalletWithMetadata } from "@privy-io/react-auth";
 import { useState } from "react";
-import { Account, Key, ServerActions } from "porto/viem";
+import { Account, RelayActions, WalletActions } from "porto/viem";
 import { encodeFunctionData, Hex, createClient, http } from "viem";
 import { Chains } from "porto";
 
@@ -70,13 +70,10 @@ export default function WalletCard({ wallet }: WalletCardProps) {
               setLoading(true);
               try {
                 // Create Porto account
-                const upgradedAccount = await ServerActions.upgradeAccount(
+                const upgradedAccount = await RelayActions.upgradeAccount(
                   client,
                   {
                     account,
-                    authorizeKeys: [
-                      Key.fromSecp256k1({ address: account.address }),
-                    ],
                   }
                 );
                 setUpgraded(true);
@@ -105,7 +102,7 @@ export default function WalletCard({ wallet }: WalletCardProps) {
               setLoading(true);
               try {
                 // Create Porto account
-                const result = await ServerActions.sendCalls(client, {
+                const result = await RelayActions.sendCalls(client, {
                   account,
                   calls: [
                     {
