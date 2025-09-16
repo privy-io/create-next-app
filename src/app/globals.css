@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@layer components {
+  .button-primary {
+    @apply bg-[#5B4FFF] hover:bg-[#4A3EE6] focus:bg-[#4A3EE6] active:bg-[#3F35D9]
+           disabled:bg-gray-300 disabled:cursor-not-allowed
+           text-white font-medium
+           px-4 py-2 rounded-md
+           border border-transparent
+           transition-colors duration-200 ease-in-out
+           focus:outline-none focus:ring-2 focus:ring-[#5B4FFF] focus:ring-offset-2
+           inline-flex items-center justify-center
+           text-sm leading-5 cursor-pointer;
+  }
+
+  .button-outline {
+    @apply flex flex-row items-center
+           px-4 py-2 gap-1 cursor-pointer
+           h-9 rounded-full
+           bg-transparent border border-[#5B4FFF]
+           text-[#5B4FFF] font-medium text-sm leading-tight
+           hover:bg-[#5B4FFF] hover:text-white
+           focus:bg-[#5B4FFF] focus:text-white
+           active:bg-[#4A3EE6]
+           focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2
+           transition-all duration-200 ease-in-out
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .button {
+    @apply flex flex-row items-center
+           px-3 py-2 gap-3 cursor-pointer
+           bg-white border border-[#E2E3F0] rounded-xl
+           text-[#040217] font-normal text-base leading-6
+           hover:bg-gray-50 hover:border-gray-300
+           focus:bg-gray-50 focus:border-gray-300
+           active:bg-gray-100
+           focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2
+           transition-all duration-200 ease-in-out
+           disabled:opacity-50 disabled:cursor-not-allowed
+           box-border;
+  }
+
+  .text-primary {
+    @apply text-[#5B4FFF];
+  }
+  .border-primary {
+    @apply border-[#5B4FFF];
+  }
+
+  .loader-overlay {
+    @apply absolute left-0 top-0 z-10 flex h-full w-full items-center justify-center bg-white/30;
+    animation: fade-in 150ms ease-in forwards;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
