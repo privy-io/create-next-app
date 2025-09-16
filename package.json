@@ -11,7 +11,9 @@
   "dependencies": {
     "@heroicons/react": "^2.2.0",
     "@privy-io/react-auth": "^2.25.0",
-    "@solana/kit": "^3.0.3",
+    "@solana-program/system": "0.7.0",
+    "@solana-program/token": "0.5.1",
+    "@solana/kit": "2.3.0",
     "@solana/spl-token": "^0.4.14",
     "@solana/web3.js": "^1.98.4",
     "bs58": "^6.0.0",
