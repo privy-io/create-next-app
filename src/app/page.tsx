@@ -65,6 +65,7 @@ function Home() {
         pauseOnHover
         limit={1}
         aria-label="Toast notifications"
+        style={{ top: 58 }}
       />
     </div>
   );

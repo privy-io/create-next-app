@@ -6,7 +6,7 @@ import {
 } from "@privy-io/react-auth";
 import { useCreateWallet as useCreateWalletExtendedChains } from "@privy-io/react-auth/extended-chains";
 import Section from "../reusables/section";
-import { toast } from "react-toastify";
+import { showSuccessToast, showErrorToast } from "../ui/custom-toast";
 
 type SupportedExtendedChains =
   | "cosmos"
@@ -25,12 +25,12 @@ const CreateAWallet = () => {
   const { createWallet: createWalletSolana } = useSolanaWallets();
   const { createWallet: createWalletEvm } = useCreateEvmWallet({
     onSuccess: ({ wallet }) => {
-      toast.success("EVM wallet created successfully.");
+      showSuccessToast("EVM wallet created successfully.");
       console.log("Created wallet ", wallet);
     },
     onError: (error) => {
       console.log(error);
-      toast.error("EVM wallet creation failed.");
+      showErrorToast("EVM wallet creation failed.");
     },
   });
 
@@ -44,10 +44,10 @@ const CreateAWallet = () => {
       await createWalletSolana({
         createAdditional: true,
       });
-      toast.success("Solana wallet created successfully.");
+      showSuccessToast("Solana wallet created successfully.");
     } catch (error) {
       console.log(error);
-      toast.error("Solana wallet creation failed.");
+      showErrorToast("Solana wallet creation failed.");
     }
   };
   const createWalletExtendedChainHandler = async (
@@ -57,10 +57,10 @@ const CreateAWallet = () => {
       await createWalletExtendedChains({
         chainType: chain,
       });
-      toast.success(`${chain} wallet successfully created`);
+      showSuccessToast(`${chain} wallet successfully created`);
     } catch (error) {
       console.log(error);
-      toast.error(`${chain} wallet creation failed.`);
+      showErrorToast(`${chain} wallet creation failed.`);
     }
   };
 

@@ -10,7 +10,7 @@ import Section from "../reusables/section";
 
 import { useFundWallet as useFundWalletSolana } from "@privy-io/react-auth/solana";
 import type { Hex } from "viem";
-import { toast } from "react-toastify";
+import { showErrorToast } from "../ui/custom-toast";
 
 type WalletInfo = {
   address: string;
@@ -59,7 +59,7 @@ const FundWallet = () => {
       | "native-currency"
   ) => {
     if (!isEvmWallet || !selectedWallet) {
-      toast.error("Please select an Ethereum wallet");
+      showErrorToast("Please select an Ethereum wallet");
       return;
     }
     try {
@@ -69,12 +69,12 @@ const FundWallet = () => {
       });
     } catch (error) {
       console.log(error);
-      toast.error("Failed to fund wallet. Please try again.");
+      showErrorToast("Failed to fund wallet. Please try again.");
     }
   };
   const fundWalletSolanaHandler = (asset?: "USDC" | "native-currency") => {
     if (!isSolanaWallet || !selectedWallet) {
-      toast.error("Please select a Solana wallet");
+      showErrorToast("Please select a Solana wallet");
       return;
     }
     try {
@@ -84,7 +84,7 @@ const FundWallet = () => {
       });
     } catch (error) {
       console.log(error);
-      toast.error("Failed to fund wallet. Please try again.");
+      showErrorToast("Failed to fund wallet. Please try again.");
     }
   };
 
@@ -149,7 +149,8 @@ const FundWallet = () => {
                 <option value="">Select a wallet</option>
                 {allWallets.map((wallet) => (
                   <option key={wallet.address} value={wallet.address}>
-                    {wallet.address} [{wallet.type === "ethereum" ? "ethereum" : "solana"}]
+                    {wallet.address} [
+                    {wallet.type === "ethereum" ? "ethereum" : "solana"}]
                   </option>
                 ))}
               </>

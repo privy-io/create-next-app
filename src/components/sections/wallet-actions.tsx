@@ -22,7 +22,7 @@ import {
   Transaction,
 } from "@solana/web3.js";
 import Section from "../reusables/section";
-import { toast } from "react-toastify";
+import { showSuccessToast, showErrorToast } from "@/components/ui/custom-toast";
 
 type WalletInfo = {
   address: string;
@@ -70,7 +70,7 @@ const WalletActions = () => {
 
   const handleSignMessageEvm = async () => {
     if (!isEvmWallet || !selectedWallet) {
-      toast.error("Please select an Ethereum wallet");
+      showErrorToast("Please select an Ethereum wallet");
       return;
     }
     try {
@@ -79,16 +79,16 @@ const WalletActions = () => {
         { message },
         { address: selectedWallet.address }
       );
-      toast.success(`EVM Message signed: ${signature.slice(0, 10)}...`);
+      showSuccessToast(`EVM Message signed: ${signature.slice(0, 10)}...`);
     } catch (error) {
       console.log(error);
-      toast.error("Failed to sign EVM message");
+      showErrorToast("Failed to sign EVM message");
     }
   };
 
   const handleSignMessageSolana = async () => {
     if (!isSolanaWallet || !selectedWallet) {
-      toast.error("Please select a Solana wallet");
+      showErrorToast("Please select a Solana wallet");
       return;
     }
     try {
@@ -103,16 +103,16 @@ const WalletActions = () => {
         },
       });
       const signature = bs58.encode(signatureUint8Array);
-      toast.success(`Solana Message signed: ${signature.slice(0, 10)}...`);
+      showSuccessToast(`Solana Message signed: ${signature.slice(0, 10)}...`);
     } catch (error) {
       console.log(error);
-      toast.error("Failed to sign Solana message");
+      showErrorToast("Failed to sign Solana message");
     }
   };
 
   const handleSignTransactionEvm = async () => {
     if (!isEvmWallet || !selectedWallet) {
-      toast.error("Please select an Ethereum wallet");
+      showErrorToast("Please select an Ethereum wallet");
       return;
     }
     try {
@@ -124,16 +124,16 @@ const WalletActions = () => {
         typeof transaction === "string"
           ? transaction
           : JSON.stringify(transaction);
-      toast.success(`EVM Transaction signed: ${result.slice(0, 20)}...`);
+      showSuccessToast(`EVM Transaction signed: ${result.slice(0, 20)}...`);
     } catch (error) {
       console.log(error);
-      toast.error("Failed to sign EVM transaction");
+      showErrorToast("Failed to sign EVM transaction");
     }
   };
 
   const handleSignTransactionSolana = async () => {
     if (!isSolanaWallet || !selectedWallet) {
-      toast.error("Please select a Solana wallet");
+      showErrorToast("Please select a Solana wallet");
       return;
     }
     try {
@@ -146,16 +146,16 @@ const WalletActions = () => {
         address: selectedWallet.address,
       });
       console.log(signedTransaction);
-      toast.success("Solana Transaction signed successfully");
+      showSuccessToast("Solana Transaction signed successfully");
     } catch (error) {
       console.log(error);
-      toast.error("Failed to sign Solana transaction");
+      showErrorToast("Failed to sign Solana transaction");
     }
   };
 
   const handleSendTransactionEvm = async () => {
     if (!isEvmWallet || !selectedWallet) {
-      toast.error("Please select an Ethereum wallet");
+      showErrorToast("Please select an Ethereum wallet");
       return;
     }
     try {
@@ -167,16 +167,16 @@ const WalletActions = () => {
         typeof transaction === "string"
           ? transaction
           : JSON.stringify(transaction);
-      toast.success(`EVM Transaction sent: ${result.slice(0, 20)}...`);
+      showSuccessToast(`EVM Transaction sent: ${result.slice(0, 20)}...`);
     } catch (error) {
       console.log(error);
-      toast.error("Failed to send EVM transaction");
+      showErrorToast("Failed to send EVM transaction");
     }
   };
 
   const handleSendTransactionSolana = async () => {
     if (!isSolanaWallet || !selectedWallet) {
-      toast.error("Please select a Solana wallet");
+      showErrorToast("Please select a Solana wallet");
       return;
     }
     try {
@@ -201,16 +201,16 @@ const WalletActions = () => {
       });
       console.log(receipt);
 
-      toast.success("Solana Transaction sent successfully");
+      showSuccessToast("Solana Transaction sent successfully");
     } catch (error) {
       console.log(error);
-      toast.error("Failed to send Solana transaction");
+      showErrorToast("Failed to send Solana transaction");
     }
   };
 
   const handleSignTypedData = async () => {
     if (!isEvmWallet || !selectedWallet) {
-      toast.error("Please select an Ethereum wallet");
+      showErrorToast("Please select an Ethereum wallet");
       return;
     }
     try {
@@ -249,16 +249,16 @@ const WalletActions = () => {
       const { signature } = await signTypedData(typedData, {
         address: selectedWallet?.address,
       });
-      toast.success(`Typed Data signed: ${signature.slice(0, 10)}...`);
+      showSuccessToast(`Typed Data signed: ${signature.slice(0, 10)}...`);
     } catch (error) {
       console.log(error);
-      toast.error("Failed to sign typed data");
+      showErrorToast("Failed to sign typed data");
     }
   };
 
   const handleSignRawHash = async () => {
     if (!isEvmWallet || !selectedWallet) {
-      toast.error("Please select an Ethereum wallet");
+      showErrorToast("Please select an Ethereum wallet");
       return;
     }
     try {
@@ -270,7 +270,7 @@ const WalletActions = () => {
       );
 
       if (!embeddedWallet) {
-        toast.error(
+        showErrorToast(
           "Selected wallet must be an embedded Privy wallet for raw hash signing"
         );
         return;
@@ -286,10 +286,10 @@ const WalletActions = () => {
         params: [rawHash],
       });
 
-      toast.success(`Raw Hash signed: ${signature.slice(0, 10)}...`);
+      showSuccessToast(`Raw Hash signed: ${signature.slice(0, 10)}...`);
     } catch (error) {
       console.log(error);
-      toast.error("Failed to sign raw hash");
+      showErrorToast("Failed to sign raw hash");
     }
   };
 
@@ -357,30 +357,43 @@ const WalletActions = () => {
             id="wallet-select"
             value={selectedWallet?.address || ""}
             onChange={(e) => {
-              const wallet = allWallets.find((w) => w.address === e.target.value);
+              const wallet = allWallets.find(
+                (w) => w.address === e.target.value
+              );
               setSelectedWallet(wallet || null);
             }}
             className="w-full pl-3 pr-8 py-2 border border-[#E2E3F0] rounded-md bg-white text-black focus:outline-none focus:ring-1 focus:ring-black appearance-none"
           >
-          {allWallets.length === 0 ? (
-            <option value="">No wallets available</option>
-          ) : (
-            <>
-              <option value="">Select a wallet</option>
-              {allWallets.map((wallet) => (
-                <option key={wallet.address} value={wallet.address}>
-                  {wallet.address} [{wallet.type === "ethereum" ? "ethereum" : "solana"}]
-                </option>
-              ))}
-            </>
-          )}
-        </select>
-        <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-          <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
+            {allWallets.length === 0 ? (
+              <option value="">No wallets available</option>
+            ) : (
+              <>
+                <option value="">Select a wallet</option>
+                {allWallets.map((wallet) => (
+                  <option key={wallet.address} value={wallet.address}>
+                    {wallet.address} [
+                    {wallet.type === "ethereum" ? "ethereum" : "solana"}]
+                  </option>
+                ))}
+              </>
+            )}
+          </select>
+          <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+            <svg
+              className="w-4 h-4 text-gray-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </div>
         </div>
-      </div>
       </div>
     </Section>
   );

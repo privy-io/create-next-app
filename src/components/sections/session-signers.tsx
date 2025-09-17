@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useSessionSigners, useWallets } from "@privy-io/react-auth";
 import Section from "../reusables/section";
-import { toast } from "react-toastify";
+import { showSuccessToast, showErrorToast } from "@/components/ui/custom-toast";
 
 type WalletInfo = {
   address: string;
@@ -33,7 +33,7 @@ const SessionSigners = () => {
 
   const handleAddSessionSigners = async () => {
     if (!selectedWallet) {
-      toast.error("Please select a wallet");
+      showErrorToast("Please select a wallet");
       return;
     }
     try {
@@ -46,26 +46,26 @@ const SessionSigners = () => {
           },
         ],
       });
-      toast.success("Session signer added");
+      showSuccessToast("Session signer added");
     } catch (error) {
       const message = error?.toString?.() ?? "Failed to add session signer";
-      toast.error(message);
+      showErrorToast(message);
     }
   };
 
   const handleRemoveSessionSigners = async () => {
     if (!selectedWallet) {
-      toast.error("Please select a wallet");
+      showErrorToast("Please select a wallet");
       return;
     }
     try {
       await removeSessionSigners({
         address: selectedWallet.address,
       });
-      toast.success("Session signer removed");
+      showSuccessToast("Session signer removed");
     } catch (error) {
       const message = error?.toString?.() ?? "Failed to remove session signer";
-      toast.error(message);
+      showErrorToast(message);
     }
   };
 

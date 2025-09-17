@@ -11,7 +11,7 @@ import {
   useConnectedStandardWallets,
 } from "@privy-io/react-auth/solana";
 import Section from "../reusables/section";
-import { toast } from "react-toastify";
+import { showSuccessToast, showErrorToast } from "@/components/ui/custom-toast";
 
 type WalletInfo = {
   address: string;
@@ -55,61 +55,58 @@ const WalletManagement = () => {
     }
   }, [allWallets, selectedWallet]);
 
-  const isEvmWallet = selectedWallet?.type === "ethereum";
-  const isSolanaWallet = selectedWallet?.type === "solana";
-
   const handleExportWallet = async () => {
     if (!selectedWallet) {
-      toast.error("Please select a wallet to export");
+      showErrorToast("Please select a wallet to export");
       return;
     }
 
     if (!selectedWallet.isPrivy) {
-      toast.error("Only Privy wallets can be exported");
+      showErrorToast("Only Privy wallets can be exported");
       return;
     }
 
     try {
       if (selectedWallet.type === "ethereum") {
         await exportWalletEvm({ address: selectedWallet.address });
-        toast.success("Ethereum wallet exported");
+        showSuccessToast("Ethereum wallet exported");
       } else {
         await exportWalletSolana({ address: selectedWallet.address });
-        toast.success("Solana wallet exported");
+        showSuccessToast("Solana wallet exported");
       }
     } catch (error) {
       const message = error?.toString?.() ?? "Failed to export wallet";
-      toast.error(message);
+      showErrorToast(message);
     }
   };
 
   const handleImportEthereum = async () => {
     if (!privateKey) {
-      toast.error("Please enter a private key");
+      showErrorToast("Please enter a private key");
       return;
     }
     try {
       await importWalletEvm({ privateKey });
-      toast.success("Ethereum wallet imported successfully");
+      showSuccessToast("Ethereum wallet imported successfully");
       setPrivateKey("");
     } catch (error) {
       const message = error?.toString?.() ?? "Failed to import Ethereum wallet";
-      toast.error(message);
+      showErrorToast(message);
     }
   };
 
   const handleImportSolana = async () => {
     if (!privateKey) {
-      toast.error("Please enter a private key");
+      showErrorToast("Please enter a private key");
       return;
     }
     try {
       await importWalletSolana({ privateKey });
-      toast.success("Solana wallet imported successfully");
+      showSuccessToast("Solana wallet imported successfully");
       setPrivateKey("");
     } catch (error) {
       const message = error?.toString?.() ?? "Failed to import Solana wallet";
-      toast.error(message);
+      showErrorToast(message);
     }
   };
 

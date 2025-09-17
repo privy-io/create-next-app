@@ -1,7 +1,7 @@
 "use client";
 import { usePrivy } from "@privy-io/react-auth";
 import Section from "../reusables/section";
-import { toast } from "react-toastify";
+import { showSuccessToast, showErrorToast } from "@/components/ui/custom-toast";
 
 const UnlinkAccounts = () => {
   const {
@@ -37,10 +37,10 @@ const UnlinkAccounts = () => {
         function: async () => {
           try {
             await unlinkEmail(address);
-            toast.success("Email account unlinked successfully");
+            showSuccessToast("Email account unlinked successfully");
           } catch (error) {
             console.log(error);
-            toast.error("Failed to unlink email account");
+            showErrorToast("Failed to unlink email account");
           }
         },
       });
@@ -53,10 +53,10 @@ const UnlinkAccounts = () => {
         function: async () => {
           try {
             await unlinkPhone(phoneNumber);
-            toast.success("Phone account unlinked successfully");
+            showSuccessToast("Phone account unlinked successfully");
           } catch (error) {
             console.log(error);
-            toast.error("Failed to unlink phone account");
+            showErrorToast("Failed to unlink phone account");
           }
         },
       });
@@ -74,10 +74,10 @@ const UnlinkAccounts = () => {
           function: async () => {
             try {
               await unlinkWallet(address);
-              toast.success("Wallet account unlinked successfully");
+              showSuccessToast("Wallet account unlinked successfully");
             } catch (error) {
               console.log(error);
-              toast.error("Failed to unlink wallet account");
+              showErrorToast("Failed to unlink wallet account");
             }
           },
         });
@@ -91,10 +91,10 @@ const UnlinkAccounts = () => {
         function: async () => {
           try {
             await unlinkGoogle(subject);
-            toast.success("Google account unlinked successfully");
+            showSuccessToast("Google account unlinked successfully");
           } catch (error) {
             console.log(error);
-            toast.error("Failed to unlink Google account");
+            showErrorToast("Failed to unlink Google account");
           }
         },
       });
@@ -107,10 +107,10 @@ const UnlinkAccounts = () => {
         function: async () => {
           try {
             await unlinkApple(subject);
-            toast.success("Apple account unlinked successfully");
+            showSuccessToast("Apple account unlinked successfully");
           } catch (error) {
             console.log(error);
-            toast.error("Failed to unlink Apple account");
+            showErrorToast("Failed to unlink Apple account");
           }
         },
       });
@@ -123,10 +123,10 @@ const UnlinkAccounts = () => {
         function: async () => {
           try {
             await unlinkTwitter(subject);
-            toast.success("Twitter account unlinked successfully");
+            showSuccessToast("Twitter account unlinked successfully");
           } catch (error) {
             console.log(error);
-            toast.error("Failed to unlink Twitter account");
+            showErrorToast("Failed to unlink Twitter account");
           }
         },
       });
@@ -139,10 +139,10 @@ const UnlinkAccounts = () => {
         function: async () => {
           try {
             await unlinkDiscord(subject);
-            toast.success("Discord account unlinked successfully");
+            showSuccessToast("Discord account unlinked successfully");
           } catch (error) {
             console.log(error);
-            toast.error("Failed to unlink Discord account");
+            showErrorToast("Failed to unlink Discord account");
           }
         },
       });
@@ -155,10 +155,10 @@ const UnlinkAccounts = () => {
         function: async () => {
           try {
             await unlinkGithub(subject);
-            toast.success("GitHub account unlinked successfully");
+            showSuccessToast("GitHub account unlinked successfully");
           } catch (error) {
             console.log(error);
-            toast.error("Failed to unlink GitHub account");
+            showErrorToast("Failed to unlink GitHub account");
           }
         },
       });
@@ -171,10 +171,10 @@ const UnlinkAccounts = () => {
         function: async () => {
           try {
             await unlinkLinkedIn(subject);
-            toast.success("LinkedIn account unlinked successfully");
+            showSuccessToast("LinkedIn account unlinked successfully");
           } catch (error) {
             console.log(error);
-            toast.error("Failed to unlink LinkedIn account");
+            showErrorToast("Failed to unlink LinkedIn account");
           }
         },
       });
@@ -187,10 +187,10 @@ const UnlinkAccounts = () => {
         function: async () => {
           try {
             await unlinkTiktok(subject);
-            toast.success("Tiktok account unlinked successfully");
+            showSuccessToast("Tiktok account unlinked successfully");
           } catch (error) {
             console.log(error);
-            toast.error("Failed to unlink Tiktok account");
+            showErrorToast("Failed to unlink Tiktok account");
           }
         },
       });
@@ -203,10 +203,10 @@ const UnlinkAccounts = () => {
         function: async () => {
           try {
             await unlinkLine(subject);
-            toast.success("Line account unlinked successfully");
+            showSuccessToast("Line account unlinked successfully");
           } catch (error) {
             console.log(error);
-            toast.error("Failed to unlink Line account");
+            showErrorToast("Failed to unlink Line account");
           }
         },
       });
@@ -219,10 +219,10 @@ const UnlinkAccounts = () => {
         function: async () => {
           try {
             await unlinkSpotify(subject);
-            toast.success("Spotify account unlinked successfully");
+            showSuccessToast("Spotify account unlinked successfully");
           } catch (error) {
             console.log(error);
-            toast.error("Failed to unlink Spotify account");
+            showErrorToast("Failed to unlink Spotify account");
           }
         },
       });
@@ -235,10 +235,10 @@ const UnlinkAccounts = () => {
         function: async () => {
           try {
             await unlinkInstagram(subject);
-            toast.success("Instagram account unlinked successfully");
+            showSuccessToast("Instagram account unlinked successfully");
           } catch (error) {
             console.log(error);
-            toast.error("Failed to unlink Instagram account");
+            showErrorToast("Failed to unlink Instagram account");
           }
         },
       });
@@ -252,10 +252,10 @@ const UnlinkAccounts = () => {
           function: async () => {
             try {
               await unlinkFarcaster(fid);
-              toast.success("Farcaster account unlinked successfully");
+              showSuccessToast("Farcaster account unlinked successfully");
             } catch (error) {
               console.log(error);
-              toast.error("Failed to unlink Farcaster account");
+              showErrorToast("Failed to unlink Farcaster account");
             }
           },
         });
@@ -271,10 +271,10 @@ const UnlinkAccounts = () => {
           function: async () => {
             try {
               await unlinkTelegram(telegramUserId);
-              toast.success("Telegram account unlinked successfully");
+              showSuccessToast("Telegram account unlinked successfully");
             } catch (error) {
               console.log(error);
-              toast.error("Failed to unlink Telegram account");
+              showErrorToast("Failed to unlink Telegram account");
             }
           },
         });
@@ -290,10 +290,10 @@ const UnlinkAccounts = () => {
           function: async () => {
             try {
               await unlinkPasskey(credentialId);
-              toast.success("Passkey account unlinked successfully");
+              showSuccessToast("Passkey account unlinked successfully");
             } catch (error) {
               console.log(error);
-              toast.error("Failed to unlink Passkey account");
+              showErrorToast("Failed to unlink Passkey account");
             }
           },
         });
