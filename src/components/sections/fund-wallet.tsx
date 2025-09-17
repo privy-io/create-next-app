@@ -31,7 +31,7 @@ const FundWallet = () => {
       });
     } catch (error) {
       console.log(error);
-      toast.error("Wallet funding action failed.");
+      toast.error("Failed to fund wallet. Please try again.");
     }
   };
   const fundWalletSolanaHandler = (asset?: "USDC" | "native-currency") => {
@@ -42,7 +42,7 @@ const FundWallet = () => {
       });
     } catch (error) {
       console.log(error);
-      toast.error("Wallet funding action failed.");
+      toast.error("Failed to fund wallet. Please try again.");
     }
   };
 
@@ -72,7 +72,7 @@ const FundWallet = () => {
     <Section
       name="Fund Wallet"
       description={
-        "Fund wallet by using Card, Exchange or an external wallet. Privy has briding integration out of the box powered by Relay resorvoir."
+        "Fund wallet using a card, exchange, or external wallet. Privy has bridging integration out of the box powered by Relay reservoir."
       }
       filepath="src/components/sections/fund-wallet"
       actions={availableActions}
