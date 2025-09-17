@@ -15,14 +15,15 @@ export const CustomToast: React.FC<CustomToastProps> = ({
 
   const containerClasses = [
     "flex",
-    "items-center",
-    "gap-2",
+    "items-start",
+    "gap-3",
     "min-w-0",
     "pl-4",
     "pr-3",
     "py-4",
-    "w-[455px]",
-    "h-[55px]",
+    "max-w-[520px]",
+    "min-w-[380px]",
+    "min-h-[55px]",
     "rounded-lg",
     "border",
     isError ? "bg-[#FEE2E2] border-[#F69393]" : "bg-[#DCFCE7] border-[#87D7B7]",
@@ -33,7 +34,8 @@ export const CustomToast: React.FC<CustomToastProps> = ({
     isError ? "font-medium leading-[22px]" : "font-normal leading-5",
     "text-[#040217]",
     "flex-1",
-    "whitespace-nowrap",
+    "break-words",
+    "max-w-[420px]",
   ].join(" ");
 
   return (
@@ -44,7 +46,7 @@ export const CustomToast: React.FC<CustomToastProps> = ({
           "0px 4px 10px -2px rgba(16, 24, 40, 0.08), 0px 10px 20px -3px rgba(0, 0, 0, 0.1)",
       }}
     >
-      <div className="shrink-0" aria-hidden>
+      <div className="shrink-0 mt-0.5" aria-hidden>
         {isError ? (
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
             <path
@@ -81,7 +83,7 @@ export const CustomToast: React.FC<CustomToastProps> = ({
       <div className={textClasses}>{message}</div>
       <button
         aria-label="Close"
-        className="flex h-[23px] w-9 items-center justify-center rounded-lg shrink-0"
+        className="flex h-[23px] w-9 items-center justify-center rounded-lg shrink-0 mt-0.5"
         onClick={() => toast.dismiss()}
       >
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -110,7 +112,12 @@ export const showSuccessToast = (message: string) => {
     closeButton: false,
     icon: false,
     className: "bg-transparent shadow-none p-0 m-0",
-    style: { background: "transparent", boxShadow: "none" },
+    style: { 
+      background: "transparent", 
+      boxShadow: "none",
+      width: "auto",
+      maxWidth: "none"
+    },
   });
 };
 
@@ -126,7 +133,13 @@ export const showErrorToast = (message: string) => {
     closeButton: false,
     icon: false,
     className: "bg-transparent shadow-none p-0 m-0",
-    style: { background: "transparent", boxShadow: "none", marginTop: 16 },
+    style: { 
+      background: "transparent", 
+      boxShadow: "none", 
+      marginTop: 16,
+      width: "auto",
+      maxWidth: "none"
+    },
   });
 };
 

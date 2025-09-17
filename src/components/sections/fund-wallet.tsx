@@ -116,7 +116,7 @@ const FundWallet = () => {
   ];
   return (
     <Section
-      name="Fund Wallet"
+      name="Fund wallet"
       description={
         "Fund wallet using a card, exchange, or external wallet. Privy has bridging integration out of the box powered by Relay reservoir."
       }
@@ -128,7 +128,7 @@ const FundWallet = () => {
           htmlFor="fund-wallet-select"
           className="block text-sm font-medium mb-2"
         >
-          Select Wallet:
+          Select wallet:
         </label>
         <div className="relative">
           <select

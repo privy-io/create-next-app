@@ -295,42 +295,42 @@ const WalletActions = () => {
 
   const availableActions = [
     {
-      name: "Sign Message (EVM)",
+      name: "Sign message (EVM)",
       function: handleSignMessageEvm,
       disabled: !isEvmWallet,
     },
     {
-      name: "Sign Message (Solana)",
+      name: "Sign message (Solana)",
       function: handleSignMessageSolana,
       disabled: !isSolanaWallet,
     },
     {
-      name: "Sign Typed Data (EVM)",
+      name: "Sign typed data (EVM)",
       function: handleSignTypedData,
       disabled: !isEvmWallet,
     },
     {
-      name: "Sign Raw Hash (EVM)",
+      name: "Sign raw hash (EVM)",
       function: handleSignRawHash,
       disabled: !isEvmWallet,
     },
     {
-      name: "Sign Transaction (EVM)",
+      name: "Sign transaction (EVM)",
       function: handleSignTransactionEvm,
       disabled: !isEvmWallet,
     },
     {
-      name: "Sign Transaction (Solana)",
+      name: "Sign transaction (Solana)",
       function: handleSignTransactionSolana,
       disabled: !isSolanaWallet,
     },
     {
-      name: "Send Transaction (EVM)",
+      name: "Send transaction (EVM)",
       function: handleSendTransactionEvm,
       disabled: !isEvmWallet,
     },
     {
-      name: "Send Transaction (Solana)",
+      name: "Send transaction (Solana)",
       function: handleSendTransactionSolana,
       disabled: !isSolanaWallet,
     },
@@ -338,7 +338,7 @@ const WalletActions = () => {
 
   return (
     <Section
-      name="Wallet Actions"
+      name="Wallet actions"
       description={
         "Sign messages, typed data, raw hashes, and transactions, send transactions for both EVM and Solana wallets. Seamless experience with Privy embedded wallets."
       }
@@ -350,7 +350,7 @@ const WalletActions = () => {
           htmlFor="wallet-select"
           className="block text-sm font-medium mb-2"
         >
-          Select Wallet:
+          Select wallet:
         </label>
         <div className="relative">
           <select

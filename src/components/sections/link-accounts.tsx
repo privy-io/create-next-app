@@ -109,7 +109,7 @@ const LinkAccounts = () => {
   ];
   return (
     <Section
-      name="Link Accounts"
+      name="Link accounts"
       description={
         "Link social accounts or external wallets to the current user."
       }
