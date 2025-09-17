@@ -27,7 +27,7 @@ const MFA = () => {
     <Section
       name="MFA Enrollment"
       description={
-        "Enroll in MFA to enhance security. Privy support TOTP, SMS and Passkey MFA methods, once enrolled, you can use to perform sensitive wallet actions."
+        "Enroll in MFA to enhance security. Privy supports TOTP, SMS, and Passkey MFA methods. Once enrolled, you can use MFA to perform sensitive wallet actions."
       }
       filepath="src/components/sections/mfa"
       actions={availableActions}

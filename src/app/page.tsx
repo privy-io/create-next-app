@@ -46,7 +46,7 @@ function Home() {
           <UserObject />
         </section>
       ) : (
-        <section className="w-full flex flex-reow justify-center items-center h-[calc(100vh-60px)]">
+        <section className="w-full flex flex-row justify-center items-center h-[calc(100vh-60px)]">
           <button className="button " onClick={login}>
             Login
           </button>
