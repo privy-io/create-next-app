@@ -8,7 +8,7 @@ export function Header() {
         <PrivyLogo className="w-[103.48px] h-[23.24px]" />
 
         <div className="text-medium flex h-[22px] items-center justify-center rounded-[11px] border border-primary px-[0.375rem] text-[0.75rem] text-primary">
-          React Demo
+          Next.js Demo
         </div>
       </div>
 
