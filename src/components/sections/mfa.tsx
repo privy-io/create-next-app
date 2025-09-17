@@ -2,7 +2,7 @@
 
 import { useMfaEnrollment } from "@privy-io/react-auth";
 import Section from "../reusables/section";
-import { toast } from "react-toastify";
+import { showErrorToast } from "@/components/ui/custom-toast";
 
 const MFA = () => {
   const { showMfaEnrollmentModal } = useMfaEnrollment();
@@ -12,7 +12,7 @@ const MFA = () => {
       showMfaEnrollmentModal();
     } catch (error) {
       const message = error?.toString?.() ?? "Failed to open MFA enrollment";
-      toast.error(message);
+      showErrorToast(message);
     }
   };
 

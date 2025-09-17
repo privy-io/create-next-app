@@ -22,7 +22,7 @@ export function Header() {
           Docs <ArrowUpRightIcon className="h-4 w-4" strokeWidth={2} />
         </a>
 
-        <button className="button-primary rounded-full">
+        <button className="button-primary rounded-full hidden md:block">
           <a
             className="flex flex-row items-center gap-2"
             href="https://dashboard.privy.io/"
