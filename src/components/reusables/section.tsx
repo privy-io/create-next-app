@@ -14,7 +14,7 @@ interface ISection {
 const Section = ({ name, description, filepath, actions }: ISection) => {
   return (
     <div className="py-4 my-4">
-      <div className="flex flex-row gap-2 items-center my-4">
+      <div className="flex flex-col md:flex-row gap-2 md:items-center my-4">
         <h3 className="text-[20px] font-semibold">{name}</h3>
         <pre className="bg-white px-2 py-1 rounded-full text-[12px]">
           @{filepath}
@@ -28,7 +28,9 @@ const Section = ({ name, description, filepath, actions }: ISection) => {
             key={index}
             onClick={action.function}
             disabled={action.disabled}
-            className={`button ${action.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`button ${
+              action.disabled ? "opacity-50 cursor-not-allowed" : ""
+            }`}
           >
             {action.name}
           </button>
