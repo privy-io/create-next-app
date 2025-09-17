@@ -1,3 +1,5 @@
+import React from "react";
+
 interface IAction {
   name: string;
   function: () => void;
@@ -9,9 +11,10 @@ interface ISection {
   description?: string;
   filepath?: string;
   actions: IAction[];
+  children?: React.ReactNode;
 }
 
-const Section = ({ name, description, filepath, actions }: ISection) => {
+const Section = ({ name, description, filepath, actions, children }: ISection) => {
   return (
     <div className="py-4 my-4">
       <div className="flex flex-col md:flex-row gap-2 md:items-center my-4">
@@ -21,6 +24,8 @@ const Section = ({ name, description, filepath, actions }: ISection) => {
         </pre>
       </div>
       <p className="text-[16px] font-light">{description}</p>
+
+      {children && <div className="my-4">{children}</div>}
 
       <div className="flex flex-row flex-wrap gap-2 my-4">
         {actions.map((action, index) => (
