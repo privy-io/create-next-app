@@ -71,12 +71,12 @@ const SessionSigners = () => {
 
   const availableActions = [
     {
-      name: "Add Session Signer",
+      name: "Add session signer",
       function: handleAddSessionSigners,
       disabled: !selectedWallet,
     },
     {
-      name: "Remove Session Signer",
+      name: "Remove session signer",
       function: handleRemoveSessionSigners,
       disabled: !selectedWallet,
     },
@@ -84,7 +84,7 @@ const SessionSigners = () => {
 
   return (
     <Section
-      name="Session Signers"
+      name="Session signers"
       description={
         "Delegate signing to a trusted service for actions like limit orders or scheduled transactions when the user is offline."
       }
@@ -96,7 +96,7 @@ const SessionSigners = () => {
           htmlFor="session-wallet-select"
           className="block text-sm font-medium mb-2"
         >
-          Select Wallet:
+          Select wallet:
         </label>
         <div className="relative">
           <select

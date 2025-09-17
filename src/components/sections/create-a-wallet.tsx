@@ -78,23 +78,23 @@ const CreateAWallet = () => {
 
   const availableActions = [
     {
-      name: "Create Ethereum Wallet",
+      name: "Create Ethereum wallet",
       function: createWalletEvmHandler,
     },
     {
-      name: "Create Solana Wallet",
+      name: "Create Solana wallet",
       function: createWalletSolanaHandler,
     },
     ...supportedChains.map((chain) => ({
       name: `Create ${
         chain.charAt(0).toUpperCase() + chain.slice(1).replace("-", " ")
-      } Wallet`,
+      } wallet`,
       function: () => createWalletExtendedChainHandler(chain),
     })),
   ];
   return (
     <Section
-      name="Create a Wallet"
+      name="Create a wallet"
       description={
         "Creates a new wallet for the user. To limit to a single wallet per user, remove the createAdditional flag from createWallet"
       }

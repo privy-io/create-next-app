@@ -303,7 +303,7 @@ const UnlinkAccounts = () => {
 
   return (
     <Section
-      name="Unlink Accounts"
+      name="Unlink accounts"
       description={
         "Unlink social accounts or external wallets from the current user."
       }

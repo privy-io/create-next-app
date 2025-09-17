@@ -29,7 +29,7 @@ const WalletManagement = () => {
   const { importWallet: importWalletSolana } = useImportWalletSolana();
 
   const allWallets = useMemo((): WalletInfo[] => {
-    const evmWallets: WalletInfo[] = walletsEvm.map((wallet) => ({
+    const evmWallets: WalletInfo[] = walletsEvm.filter((wallet) => wallet.walletClientType === "privy").map((wallet) => ({
       address: wallet.address,
       type: "ethereum" as const,
       name: wallet.address,
@@ -114,17 +114,17 @@ const WalletManagement = () => {
 
   const availableActions = [
     {
-      name: "Export Selected Wallet",
+      name: "Export selected wallet",
       function: handleExportWallet,
       disabled: !selectedWallet || !selectedWallet.isPrivy,
     },
     {
-      name: "Import Wallet (EVM)",
+      name: "Import wallet (EVM)",
       function: handleImportEthereum,
       disabled: isPrivateKeyEmpty,
     },
     {
-      name: "Import Wallet (Solana)",
+      name: "Import wallet (Solana)",
       function: handleImportSolana,
       disabled: isPrivateKeyEmpty,
     },
@@ -132,7 +132,7 @@ const WalletManagement = () => {
 
   return (
     <Section
-      name="Wallet Management"
+      name="Wallet management"
       description={
         "Export your embedded wallet or import an external private key for both Ethereum and Solana networks."
       }
@@ -144,7 +144,7 @@ const WalletManagement = () => {
           htmlFor="wallet-management-select"
           className="block text-sm font-medium mb-2"
         >
-          Select Wallet to Export:
+          Select wallet to export:
         </label>
         <div className="relative">
           <select
