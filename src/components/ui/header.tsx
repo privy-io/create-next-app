@@ -4,7 +4,7 @@ import { PrivyLogo } from "./privy-logo";
 export function Header() {
   return (
     <header className="h-[60px] flex flex-row justify-between items-center px-6 border-b bg-white border-[#E2E3F0]">
-      <div className="flex flex-row items-center gap-2 w-[198.48px] h-[26px]">
+      <div className="flex flex-row items-center gap-2 h-[26px]">
         <PrivyLogo className="w-[103.48px] h-[23.24px]" />
 
         <div className="text-medium flex h-[22px] items-center justify-center rounded-[11px] border border-primary px-[0.375rem] text-[0.75rem] text-primary">
