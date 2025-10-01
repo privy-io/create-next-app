@@ -1,13 +1,13 @@
 import { useWallets, WalletWithMetadata } from "@privy-io/react-auth";
 import { useState } from "react";
-import { Account, RelayActions, WalletActions } from "porto/viem";
+import { Account, Key, RelayActions, WalletActions } from "porto/viem";
 import { encodeFunctionData, Hex, createClient, http } from "viem";
 import { Chains } from "porto";
 
 // Instantiate a Viem Client with Porto-compatible Chain.
 const client = createClient({
   chain: Chains.baseSepolia,
-  transport: http(),
+  transport: http("https://rpc.porto.sh"),
 });
 
 interface WalletCardProps {
@@ -35,6 +35,7 @@ const ABI = [
 export default function WalletCard({ wallet }: WalletCardProps) {
   const [upgraded, setUpgraded] = useState(false);
   const [loading, setLoading] = useState(false);
+
   const [txHash, setTxHash] = useState<string | null>(null);
   const { wallets } = useWallets();
 
@@ -72,9 +73,7 @@ export default function WalletCard({ wallet }: WalletCardProps) {
                 // Create Porto account
                 const upgradedAccount = await RelayActions.upgradeAccount(
                   client,
-                  {
-                    account,
-                  }
+                  { account }
                 );
                 setUpgraded(true);
                 console.log("Upgraded account:", upgradedAccount);
@@ -104,6 +103,7 @@ export default function WalletCard({ wallet }: WalletCardProps) {
                 // Create Porto account
                 const result = await RelayActions.sendCalls(client, {
                   account,
+                  chain: Chains.baseSepolia,
                   calls: [
                     {
                       to: NFT_ADDRESS,
@@ -117,6 +117,21 @@ export default function WalletCard({ wallet }: WalletCardProps) {
                 });
 
                 console.log("Transaction result:", result);
+
+                const status = await RelayActions.getCallsStatus(client, {
+                  id: result.id, // Bundle ID from sendCalls
+                });
+                console.log("Transaction status:", status);
+
+                // await 10 seconds for transaction to be indexed
+                await new Promise((resolve) => setTimeout(resolve, 10000));
+
+                const finalStatus = await RelayActions.getCallsStatus(client, {
+                  id: result.id, // Bundle ID from sendCalls
+                });
+
+                console.log("Final transaction status:", finalStatus);
+
                 // setTxHash(result);
               } catch (error) {
                 console.error("Error minting NFT:", error);
