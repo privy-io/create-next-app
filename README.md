@@ -1,3 +1,7 @@
+# Privy Next.js Starter
+
+> **This repository is archived.** For up-to-date examples, please visit [github.com/privy-io/examples](https://github.com/privy-io/examples).
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
